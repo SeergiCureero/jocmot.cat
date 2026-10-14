@@ -1,0 +1,97 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAuth } from '@/features/auth/AuthContext';
+import type { GameId } from '@/games/types';
+import { storage } from '@/lib/storage';
+import { backend, type GameStatus, type ProgressRecord } from '@/services/backend';
+
+interface Options<S> {
+  gameId: GameId;
+  puzzleId: number;
+  initialState: () => S;
+  getStatus: (state: S) => GameStatus;
+}
+
+const REMOTE_DEBOUNCE_MS = 1500;
+const localKey = (gameId: string, puzzleId: number) => `progress:${gameId}:${puzzleId}`;
+
+/**
+ * Estat persistent d'un puzle.
+ * - Sempre es guarda al navegador (funciona sense compte).
+ * - Si hi ha sessió, se sincronitza amb el backend: guanya la còpia més recent.
+ *
+ * El component del joc s'ha de muntar amb `key` per puzle (ho fa GameRoute).
+ */
+export function useGameProgress<S>({ gameId, puzzleId, initialState, getStatus }: Options<S>) {
+  const { user } = useAuth();
+  const [state, setState] = useState<S>(
+    () => storage.get<ProgressRecord<S>>(localKey(gameId, puzzleId))?.state ?? initialState(),
+  );
+  const [syncing, setSyncing] = useState(false);
+
+  const pendingRemote = useRef<ProgressRecord<S> | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const flushRemote = useCallback(() => {
+    clearTimeout(timer.current);
+    const record = pendingRemote.current;
+    pendingRemote.current = null;
+    if (record && backend.getCurrentUser()) backend.saveProgress(record).catch(console.error);
+  }, []);
+
+  // Sincronització inicial amb el servidor quan hi ha sessió.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    setSyncing(true);
+    backend
+      .getProgress(gameId, puzzleId)
+      .then((remote) => {
+        if (cancelled) return;
+        const local = storage.get<ProgressRecord<S>>(localKey(gameId, puzzleId));
+        if (remote && (!local || remote.updatedAt > local.updatedAt)) {
+          storage.set(localKey(gameId, puzzleId), remote);
+          setState(remote.state as S);
+        } else if (local) {
+          backend.saveProgress(local).catch(console.error);
+        }
+      })
+      .catch(console.error)
+      .finally(() => !cancelled && setSyncing(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [user, gameId, puzzleId]);
+
+  // Envia el que quedi pendent en sortir de la pàgina o desmuntar.
+  useEffect(() => {
+    window.addEventListener('pagehide', flushRemote);
+    return () => {
+      window.removeEventListener('pagehide', flushRemote);
+      flushRemote();
+    };
+  }, [flushRemote]);
+
+  const update = useCallback(
+    (updater: (prev: S) => S) => {
+      setState((prev) => {
+        const next = updater(prev);
+        if (next === prev) return prev;
+        const record: ProgressRecord<S> = {
+          gameId,
+          puzzleId,
+          status: getStatus(next),
+          state: next,
+          updatedAt: new Date().toISOString(),
+        };
+        storage.set(localKey(gameId, puzzleId), record);
+        pendingRemote.current = record;
+        clearTimeout(timer.current);
+        timer.current = setTimeout(flushRemote, REMOTE_DEBOUNCE_MS);
+        return next;
+      });
+    },
+    [gameId, puzzleId, getStatus, flushRemote],
+  );
+
+  return { state, update, status: getStatus(state), syncing };
+}
