@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router';
 import Layout from './components/layout/Layout';
 import Spinner from './components/ui/Spinner';
@@ -10,6 +10,8 @@ import NotFoundPage from './pages/NotFoundPage';
 import LoginPage from './features/auth/LoginPage';
 import RegisterPage from './features/auth/RegisterPage';
 import ProfilePage from './features/auth/ProfilePage';
+
+const EditorRoutes = lazy(() => import('./features/editor/EditorRoutes'));
 
 export default function App() {
   return (
@@ -33,6 +35,7 @@ export default function App() {
               <Route path="registre" element={<RegisterPage />} />
             </Route>
           )}
+          {FEATURES.accounts && <Route path="editor/*" element={<EditorRoutes />} />}
 
           <Route path="*" element={<NotFoundPage />} />
         </Route>

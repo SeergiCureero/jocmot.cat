@@ -4,3 +4,7 @@ dist
 .env
 .DS_Store
 coverage
+
+# PocketBase local
+backend/pb_data
+backend/pocketbase

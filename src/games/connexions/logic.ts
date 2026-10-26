@@ -67,3 +67,20 @@ export function buildShareText(puzzleNumber: number, state: ConnexionsState, puz
   const rows = state.attempts.map((a) => a.map((w) => EMOJI[puzzle.groups[groupOf(puzzle, w)].level]).join(''));
   return `Connexions #${puzzleNumber}\n${rows.join('\n')}\n\n${url}`;
 }
+
+/** Valida que un puzle és coherent (tests i editor). Retorna la llista d'errors. */
+export function validatePuzzle(p: ConnexionsPuzzle): string[] {
+  const errors: string[] = [];
+  if (p.groups.length !== 4) errors.push('calen quatre grups');
+  if ([...p.groups.map((g) => g.level)].sort().join() !== '0,1,2,3') errors.push('cal un grup per nivell');
+  p.groups.forEach((g, i) => {
+    if (!g.title.trim()) errors.push(`grup ${i + 1}: falta el títol`);
+    if (g.words.length !== GROUP_SIZE || g.words.some((w) => !w.trim())) {
+      errors.push(`grup ${i + 1}: calen ${GROUP_SIZE} paraules`);
+    }
+  });
+  const words = p.groups.flatMap((g) => g.words).filter((w) => w.trim());
+  const repeated = words.filter((w, i) => words.indexOf(w) !== i);
+  if (repeated.length) errors.push(`paraules repetides: ${[...new Set(repeated)].join(', ')}`);
+  return errors;
+}

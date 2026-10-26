@@ -29,12 +29,24 @@ export default function Header() {
         </nav>
 
         {FEATURES.accounts && (
-          <Link
-            to={user ? '/compte' : '/compte/entrar'}
-            className="ml-auto rounded-full border border-stone-300 px-3 py-1 text-sm font-medium hover:bg-stone-100"
-          >
-            {user ? user.username : 'Entra'}
-          </Link>
+          <div className="ml-auto flex items-center gap-2">
+            {user?.editor && (
+              <NavLink
+                to="/editor"
+                className={({ isActive }) =>
+                  cn('rounded-full px-3 py-1 text-sm font-medium', isActive ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100')
+                }
+              >
+                ✏️ Editor
+              </NavLink>
+            )}
+            <Link
+              to={user ? '/compte' : '/compte/entrar'}
+              className="rounded-full border border-stone-300 px-3 py-1 text-sm font-medium hover:bg-stone-100"
+            >
+              {user ? user.username : 'Entra'}
+            </Link>
+          </div>
         )}
       </div>
     </header>

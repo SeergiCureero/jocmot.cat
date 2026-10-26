@@ -1,5 +1,5 @@
 import { PUZZLES } from './data/puzzles';
-import { buildShareText, initialOrder, initialState, submitSelection } from './logic';
+import { buildShareText, initialOrder, initialState, submitSelection, validatePuzzle } from './logic';
 
 const puzzle = PUZZLES[0];
 const [g0, g1] = puzzle.groups;
@@ -38,6 +38,15 @@ it('cada puzle té 16 paraules úniques i un grup per nivell', () => {
   for (const p of PUZZLES) {
     const words = p.groups.flatMap((g) => g.words);
     expect(new Set(words).size).toBe(16);
-    expect(p.groups.map((g) => g.level).sort()).toEqual([0, 1, 2, 3]);
+    expect(validatePuzzle(p)).toEqual([]);
   }
+});
+
+it('validatePuzzle detecta repetides i camps buits', () => {
+  const groups = puzzle.groups.map((g) => ({ ...g, words: [...g.words] as typeof g.words }));
+  groups[1].words[0] = groups[0].words[0];
+  groups[2].title = ' ';
+  const errors = validatePuzzle({ groups: groups as typeof puzzle.groups });
+  expect(errors).toContain(`paraules repetides: ${groups[0].words[0]}`);
+  expect(errors).toContain('grup 3: falta el títol');
 });

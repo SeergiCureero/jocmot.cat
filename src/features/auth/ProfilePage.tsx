@@ -11,10 +11,12 @@ export default function ProfilePage() {
   const { user, logout, backendKind } = useAuth();
   const [records, setRecords] = useState<ProgressRecord[] | null>(null);
 
+  // Depèn de l'id i no de l'objecte: refrescar la sessió crea un objecte nou i no ha de tornar a sincronitzar.
+  const userId = user?.id;
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
     syncLocalProgress().then(setRecords).catch(() => setRecords([]));
-  }, [user]);
+  }, [userId]);
 
   if (!user) return <Navigate to="/compte/entrar" replace />;
 

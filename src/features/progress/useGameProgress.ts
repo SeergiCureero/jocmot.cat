@@ -9,6 +9,8 @@ interface Options<S> {
   puzzleId: number;
   initialState: () => S;
   getStatus: (state: S) => GameStatus;
+  /** false = mode prova (editor): no es desa enlloc. */
+  persist?: boolean;
 }
 
 const REMOTE_DEBOUNCE_MS = 1500;
@@ -21,10 +23,11 @@ const localKey = (gameId: string, puzzleId: number) => `progress:${gameId}:${puz
  *
  * El component del joc s'ha de muntar amb `key` per puzle (ho fa GameRoute).
  */
-export function useGameProgress<S>({ gameId, puzzleId, initialState, getStatus }: Options<S>) {
-  const { user } = useAuth();
+export function useGameProgress<S>({ gameId, puzzleId, initialState, getStatus, persist = true }: Options<S>) {
+  const { user: sessionUser } = useAuth();
+  const user = persist ? sessionUser : null;
   const [state, setState] = useState<S>(
-    () => storage.get<ProgressRecord<S>>(localKey(gameId, puzzleId))?.state ?? initialState(),
+    () => (persist ? storage.get<ProgressRecord<S>>(localKey(gameId, puzzleId))?.state : null) ?? initialState(),
   );
   const [syncing, setSyncing] = useState(false);
 
@@ -38,9 +41,10 @@ export function useGameProgress<S>({ gameId, puzzleId, initialState, getStatus }
     if (record && backend.getCurrentUser()) backend.saveProgress(record).catch(console.error);
   }, []);
 
-  // Sincronització inicial amb el servidor quan hi ha sessió.
+  // Sincronització inicial amb el servidor quan hi ha sessió (per id: refrescar la sessió no la repeteix).
+  const userId = user?.id;
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
     let cancelled = false;
     setSyncing(true);
     backend
@@ -60,7 +64,7 @@ export function useGameProgress<S>({ gameId, puzzleId, initialState, getStatus }
     return () => {
       cancelled = true;
     };
-  }, [user, gameId, puzzleId]);
+  }, [userId, gameId, puzzleId]);
 
   // Envia el que quedi pendent en sortir de la pàgina o desmuntar.
   useEffect(() => {
@@ -75,7 +79,7 @@ export function useGameProgress<S>({ gameId, puzzleId, initialState, getStatus }
     (updater: (prev: S) => S) => {
       setState((prev) => {
         const next = updater(prev);
-        if (next === prev) return prev;
+        if (next === prev || !persist) return next;
         const record: ProgressRecord<S> = {
           gameId,
           puzzleId,
@@ -90,7 +94,7 @@ export function useGameProgress<S>({ gameId, puzzleId, initialState, getStatus }
         return next;
       });
     },
-    [gameId, puzzleId, getStatus, flushRemote],
+    [gameId, puzzleId, getStatus, flushRemote, persist],
   );
 
   return { state, update, status: getStatus(state), syncing };
@@ -106,8 +110,11 @@ export async function syncLocalProgress(): Promise<ProgressRecord[]> {
     const local = storage.get<ProgressRecord>(key);
     const current = remote.get(key);
     if (local && (!current || local.updatedAt > current.updatedAt)) {
-      await backend.saveProgress(local);
-      remote.set(key, local);
+      // Si un registre falla, la resta continua (i el local es torna a provar el proper cop).
+      await backend.saveProgress(local).then(
+        () => remote.set(key, local),
+        (e) => console.warn('No s’ha pogut pujar el progrés', key, e),
+      );
     }
   }
   return [...remote.values()];

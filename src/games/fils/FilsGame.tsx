@@ -20,15 +20,15 @@ import {
   wordFromPath,
 } from './logic';
 import { meta } from './meta';
-import type { Cell } from './types';
+import type { Cell, FilsPuzzle } from './types';
 
-export default function FilsGame({ puzzleNumber, date }: GameProps) {
-  const puzzle = pickByNumber(PUZZLES, puzzleNumber);
+export default function FilsGame({ puzzleNumber, date, puzzle: groupPuzzle, preview }: GameProps) {
+  const puzzle = (groupPuzzle as FilsPuzzle | undefined) ?? pickByNumber(PUZZLES, puzzleNumber);
   const { state, update, status } = useGameProgress({
     gameId: meta.id,
     puzzleId: puzzleNumber,
     initialState,
-    getStatus,
+    getStatus, persist: !preview,
   });
   const [selection, setSelection] = useState<Cell[]>([]);
   const toast = useToast();
@@ -54,7 +54,7 @@ export default function FilsGame({ puzzleNumber, date }: GameProps) {
       : null;
 
   return (
-    <GameShell meta={meta} puzzleNumber={puzzleNumber} date={date} result={result} help={<Help />}>
+    <GameShell preview={preview} meta={meta} puzzleNumber={puzzleNumber} date={date} result={result} help={<Help />}>
       <div className="mb-3 w-full max-w-sm rounded-xl bg-sky-100 p-3 text-center">
         <p className="text-xs font-semibold uppercase text-sky-800">Tema d’avui</p>
         <p className="text-lg font-bold">{puzzle.theme}</p>

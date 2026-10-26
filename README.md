@@ -77,10 +77,15 @@ src/
 - **Arxiu (futur):** les rutes `/joc/:puzzleId` ja existeixen. S'activen amb `FEATURES.archive = true` a `src/config/site.ts`.
 - **Anuncis (futur):** espais `<AdSlot>` ja col·locats. Veure [docs/ANUNCIS.md](docs/ANUNCIS.md).
 
+## Editor de puzles
+
+A `/editor`, els editors del grup dissenyen, proven i revisen puzles de Connexions, Fils i Mini. Amb 2 aprovacions, cada puzle es programa sol al primer dia lliure. Cal el backend (PocketBase). Veure [docs/EDITOR.md](docs/EDITOR.md).
+
 ## Documentació
 
 - [Arquitectura](docs/ARQUITECTURA.md)
-- [Backend i comptes (PocketBase)](docs/BACKEND.md)
+- [Backend, comptes i puzles del grup (PocketBase)](docs/BACKEND.md)
+- [Editor de puzles (guia per al grup)](docs/EDITOR.md)
 - [Afegir puzles o un joc nou](docs/AFEGIR-UN-JOC.md)
 - [Anuncis](docs/ANUNCIS.md)
 - [Desplegament](docs/DESPLEGAMENT.md)
