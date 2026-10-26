@@ -1,4 +1,5 @@
 import { Link, NavLink } from 'react-router';
+import { FEATURES } from '@/config/site';
 import { useAuth } from '@/features/auth/AuthContext';
 import { GAMES } from '@/games/registry';
 import { cn } from '@/lib/cn';
@@ -27,12 +28,14 @@ export default function Header() {
           ))}
         </nav>
 
-        <Link
-          to={user ? '/compte' : '/compte/entrar'}
-          className="ml-auto rounded-full border border-stone-300 px-3 py-1 text-sm font-medium hover:bg-stone-100"
-        >
-          {user ? user.username : 'Entra'}
-        </Link>
+        {FEATURES.accounts && (
+          <Link
+            to={user ? '/compte' : '/compte/entrar'}
+            className="ml-auto rounded-full border border-stone-300 px-3 py-1 text-sm font-medium hover:bg-stone-100"
+          >
+            {user ? user.username : 'Entra'}
+          </Link>
+        )}
       </div>
     </header>
   );
