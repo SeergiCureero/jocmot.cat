@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router';
 import Button from '@/components/ui/Button';
 import { GAMES } from '@/games/registry';
-import { backend, type ProgressRecord } from '@/services/backend';
+import type { ProgressRecord } from '@/services/backend';
 import { computeStats } from '@/features/progress/stats';
+import { syncLocalProgress } from '@/features/progress/useGameProgress';
 import { useAuth } from './AuthContext';
 
 export default function ProfilePage() {
@@ -12,7 +13,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!user) return;
-    backend.listProgress().then(setRecords).catch(() => setRecords([]));
+    syncLocalProgress().then(setRecords).catch(() => setRecords([]));
   }, [user]);
 
   if (!user) return <Navigate to="/compte/entrar" replace />;

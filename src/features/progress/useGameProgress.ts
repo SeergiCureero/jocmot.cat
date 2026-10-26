@@ -95,3 +95,20 @@ export function useGameProgress<S>({ gameId, puzzleId, initialState, getStatus }
 
   return { state, update, status: getStatus(state), syncing };
 }
+
+/**
+ * Puja al servidor el progrés local que hi falti o sigui més nou (p. ex. puzles
+ * jugats abans d'iniciar sessió) i retorna tots els registres de l'usuari.
+ */
+export async function syncLocalProgress(): Promise<ProgressRecord[]> {
+  const remote = new Map((await backend.listProgress()).map((r) => [localKey(r.gameId, r.puzzleId), r]));
+  for (const key of storage.keys('progress:')) {
+    const local = storage.get<ProgressRecord>(key);
+    const current = remote.get(key);
+    if (local && (!current || local.updatedAt > current.updatedAt)) {
+      await backend.saveProgress(local);
+      remote.set(key, local);
+    }
+  }
+  return [...remote.values()];
+}
