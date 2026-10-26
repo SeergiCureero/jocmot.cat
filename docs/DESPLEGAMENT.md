@@ -23,7 +23,13 @@ Gratuït, amb HTTPS, i publica automàticament a cada push a `main`.
    | `VITE_LAUNCH_DATE` | Dia del puzle #1, p. ex. `2026-11-01` |
    | `VITE_POCKETBASE_URL` | Opcional. Sense aquesta variable, els comptes s'amaguen. |
 
-4. Domini: **Custom domains → Set up a domain → `jocmot.cat`**. Si el domini és a un altre registrador (p. ex. CDmon), Cloudflare indica el registre DNS (CNAME) que s'hi ha d'afegir, o bé es poden canviar els servidors DNS del domini als de Cloudflare.
+4. Domini. Perquè funcioni el domini arrel (`jocmot.cat`, sense `www`), Cloudflare n'ha de gestionar el DNS:
+   1. A Cloudflare: **Add a domain** → `jocmot.cat` → pla **Free**. Cloudflare dona dos *nameservers* (p. ex. `xxx.ns.cloudflare.com`).
+   2. Al tauler del registrador (p. ex. CDmon), al domini → **Servidors DNS / Nameservers**: substituir els que hi ha pels dos de Cloudflare.
+   3. Esperar que Cloudflare marqui el domini com a **Active** (de minuts a unes hores).
+   4. Al projecte de Pages: **Custom domains → Set up a domain → `jocmot.cat`**. Cloudflare crea el registre DNS sol. Repetir amb `www.jocmot.cat` si es vol.
+
+   Un CNAME al registrador només serveix per a subdominis (`www.jocmot.cat`), no per al domini arrel.
 
 No cal cap configuració per a les rutes (`/paraula`, etc.): si `dist/` no té `404.html`, Cloudflare Pages ja serveix `index.html` per a qualsevol ruta.
 
