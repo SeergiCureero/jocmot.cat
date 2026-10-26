@@ -20,7 +20,6 @@ Gratuït, amb HTTPS, i publica automàticament a cada push a `main`.
    | Variable | Valor |
    | --- | --- |
    | `NODE_VERSION` | `22` |
-   | `VITE_LAUNCH_DATE` | Dia del puzle #1, p. ex. `2026-11-01` |
    | `VITE_POCKETBASE_URL` | Opcional. Sense aquesta variable, els comptes s'amaguen. |
 
 4. Domini. Perquè funcioni el domini arrel (`jocmot.cat`, sense `www`), Cloudflare n'ha de gestionar el DNS:
@@ -34,6 +33,8 @@ Gratuït, amb HTTPS, i publica automàticament a cada push a `main`.
 No cal cap configuració per a les rutes (`/paraula`, etc.): si `dist/` no té `404.html`, Cloudflare Pages ja serveix `index.html` per a qualsevol ruta.
 
 Cada pull request també genera una URL de previsualització.
+
+La data de llançament (`VITE_LAUNCH_DATE`) és a `.env.production`, al repositori, perquè funcioni igual sigui quin sigui el tipus de projecte de Cloudflare. Si el projecte s'ha creat com a **Worker** amb fitxers estàtics (no Pages), les variables de build es posen a **Settings → Build → Variables and secrets**, no a les variables del Worker.
 
 ## Llançar sense comptes
 
