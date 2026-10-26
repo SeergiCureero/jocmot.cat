@@ -63,4 +63,61 @@ export const PUZZLES: readonly MiniPuzzle[] = [
       },
     },
   },
+  {
+    grid: ['##PEU', '#TORN', 'CARES', 'ALTS#', 'PLA##'],
+    clues: {
+      across: {
+        1: 'Hi portem la sabata',
+        4: 'Ara és el meu ___: em toca a mi',
+        5: 'Que costen molts diners',
+        6: 'Com els gegants de la festa major',
+        7: 'El ___ de l’Estany, comarca gironina',
+      },
+      down: {
+        1: 'S’obre, es tanca i s’hi truca',
+        2: 'Llargs períodes de la història',
+        3: '___ quants: alguns',
+        4: 'Llesca de pernil o de formatge',
+        5: 'No en queda ni un: no en queda ___',
+      },
+    },
+  },
+  {
+    grid: ['##RAS', '#MOLI', 'CASES', 'ARES#', 'PES##'],
+    clues: {
+      across: {
+        1: 'Cel ___: sense ni un núvol',
+        4: 'El de vent té aspes',
+        5: 'Edificis on viu la gent',
+        6: 'Unitats de superfície de cent metres quadrats',
+        7: 'El mesura la bàscula',
+      },
+      down: {
+        1: 'Flors de Sant Jordi',
+        2: 'Les d’un avió el sostenen a l’aire',
+        3: 'Les cares d’un dau',
+        4: 'Progenitora',
+        5: '___ de setmana',
+      },
+    },
+  },
+  {
+    grid: ['#POTA', '#LLAR', 'SALSA', 'ANEC#', 'CASA#'],
+    clues: {
+      across: {
+        1: 'Una taula en té quatre',
+        5: 'La ___ de foc: on es crema la llenya',
+        6: 'El romesco n’és una',
+        7: 'Ocell que fa «cuac»',
+        8: 'Edifici on viu una família',
+      },
+      down: {
+        1: 'La de Vic és famosa per la boira',
+        2: 'Recipients per fer escudella',
+        3: 'Feina que cal fer',
+        4: 'En aquest moment',
+        6: 'Bossa gran per portar patates',
+      },
+    },
+  },
 ];

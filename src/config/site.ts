@@ -12,4 +12,9 @@ export const SITE = {
 export const FEATURES = {
   /** Permet jugar puzles anteriors a /joc/:puzzleId. */
   archive: false,
+  /**
+   * Comptes d'usuari. Calen un backend real (VITE_POCKETBASE_URL); sense, només
+   * s'activen en desenvolupament (mode local) i en producció s'amaguen.
+   */
+  accounts: Boolean(import.meta.env.VITE_POCKETBASE_URL) || import.meta.env.DEV,
 } as const;

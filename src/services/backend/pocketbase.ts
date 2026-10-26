@@ -70,7 +70,7 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
 
   const toProgress = (r: PbProgressRecord): ProgressRecord => {
     recordIds.set(cacheKey(r.game, r.puzzle), r.id);
-    return { gameId: r.game, puzzleId: r.puzzle, status: r.status, state: r.state, updatedAt: r.updated };
+    return { gameId: r.game, puzzleId: r.puzzle, status: r.status, state: r.state, updatedAt: new Date(r.updated.replace(' ', 'T')).toISOString() };
   };
 
   const requireUser = () => {

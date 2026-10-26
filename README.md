@@ -21,7 +21,7 @@ cp .env.example .env      # opcional
 npm run dev               # http://localhost:5173
 ```
 
-Sense `VITE_POCKETBASE_URL`, l'app funciona en **mode local**: els comptes i el progrés es guarden al navegador. Serveix per desenvolupar; per a producció cal el backend (veure [docs/BACKEND.md](docs/BACKEND.md)).
+Sense `VITE_POCKETBASE_URL`, l'app funciona en **mode local**: els comptes i el progrés es guarden al navegador. Serveix per desenvolupar; en un build de producció sense backend els comptes s'amaguen i només es pot jugar. Per tenir comptes cal el backend (veure [docs/BACKEND.md](docs/BACKEND.md)).
 
 | Script | Què fa |
 | --- | --- |

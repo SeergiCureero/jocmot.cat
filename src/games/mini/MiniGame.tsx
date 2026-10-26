@@ -7,6 +7,7 @@ import { SITE } from '@/config/site';
 import { useGameProgress } from '@/features/progress/useGameProgress';
 import { formatSeconds } from '@/lib/date';
 import { cn } from '@/lib/cn';
+import { isModalOpen } from '@/lib/dom';
 import { pickByNumber } from '../puzzles';
 import type { GameProps } from '../types';
 import CrosswordGrid from './components/CrosswordGrid';
@@ -93,6 +94,7 @@ export default function MiniGame({ puzzleNumber, date }: GameProps) {
   // Fletxes per moure's per la graella.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      if (isModalOpen()) return;
       const moves: Record<string, [number, number, Direction]> = {
         ArrowUp: [-1, 0, 'down'],
         ArrowDown: [1, 0, 'down'],

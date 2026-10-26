@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { cn } from '@/lib/cn';
+import { isModalOpen } from '@/lib/dom';
 
 export const ENTER = 'ENTER';
 export const BACKSPACE = 'BACKSPACE';
@@ -23,7 +24,7 @@ export default function Keyboard({ onKey, keyClassName, disabled, showEnter = tr
   useEffect(() => {
     if (disabled) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || isModalOpen()) return;
       if (e.key === 'Enter') onKey(ENTER);
       else if (e.key === 'Backspace') onKey(BACKSPACE);
       else if (/^[a-zç]$/i.test(e.key)) onKey(e.key.toUpperCase());

@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { Route, Routes } from 'react-router';
 import Layout from './components/layout/Layout';
 import Spinner from './components/ui/Spinner';
+import { FEATURES } from './config/site';
 import { GAMES } from './games/registry';
 import GameRoute from './games/GameRoute';
 import HomePage from './pages/HomePage';
@@ -25,11 +26,13 @@ export default function App() {
             </Route>
           ))}
 
-          <Route path="compte">
-            <Route index element={<ProfilePage />} />
-            <Route path="entrar" element={<LoginPage />} />
-            <Route path="registre" element={<RegisterPage />} />
-          </Route>
+          {FEATURES.accounts && (
+            <Route path="compte">
+              <Route index element={<ProfilePage />} />
+              <Route path="entrar" element={<LoginPage />} />
+              <Route path="registre" element={<RegisterPage />} />
+            </Route>
+          )}
 
           <Route path="*" element={<NotFoundPage />} />
         </Route>
