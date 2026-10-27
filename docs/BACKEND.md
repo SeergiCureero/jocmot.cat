@@ -90,9 +90,10 @@ Primer el servidor i després el frontend: la web antiga continua funcionant amb
 
 **Actualitzar PocketBase:** des del panell no es pot; cal baixar el binari nou de GitHub, comprovar-ne el `checksums.txt`, substituir `/opt/pocketbase/pocketbase` i `systemctl restart pocketbase`. Fer abans una còpia des del panell.
 
+**Correu.** Els correus (recuperar la contrasenya, avís d'inici de sessió nou…) surten de `hola@jocmot.cat` a través de [Brevo](https://www.brevo.com) (pla gratuït, 300 correus al dia). El domini està verificat a Brevo amb registres DNS a Cloudflare (SPF, DKIM, DMARC). Les credencials SMTP només són al panell: *Settings → Mail settings* (servidor `smtp-relay.brevo.com`, port 587). Les plantilles en català són a la migració `1761700000_correus.js`; l'enllaç per canviar la contrasenya porta a `jocmot.cat/compte/nova-contrasenya/:token`.
+
 Pendent:
 
-- Configurar **SMTP** al panell (verificació de correu i recuperació de contrasenya).
 - **RGPD**: política de privacitat i dret a esborrar el compte.
 
 ## Canviar de proveïdor

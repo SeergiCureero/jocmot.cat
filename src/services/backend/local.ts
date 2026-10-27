@@ -232,6 +232,14 @@ export function createLocalBackend(): Backend {
       storage.set(REVIEWS_KEY, [...others, review]);
     },
 
+    async requestPasswordReset() {
+      throw new BackendError('Cal el servidor', 503);
+    },
+
+    async confirmPasswordReset() {
+      throw new BackendError('Cal el servidor', 503);
+    },
+
     async call() {
       throw new BackendError('Cal el servidor', 503);
     },

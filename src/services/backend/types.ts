@@ -72,6 +72,9 @@ export interface Backend {
   register(input: RegisterInput): Promise<User>;
   login(email: string, password: string): Promise<User>;
   logout(): void;
+  /** Envia el correu per canviar la contrasenya (no falla si el correu no existeix). */
+  requestPasswordReset(email: string): Promise<void>;
+  confirmPasswordReset(token: string, password: string): Promise<void>;
   onAuthChange(callback: (user: User | null) => void): () => void;
 
   getProgress(gameId: GameId, puzzleId: number): Promise<ProgressRecord | null>;

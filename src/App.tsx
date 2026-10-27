@@ -11,6 +11,8 @@ import NotFoundPage from './pages/NotFoundPage';
 import LoginPage from './features/auth/LoginPage';
 import RegisterPage from './features/auth/RegisterPage';
 import ProfilePage from './features/auth/ProfilePage';
+import ForgotPasswordPage from './features/auth/ForgotPasswordPage';
+import NewPasswordPage from './features/auth/NewPasswordPage';
 
 const EditorRoutes = lazy(() => import('./features/editor/EditorRoutes'));
 const LeaguesPage = lazy(() => import('./features/social/LeaguesPage'));
@@ -40,6 +42,8 @@ export default function App() {
               <Route index element={<ProfilePage />} />
               <Route path="entrar" element={<LoginPage />} />
               <Route path="registre" element={<RegisterPage />} />
+              <Route path="recupera" element={<ForgotPasswordPage />} />
+              <Route path="nova-contrasenya/:token" element={<NewPasswordPage />} />
             </Route>
           )}
           {FEATURES.social && (
