@@ -4,6 +4,12 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { GAMES } from '@/games/registry';
 import { cn } from '@/lib/cn';
 
+const pill = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    'rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap transition-colors',
+    isActive ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100',
+  );
+
 export default function Header() {
   const { user } = useAuth();
 
@@ -19,44 +25,32 @@ export default function Header() {
 
         <nav className="hidden flex-1 items-center gap-1 sm:flex" aria-label="Jocs">
           {GAMES.map((game) => (
-            <NavLink
-              key={game.id}
-              to={`/${game.slug}`}
-              className={({ isActive }) =>
-                cn(
-                  'rounded-full px-3 py-1 text-sm font-medium transition-colors',
-                  isActive ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100',
-                )
-              }
-            >
+            <NavLink key={game.id} to={`/${game.slug}`} className={pill}>
               {game.name}
             </NavLink>
           ))}
         </nav>
 
-        {FEATURES.accounts && (
-          <div className="ml-auto flex items-center gap-2">
-            {user?.editor && (
-              <NavLink
-                to="/editor"
-                className={({ isActive }) =>
-                  cn(
-                    'rounded-full px-3 py-1 text-sm font-medium transition-colors',
-                    isActive ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100',
-                  )
-                }
-              >
-                ✏️ Editor
-              </NavLink>
-            )}
+        <div className="ml-auto flex items-center gap-2">
+          {FEATURES.archive && (
+            <NavLink to="/arxiu" className={pill} aria-label="Arxiu">
+              📅 <span className="hidden sm:inline">Arxiu</span>
+            </NavLink>
+          )}
+          {FEATURES.accounts && user?.editor && (
+            <NavLink to="/editor" className={pill} aria-label="Editor">
+              ✏️ <span className="hidden sm:inline">Editor</span>
+            </NavLink>
+          )}
+          {FEATURES.accounts && (
             <Link
               to={user ? '/compte' : '/compte/entrar'}
               className="rounded-full border border-stone-300 px-3 py-1 text-sm font-medium transition-colors hover:bg-stone-100"
             >
               {user ? user.username : 'Entra'}
             </Link>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </header>
   );

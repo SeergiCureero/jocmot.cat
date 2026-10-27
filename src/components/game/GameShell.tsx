@@ -1,9 +1,12 @@
 import { useRef, useState, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import AdSlot from '@/components/ads/AdSlot';
 import Button from '@/components/ui/Button';
 import Confetti from '@/components/ui/Confetti';
 import Modal from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
+import { FEATURES } from '@/config/site';
+import { getTodayPuzzleNumber } from '@/games/puzzles';
 import type { GameMeta } from '@/games/types';
 import { formatDateCa } from '@/lib/date';
 import { shareText } from '@/lib/share';
@@ -63,7 +66,22 @@ export default function GameShell({
               {preview ? '· prova' : `#${puzzleNumber}`}
             </span>
           </h1>
-          {!preview && <p className="text-xs text-stone-500">{formatDateCa(date)}</p>}
+          {!preview && (
+            <p className="text-xs text-stone-500">
+              {formatDateCa(date)}
+              {FEATURES.archive && (
+                <>
+                  {' · '}
+                  <Link
+                    to={`/arxiu?joc=${meta.slug}`}
+                    className="hover:text-stone-900 hover:underline"
+                  >
+                    Arxiu
+                  </Link>
+                </>
+              )}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {headerExtra}
@@ -72,6 +90,15 @@ export default function GameShell({
           </Button>
         </div>
       </div>
+
+      {!preview && puzzleNumber !== getTodayPuzzleNumber() && (
+        <p className="animate-fade-in mb-4 w-full rounded-lg bg-stone-100 px-3 py-2 text-center text-sm text-stone-600">
+          Estàs jugant un puzle de l’arxiu.{' '}
+          <Link to={`/${meta.slug}`} className="text-brand-700 font-semibold hover:underline">
+            Juga el d’avui →
+          </Link>
+        </p>
+      )}
 
       {children}
 

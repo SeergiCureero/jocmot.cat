@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import AdSlot from '@/components/ads/AdSlot';
-import { SITE } from '@/config/site';
+import { FEATURES, SITE } from '@/config/site';
 import { GAMES } from '@/games/registry';
 import { getTodayPuzzleNumber } from '@/games/puzzles';
 
@@ -41,6 +41,14 @@ export default function HomePage() {
           </li>
         ))}
       </ul>
+
+      {FEATURES.archive && today > 1 && (
+        <p className="animate-rise mt-6 text-center" style={{ animationDelay: '400ms' }}>
+          <Link to="/arxiu" className="text-brand-700 text-sm font-semibold hover:underline">
+            📅 T’has perdut algun dia? Juga els puzles anteriors →
+          </Link>
+        </p>
+      )}
 
       <AdSlot id="home-bottom" className="mt-8" />
     </div>
