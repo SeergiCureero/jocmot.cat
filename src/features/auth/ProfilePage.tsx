@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router';
 import Button from '@/components/ui/Button';
+import { FEATURES } from '@/config/site';
+import RankCard from '@/features/social/RankCard';
 import { GAMES } from '@/games/registry';
 import type { ProgressRecord } from '@/services/backend';
 import { computeStats } from '@/features/progress/stats';
@@ -15,7 +17,9 @@ export default function ProfilePage() {
   const userId = user?.id;
   useEffect(() => {
     if (!userId) return;
-    syncLocalProgress().then(setRecords).catch(() => setRecords([]));
+    syncLocalProgress()
+      .then(setRecords)
+      .catch(() => setRecords([]));
   }, [userId]);
 
   if (!user) return <Navigate to="/compte/entrar" replace />;
@@ -27,13 +31,17 @@ export default function ProfilePage() {
           <h1 className="text-2xl font-bold">Hola, {user.username}!</h1>
           <p className="text-sm text-stone-600">{user.email}</p>
           {backendKind === 'local' && (
-            <p className="mt-1 text-xs text-amber-700">Mode local: el progrés només es guarda en aquest navegador.</p>
+            <p className="mt-1 text-xs text-amber-700">
+              Mode local: el progrés només es guarda en aquest navegador.
+            </p>
           )}
         </div>
         <Button variant="secondary" onClick={logout}>
           Surt
         </Button>
       </div>
+
+      {FEATURES.social && <RankCard />}
 
       <h2 className="mb-3 text-lg font-semibold">Les teves estadístiques</h2>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -46,7 +54,9 @@ export default function ProfilePage() {
               className="rounded-xl border border-stone-200 bg-white p-4 transition hover:shadow-md"
             >
               <div className="mb-2 flex items-center gap-2 font-semibold">
-                <span className={`grid size-8 place-items-center rounded-lg ${game.theme.bg} text-white`}>
+                <span
+                  className={`grid size-8 place-items-center rounded-lg ${game.theme.bg} text-white`}
+                >
                   {game.icon}
                 </span>
                 {game.name}

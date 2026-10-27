@@ -1,0 +1,4 @@
+{
+  "//": "Els fitxers .js del servidor (hooks de PocketBase) són CommonJS.",
+  "type": "commonjs"
+}

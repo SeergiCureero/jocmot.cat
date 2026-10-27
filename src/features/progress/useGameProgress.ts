@@ -23,11 +23,19 @@ const localKey = (gameId: string, puzzleId: number) => `progress:${gameId}:${puz
  *
  * El component del joc s'ha de muntar amb `key` per puzle (ho fa GameRoute).
  */
-export function useGameProgress<S>({ gameId, puzzleId, initialState, getStatus, persist = true }: Options<S>) {
+export function useGameProgress<S>({
+  gameId,
+  puzzleId,
+  initialState,
+  getStatus,
+  persist = true,
+}: Options<S>) {
   const { user: sessionUser } = useAuth();
   const user = persist ? sessionUser : null;
   const [state, setState] = useState<S>(
-    () => (persist ? storage.get<ProgressRecord<S>>(localKey(gameId, puzzleId))?.state : null) ?? initialState(),
+    () =>
+      (persist ? storage.get<ProgressRecord<S>>(localKey(gameId, puzzleId))?.state : null) ??
+      initialState(),
   );
   const [syncing, setSyncing] = useState(false);
 
@@ -90,7 +98,11 @@ export function useGameProgress<S>({ gameId, puzzleId, initialState, getStatus, 
         storage.set(localKey(gameId, puzzleId), record);
         pendingRemote.current = record;
         clearTimeout(timer.current);
-        timer.current = setTimeout(flushRemote, REMOTE_DEBOUNCE_MS);
+        // En acabar la partida s'envia de seguida: el servidor en calcula els punts.
+        timer.current = setTimeout(
+          flushRemote,
+          record.status === 'playing' ? REMOTE_DEBOUNCE_MS : 0,
+        );
         return next;
       });
     },
@@ -105,7 +117,9 @@ export function useGameProgress<S>({ gameId, puzzleId, initialState, getStatus, 
  * jugats abans d'iniciar sessió) i retorna tots els registres de l'usuari.
  */
 export async function syncLocalProgress(): Promise<ProgressRecord[]> {
-  const remote = new Map((await backend.listProgress()).map((r) => [localKey(r.gameId, r.puzzleId), r]));
+  const remote = new Map(
+    (await backend.listProgress()).map((r) => [localKey(r.gameId, r.puzzleId), r]),
+  );
   for (const key of storage.keys('progress:')) {
     const local = storage.get<ProgressRecord>(key);
     const current = remote.get(key);

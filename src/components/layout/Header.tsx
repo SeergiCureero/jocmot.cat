@@ -37,6 +37,11 @@ export default function Header() {
               📅 <span className="hidden sm:inline">Arxiu</span>
             </NavLink>
           )}
+          {FEATURES.social && (
+            <NavLink to="/lligues" className={pill} aria-label="Lligues">
+              🏆 <span className="hidden sm:inline">Lligues</span>
+            </NavLink>
+          )}
           {FEATURES.accounts && user?.editor && (
             <NavLink to="/editor" className={pill} aria-label="Editor">
               ✏️ <span className="hidden sm:inline">Editor</span>

@@ -3,7 +3,8 @@ import { Link } from 'react-router';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
-import { SITE } from '@/config/site';
+import { FEATURES, SITE } from '@/config/site';
+import PointsEarned from '@/features/social/PointsEarned';
 import { getPuzzleDate, getTodayPuzzleNumber } from '@/games/puzzles';
 import { GAMES } from '@/games/registry';
 import type { GameMeta } from '@/games/types';
@@ -55,6 +56,7 @@ export default function ResultModal({ open, onClose, meta, puzzleNumber, result,
 
       {!preview && (
         <>
+          {FEATURES.social && <PointsEarned game={meta.id} puzzle={puzzleNumber} />}
           <pre className="rounded-xl bg-stone-100 p-4 font-sans text-sm leading-relaxed whitespace-pre-wrap text-stone-800 select-all">
             {result.shareText}
           </pre>
