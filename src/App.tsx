@@ -13,6 +13,10 @@ import RegisterPage from './features/auth/RegisterPage';
 import ProfilePage from './features/auth/ProfilePage';
 
 const EditorRoutes = lazy(() => import('./features/editor/EditorRoutes'));
+const LeaguesPage = lazy(() => import('./features/social/LeaguesPage'));
+const LeaguePage = lazy(() => import('./features/social/LeaguePage'));
+const JoinLeaguePage = lazy(() => import('./features/social/JoinLeaguePage'));
+const FriendsPage = lazy(() => import('./features/social/FriendsPage'));
 
 export default function App() {
   return (
@@ -37,6 +41,14 @@ export default function App() {
               <Route path="entrar" element={<LoginPage />} />
               <Route path="registre" element={<RegisterPage />} />
             </Route>
+          )}
+          {FEATURES.social && (
+            <>
+              <Route path="lligues" element={<LeaguesPage />} />
+              <Route path="lligues/unir/:code" element={<JoinLeaguePage />} />
+              <Route path="lligues/:id" element={<LeaguePage />} />
+              <Route path="amics" element={<FriendsPage />} />
+            </>
           )}
           {FEATURES.accounts && <Route path="editor/*" element={<EditorRoutes />} />}
 

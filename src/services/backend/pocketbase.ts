@@ -105,7 +105,10 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
     editor: Boolean(r.editor),
   });
 
-  const toPerson = (id: string, r?: PbUserRecord): PersonRef => ({ id, username: r?.name || r?.username || '?' });
+  const toPerson = (id: string, r?: PbUserRecord): PersonRef => ({
+    id,
+    username: r?.name || r?.username || '?',
+  });
 
   const toReview = (r: PbReviewRecord): ReviewRecord => ({
     id: r.id,
@@ -132,7 +135,13 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
 
   const toProgress = (r: PbProgressRecord): ProgressRecord => {
     recordIds.set(cacheKey(r.game, r.puzzle), r.id);
-    return { gameId: r.game, puzzleId: r.puzzle, status: r.status, state: r.state, updatedAt: toIso(r.updated) };
+    return {
+      gameId: r.game,
+      puzzleId: r.puzzle,
+      status: r.status,
+      state: r.state,
+      updatedAt: toIso(r.updated),
+    };
   };
 
   const requireUser = () => {
@@ -187,11 +196,20 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
       });
       const key = cacheKey(record.gameId, record.puzzleId);
       let id = recordIds.get(key);
-      if (!id) id = (await api.getProgress(record.gameId, record.puzzleId)) ? recordIds.get(key) : undefined;
+      if (!id)
+        id = (await api.getProgress(record.gameId, record.puzzleId))
+          ? recordIds.get(key)
+          : undefined;
 
       const saved = id
-        ? await request<PbProgressRecord>(`/collections/progress/records/${id}`, { method: 'PATCH', body })
-        : await request<PbProgressRecord>('/collections/progress/records', { method: 'POST', body });
+        ? await request<PbProgressRecord>(`/collections/progress/records/${id}`, {
+            method: 'PATCH',
+            body,
+          })
+        : await request<PbProgressRecord>('/collections/progress/records', {
+            method: 'POST',
+            body,
+          });
       recordIds.set(key, saved.id);
     },
 
@@ -205,7 +223,9 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
     },
 
     async getPublishedPuzzle(game, number) {
-      const q = filter(`game="${game}" && number=${number} && status="published" && releaseAt <= @now`);
+      const q = filter(
+        `game="${game}" && number=${number} && status="published" && releaseAt <= @now`,
+      );
       const res = await request<{ items: Pick<PbPuzzleRecord, 'data'>[] }>(
         `/collections/puzzles/records?${q}&perPage=1&fields=data`,
       );
@@ -222,20 +242,28 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
 
     async getPuzzle(id) {
       requireUser();
-      return toPuzzle(await request<PbPuzzleRecord>(`/collections/puzzles/records/${id}?${PUZZLE_EXPAND}`));
+      return toPuzzle(
+        await request<PbPuzzleRecord>(`/collections/puzzles/records/${id}?${PUZZLE_EXPAND}`),
+      );
     },
 
     async proposePuzzle(game, data) {
       const user = requireUser();
-      const created = await request<PbPuzzleRecord>(`/collections/puzzles/records?${PUZZLE_EXPAND}`, {
-        method: 'POST',
-        body: JSON.stringify({ game, data, author: user.id, status: 'proposed' }),
-      });
+      const created = await request<PbPuzzleRecord>(
+        `/collections/puzzles/records?${PUZZLE_EXPAND}`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ game, data, author: user.id, status: 'proposed' }),
+        },
+      );
       return toPuzzle(created);
     },
 
     async updatePuzzle(id, data) {
-      await request(`/collections/puzzles/records/${id}`, { method: 'PATCH', body: JSON.stringify({ data }) });
+      await request(`/collections/puzzles/records/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ data }),
+      });
     },
 
     async deletePuzzle(id) {
@@ -252,18 +280,29 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
     async saveReview(puzzleId, { approved, comment }) {
       const user = requireUser();
       const q = filter(`puzzle="${puzzleId}" && author="${user.id}"`);
-      const existing = await request<{ items: PbReviewRecord[] }>(`/collections/reviews/records?${q}&perPage=1`);
+      const existing = await request<{ items: PbReviewRecord[] }>(
+        `/collections/reviews/records?${q}&perPage=1`,
+      );
       const id = existing.items[0]?.id;
       await request(id ? `/collections/reviews/records/${id}` : '/collections/reviews/records', {
         method: id ? 'PATCH' : 'POST',
         body: JSON.stringify({ puzzle: puzzleId, author: user.id, approved, comment }),
       });
     },
+
+    call(path, { method = 'GET', body } = {}) {
+      return request(`/jocmot${path}`, {
+        method,
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
+    },
   };
 
   // Refresca la sessió en obrir l'app (p. ex. per saber si ara és editor).
   if (auth) {
-    request<{ token: string; record: PbUserRecord }>('/collections/users/auth-refresh', { method: 'POST' })
+    request<{ token: string; record: PbUserRecord }>('/collections/users/auth-refresh', {
+      method: 'POST',
+    })
       .then((res) => setAuth({ token: res.token, user: toUser(res.record) }))
       .catch(() => {
         /* sense connexió: mantenim la sessió desada; un 401 ja la tanca */

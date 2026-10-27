@@ -1,10 +1,12 @@
 import { Link, useNavigate } from 'react-router';
 import AuthForm from './AuthForm';
+import { useNextPath } from './next';
 import { useAuth } from './AuthContext';
 
 export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { next, query } = useNextPath();
 
   return (
     <AuthForm
@@ -13,16 +15,25 @@ export default function RegisterPage() {
       fields={[
         { name: 'username', label: 'Nom d’usuari', type: 'text', autoComplete: 'username' },
         { name: 'email', label: 'Correu electrònic', type: 'email', autoComplete: 'email' },
-        { name: 'password', label: 'Contrasenya (mín. 8 caràcters)', type: 'password', autoComplete: 'new-password', minLength: 8 },
+        {
+          name: 'password',
+          label: 'Contrasenya (mín. 8 caràcters)',
+          type: 'password',
+          autoComplete: 'new-password',
+          minLength: 8,
+        },
       ]}
       onSubmit={async ({ username, email, password }) => {
         await register({ username, email, password });
-        navigate('/');
+        navigate(next);
       }}
       footer={
         <>
           Ja tens compte?{' '}
-          <Link to="/compte/entrar" className="font-semibold text-brand-700 hover:underline">
+          <Link
+            to={`/compte/entrar${query}`}
+            className="text-brand-700 font-semibold hover:underline"
+          >
             Entra
           </Link>
         </>

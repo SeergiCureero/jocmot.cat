@@ -89,6 +89,9 @@ export interface Backend {
   /** Falla amb status 400 si el número ja és ocupat. */
   publishPuzzle(id: string, number: number, releaseAt: string): Promise<void>;
   saveReview(puzzleId: string, review: { approved: boolean; comment: string }): Promise<void>;
+
+  /** Rutes pròpies del servidor (`/api/jocmot/...`: punts, amics i lligues). Sense servidor, falla. */
+  call<T>(path: string, init?: { method?: 'GET' | 'POST' | 'DELETE'; body?: unknown }): Promise<T>;
 }
 
 export class BackendError extends Error {

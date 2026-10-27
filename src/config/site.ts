@@ -17,4 +17,6 @@ export const FEATURES = {
    * s'activen en desenvolupament (mode local) i en producció s'amaguen.
    */
   accounts: Boolean(import.meta.env.VITE_POCKETBASE_URL) || import.meta.env.DEV,
+  /** Punts, amics i lligues: els calcula el servidor, així que només funcionen amb PocketBase. */
+  social: Boolean(import.meta.env.VITE_POCKETBASE_URL),
 } as const;

@@ -42,7 +42,12 @@ async function hash(text: string): Promise<string> {
 }
 
 // En mode local tothom és editor, per poder provar l'editor sense servidor.
-const toPublic = ({ id, email, username }: StoredUser): User => ({ id, email, username, editor: true });
+const toPublic = ({ id, email, username }: StoredUser): User => ({
+  id,
+  email,
+  username,
+  editor: true,
+});
 
 export function createLocalBackend(): Backend {
   const emitter = createAuthEmitter();
@@ -52,7 +57,10 @@ export function createLocalBackend(): Backend {
 
   const puzzles = () => storage.get<StoredPuzzle[]>(PUZZLES_KEY) ?? [];
   const reviews = () => storage.get<StoredReview[]>(REVIEWS_KEY) ?? [];
-  const person = (id: string) => ({ id, username: users().find((u) => u.id === id)?.username ?? '?' });
+  const person = (id: string) => ({
+    id,
+    username: users().find((u) => u.id === id)?.username ?? '?',
+  });
   const toRecord = ({ authorId, ...p }: StoredPuzzle): PuzzleRecord => ({
     ...p,
     author: person(authorId),
@@ -66,7 +74,10 @@ export function createLocalBackend(): Backend {
     return p;
   };
   const writePuzzle = (id: string, patch: Partial<StoredPuzzle>) =>
-    storage.set(PUZZLES_KEY, puzzles().map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    storage.set(
+      PUZZLES_KEY,
+      puzzles().map((p) => (p.id === id ? { ...p, ...patch } : p)),
+    );
 
   const setSession = (user: User | null) => {
     current = user;
@@ -135,7 +146,8 @@ export function createLocalBackend(): Backend {
     async getPublishedPuzzle(game, number) {
       const now = new Date().toISOString();
       const p = puzzles().find(
-        (x) => x.game === game && x.number === number && x.status === 'published' && x.releaseAt! <= now,
+        (x) =>
+          x.game === game && x.number === number && x.status === 'published' && x.releaseAt! <= now,
       );
       return p?.data ?? null;
     },
@@ -176,9 +188,16 @@ export function createLocalBackend(): Backend {
     async deletePuzzle(id) {
       const user = requireUser();
       const p = findPuzzle(id);
-      if (p.authorId !== user.id || p.status !== 'proposed') throw new BackendError('No permès', 403);
-      storage.set(PUZZLES_KEY, puzzles().filter((x) => x.id !== id));
-      storage.set(REVIEWS_KEY, reviews().filter((r) => r.puzzleId !== id));
+      if (p.authorId !== user.id || p.status !== 'proposed')
+        throw new BackendError('No permès', 403);
+      storage.set(
+        PUZZLES_KEY,
+        puzzles().filter((x) => x.id !== id),
+      );
+      storage.set(
+        REVIEWS_KEY,
+        reviews().filter((r) => r.puzzleId !== id),
+      );
     },
 
     async publishPuzzle(id, number, releaseAt) {
@@ -187,7 +206,12 @@ export function createLocalBackend(): Backend {
       if (puzzles().some((x) => x.game === p.game && x.number === number)) {
         throw new BackendError('Número ocupat', 400);
       }
-      writePuzzle(id, { status: 'published', number, releaseAt, updated: new Date().toISOString() });
+      writePuzzle(id, {
+        status: 'published',
+        number,
+        releaseAt,
+        updated: new Date().toISOString(),
+      });
     },
 
     async saveReview(puzzleId, { approved, comment }) {
@@ -206,6 +230,10 @@ export function createLocalBackend(): Backend {
         updated: new Date().toISOString(),
       };
       storage.set(REVIEWS_KEY, [...others, review]);
+    },
+
+    async call() {
+      throw new BackendError('Cal el servidor', 503);
     },
   };
 }
