@@ -8,10 +8,10 @@ export const SITE = {
   timeZone: 'Europe/Madrid',
 } as const;
 
-/** Funcionalitats que s'activaran més endavant. */
+/** Funcionalitats que es poden activar o desactivar. */
 export const FEATURES = {
   /** Permet jugar puzles anteriors a /joc/:puzzleId. */
-  archive: false,
+  archive: true,
   /**
    * Comptes d'usuari. Calen un backend real (VITE_POCKETBASE_URL); sense, només
    * s'activen en desenvolupament (mode local) i en producció s'amaguen.

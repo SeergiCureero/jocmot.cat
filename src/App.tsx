@@ -5,6 +5,7 @@ import Spinner from './components/ui/Spinner';
 import { FEATURES } from './config/site';
 import { GAMES } from './games/registry';
 import GameRoute from './games/GameRoute';
+import ArchivePage from './pages/ArchivePage';
 import HomePage from './pages/HomePage';
 import NotFoundPage from './pages/NotFoundPage';
 import LoginPage from './features/auth/LoginPage';
@@ -27,6 +28,8 @@ export default function App() {
               <Route path=":puzzleId" element={<GameRoute game={game} />} />
             </Route>
           ))}
+
+          {FEATURES.archive && <Route path="arxiu" element={<ArchivePage />} />}
 
           {FEATURES.accounts && (
             <Route path="compte">
