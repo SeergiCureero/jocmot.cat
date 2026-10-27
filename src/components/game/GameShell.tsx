@@ -1,15 +1,14 @@
-import { useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import AdSlot from '@/components/ads/AdSlot';
 import Button from '@/components/ui/Button';
 import Confetti from '@/components/ui/Confetti';
 import Modal from '@/components/ui/Modal';
-import { useToast } from '@/components/ui/Toast';
+import ResultModal from './ResultModal';
 import { FEATURES } from '@/config/site';
 import { getTodayPuzzleNumber } from '@/games/puzzles';
 import type { GameMeta } from '@/games/types';
 import { formatDateCa } from '@/lib/date';
-import { shareText } from '@/lib/share';
 import { storage } from '@/lib/storage';
 
 interface Props {
@@ -40,21 +39,22 @@ export default function GameShell({
 }: Props) {
   const helpKey = `help-seen:${meta.id}`;
   const [helpOpen, setHelpOpen] = useState(() => !storage.get<boolean>(helpKey));
-  const toast = useToast();
   // Només celebrem si la partida s'ha acabat ara, no en tornar a obrir un puzle ja resolt.
   const startedPlaying = useRef(!result);
+  const [resultOpen, setResultOpen] = useState(false);
+  const finished = Boolean(result);
+
+  // En acabar, la finestra del resultat s'obre sola quan les animacions ja s'han vist.
+  useEffect(() => {
+    if (!finished || !startedPlaying.current) return;
+    const id = setTimeout(() => setResultOpen(true), 1200);
+    return () => clearTimeout(id);
+  }, [finished]);
 
   const closeHelp = () => {
     storage.set(helpKey, true);
     setHelpOpen(false);
   };
-
-  async function handleShare() {
-    if (!result) return;
-    const outcome = await shareText(result.shareText);
-    if (outcome === 'copied') toast('Resultat copiat!');
-    if (outcome === 'failed') toast('No s’ha pogut compartir');
-  }
 
   return (
     <div className="mx-auto flex max-w-xl flex-col items-center py-4">
@@ -106,17 +106,26 @@ export default function GameShell({
         <section className="animate-rise mt-6 w-full rounded-2xl border border-stone-200 bg-white p-5 text-center shadow-sm">
           <h2 className="text-lg font-bold">{result.title}</h2>
           {result.body && <div className="mt-2 text-sm text-stone-600">{result.body}</div>}
-          {!preview && (
-            <Button className="mt-4" onClick={handleShare}>
-              Comparteix
-            </Button>
-          )}
+          <Button className="mt-4" onClick={() => setResultOpen(true)}>
+            {preview ? 'Veure el resultat' : 'Veure i compartir el resultat'}
+          </Button>
         </section>
       )}
 
       {result?.won && startedPlaying.current && <Confetti />}
 
       {!preview && <AdSlot id="game-bottom" className="mt-8 w-full" />}
+
+      {result && (
+        <ResultModal
+          open={resultOpen}
+          onClose={() => setResultOpen(false)}
+          meta={meta}
+          puzzleNumber={puzzleNumber}
+          result={result}
+          preview={preview}
+        />
+      )}
 
       <Modal open={helpOpen} onClose={closeHelp} title={`Com es juga a ${meta.name}`}>
         {help}
