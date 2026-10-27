@@ -14,7 +14,15 @@ interface Props {
 
 const has = (list: Cell[], [r, c]: Cell) => list.some(([a, b]) => a === r && b === c);
 
-export default function CrosswordGrid({ letters, numbers, cursor, activeEntry, wrong, solved, onCellClick }: Props) {
+export default function CrosswordGrid({
+  letters,
+  numbers,
+  cursor,
+  activeEntry,
+  wrong,
+  solved,
+  onCellClick,
+}: Props) {
   const size = letters.length;
   return (
     <div
@@ -33,14 +41,30 @@ export default function CrosswordGrid({ letters, numbers, cursor, activeEntry, w
               key={`${r}-${c}`}
               role="gridcell"
               onClick={() => onCellClick([r, c])}
+              // En resoldre'l, una ona travessa la graella en diagonal.
+              style={solved ? { animationDelay: `${(r + c) * 70}ms` } : undefined}
               className={cn(
-                'relative aspect-square border border-stone-400 text-2xl font-bold uppercase sm:text-3xl',
-                solved ? 'bg-sky-100' : isCursor ? 'bg-amber-300' : inEntry ? 'bg-sky-100' : 'bg-white',
-                has(wrong, [r, c]) && 'text-red-600',
+                'relative aspect-square border border-stone-400 text-2xl font-bold uppercase transition-colors duration-150 sm:text-3xl',
+                solved
+                  ? 'animate-wave bg-sky-100'
+                  : isCursor
+                    ? 'bg-amber-300'
+                    : inEntry
+                      ? 'bg-sky-100'
+                      : 'bg-white',
+                has(wrong, [r, c]) && 'animate-shake text-red-600',
               )}
             >
-              {numbers[r][c] && <span className="absolute left-1 top-0.5 text-[10px] font-semibold">{numbers[r][c]}</span>}
-              {ch === EMPTY ? '' : ch}
+              {numbers[r][c] && (
+                <span className="absolute top-0.5 left-1 text-[10px] font-semibold">
+                  {numbers[r][c]}
+                </span>
+              )}
+              {ch !== EMPTY && (
+                <span key={ch} className="animate-pop inline-block">
+                  {ch}
+                </span>
+              )}
             </button>
           );
         }),

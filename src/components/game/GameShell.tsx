@@ -1,6 +1,7 @@
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import AdSlot from '@/components/ads/AdSlot';
 import Button from '@/components/ui/Button';
+import Confetti from '@/components/ui/Confetti';
 import Modal from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
 import type { GameMeta } from '@/games/types';
@@ -15,7 +16,7 @@ interface Props {
   /** Contingut del modal "Com es juga". */
   help: ReactNode;
   /** Si hi ha resultat, es mostra el panell final amb el botó de compartir. */
-  result?: { title: string; body?: ReactNode; shareText: string } | null;
+  result?: { title: string; body?: ReactNode; shareText: string; won?: boolean } | null;
   /** Accions extra a la capçalera (p. ex. cronòmetre). */
   headerExtra?: ReactNode;
   /** Mode prova de l'editor: sense número, data ni botó de compartir. */
@@ -24,10 +25,21 @@ interface Props {
 }
 
 /** Marc comú de tots els jocs: capçalera, ajuda, resultat i compartir. */
-export default function GameShell({ meta, puzzleNumber, date, help, result, headerExtra, preview, children }: Props) {
+export default function GameShell({
+  meta,
+  puzzleNumber,
+  date,
+  help,
+  result,
+  headerExtra,
+  preview,
+  children,
+}: Props) {
   const helpKey = `help-seen:${meta.id}`;
   const [helpOpen, setHelpOpen] = useState(() => !storage.get<boolean>(helpKey));
   const toast = useToast();
+  // Només celebrem si la partida s'ha acabat ara, no en tornar a obrir un puzle ja resolt.
+  const startedPlaying = useRef(!result);
 
   const closeHelp = () => {
     storage.set(helpKey, true);
@@ -47,7 +59,9 @@ export default function GameShell({ meta, puzzleNumber, date, help, result, head
         <div>
           <h1 className="text-xl font-bold">
             <span className="mr-1">{meta.icon}</span> {meta.name}{' '}
-            <span className="text-base font-medium text-stone-500">{preview ? '· prova' : `#${puzzleNumber}`}</span>
+            <span className="text-base font-medium text-stone-500">
+              {preview ? '· prova' : `#${puzzleNumber}`}
+            </span>
           </h1>
           {!preview && <p className="text-xs text-stone-500">{formatDateCa(date)}</p>}
         </div>
@@ -62,7 +76,7 @@ export default function GameShell({ meta, puzzleNumber, date, help, result, head
       {children}
 
       {result && (
-        <section className="mt-6 w-full rounded-2xl border border-stone-200 bg-white p-5 text-center shadow-sm">
+        <section className="animate-rise mt-6 w-full rounded-2xl border border-stone-200 bg-white p-5 text-center shadow-sm">
           <h2 className="text-lg font-bold">{result.title}</h2>
           {result.body && <div className="mt-2 text-sm text-stone-600">{result.body}</div>}
           {!preview && (
@@ -72,6 +86,8 @@ export default function GameShell({ meta, puzzleNumber, date, help, result, head
           )}
         </section>
       )}
+
+      {result?.won && startedPlaying.current && <Confetti />}
 
       {!preview && <AdSlot id="game-bottom" className="mt-8 w-full" />}
 
