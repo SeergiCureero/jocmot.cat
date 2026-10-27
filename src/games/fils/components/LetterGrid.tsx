@@ -22,13 +22,26 @@ const toPoints = (path: Cell[]) => path.map((p) => `${center(p).x},${center(p).y
  * - arrossegar (ratolí/dit) per seleccionar i deixar anar per enviar;
  * - tocar lletres una a una i tornar a tocar l'última per enviar.
  */
-export default function LetterGrid({ puzzle, found, hintWord, selection, onSelectionChange, onSubmit, disabled }: Props) {
+export default function LetterGrid({
+  puzzle,
+  found,
+  hintWord,
+  selection,
+  onSelectionChange,
+  onSubmit,
+  disabled,
+}: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const drag = useRef({ active: false, moved: false });
+  // Les paraules que ja hi eren en obrir la graella no s'animen; les noves sí.
+  const foundAtStart = useRef(found.length);
+  const isNew = (word: string) => found.indexOf(word) >= foundAtStart.current;
 
   const foundWords = [puzzle.spangram, ...puzzle.words].filter((w) => found.includes(w.word));
   const usedCells = foundWords.flatMap((w) => w.path);
-  const hintCells = hintWord ? [puzzle.spangram, ...puzzle.words].find((w) => w.word === hintWord)?.path ?? [] : [];
+  const hintCells = hintWord
+    ? ([puzzle.spangram, ...puzzle.words].find((w) => w.word === hintWord)?.path ?? [])
+    : [];
 
   const isUsed = (cell: Cell) => usedCells.some((u) => sameCell(u, cell));
   const indexInSelection = (cell: Cell) => selection.findIndex((s) => sameCell(s, cell));
@@ -94,7 +107,10 @@ export default function LetterGrid({ puzzle, found, hintWord, selection, onSelec
       onPointerCancel={handleUp}
       className="relative aspect-[6/8] w-full max-w-sm touch-none select-none"
     >
-      <svg viewBox={`0 0 ${COLS * 10} ${ROWS * 10}`} className="pointer-events-none absolute inset-0 size-full">
+      <svg
+        viewBox={`0 0 ${COLS * 10} ${ROWS * 10}`}
+        className="pointer-events-none absolute inset-0 size-full"
+      >
         {foundWords.map((w) => (
           <polyline
             key={w.word}
@@ -103,11 +119,24 @@ export default function LetterGrid({ puzzle, found, hintWord, selection, onSelec
             strokeWidth={3.2}
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={w.word === puzzle.spangram.word ? 'stroke-amber-300' : 'stroke-sky-300'}
+            // Les noves es dibuixen d'un extrem a l'altre.
+            pathLength={1}
+            strokeDasharray={isNew(w.word) ? 1 : undefined}
+            className={cn(
+              w.word === puzzle.spangram.word ? 'stroke-amber-300' : 'stroke-sky-300',
+              isNew(w.word) && 'animate-draw',
+            )}
           />
         ))}
         {selection.length > 1 && (
-          <polyline points={toPoints(selection)} fill="none" strokeWidth={3.2} strokeLinecap="round" strokeLinejoin="round" className="stroke-stone-300" />
+          <polyline
+            points={toPoints(selection)}
+            fill="none"
+            strokeWidth={3.2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="stroke-stone-300"
+          />
         )}
       </svg>
 
@@ -118,14 +147,22 @@ export default function LetterGrid({ puzzle, found, hintWord, selection, onSelec
             const word = foundWords.find((w) => w.path.some((p) => sameCell(p, cell)));
             const selected = indexInSelection(cell) >= 0;
             const hinted = hintCells.some((h) => sameCell(h, cell));
+            const step = word ? word.path.findIndex((p) => sameCell(p, cell)) : -1;
             return (
               <div key={`${r}-${c}`} className="grid place-items-center">
                 <span
+                  style={
+                    word && isNew(word.word) ? { animationDelay: `${step * 50}ms` } : undefined
+                  }
                   className={cn(
-                    'grid size-[78%] place-items-center rounded-full text-lg font-bold transition sm:text-xl',
+                    'grid size-[78%] place-items-center rounded-full text-lg font-bold transition duration-200 sm:text-xl',
                     word && (word.word === puzzle.spangram.word ? 'bg-amber-300' : 'bg-sky-300'),
-                    !word && selected && 'bg-stone-300',
-                    !word && !selected && hinted && 'outline-2 outline-dashed outline-sky-500',
+                    word && isNew(word.word) && 'animate-pop',
+                    !word && selected && 'scale-110 bg-stone-300',
+                    !word &&
+                      !selected &&
+                      hinted &&
+                      'animate-glow outline-2 outline-sky-500 outline-dashed',
                   )}
                 >
                   {letter}

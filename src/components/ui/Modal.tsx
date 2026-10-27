@@ -23,12 +23,16 @@ export default function Modal({ open, onClose, title, children }: Props) {
       ref={ref}
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
-      className="m-auto w-[min(92vw,28rem)] rounded-2xl p-0 shadow-xl backdrop:bg-black/40"
+      className="open:animate-dialog-in backdrop:animate-fade-in m-auto w-[min(92vw,28rem)] rounded-2xl p-0 shadow-xl backdrop:bg-black/40"
     >
       <div className="p-6">
         <div className="mb-4 flex items-start justify-between gap-4">
           <h2 className="text-xl font-bold">{title}</h2>
-          <button onClick={onClose} aria-label="Tanca" className="text-2xl leading-none text-stone-500 hover:text-stone-900">
+          <button
+            onClick={onClose}
+            aria-label="Tanca"
+            className="text-2xl leading-none text-stone-500 transition hover:rotate-90 hover:text-stone-900"
+          >
             ×
           </button>
         </div>

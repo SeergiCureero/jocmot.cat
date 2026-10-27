@@ -8,9 +8,21 @@ const LEVEL_BG: Record<Level, string> = {
   3: 'bg-level-3',
 };
 
-export default function GroupBar({ group }: { group: ConnexionsGroup }) {
+export default function GroupBar({
+  group,
+  delayMs = 0,
+}: {
+  group: ConnexionsGroup;
+  delayMs?: number;
+}) {
   return (
-    <div className={cn('flex h-16 flex-col items-center justify-center rounded-lg text-center sm:h-20', LEVEL_BG[group.level])}>
+    <div
+      style={{ animationDelay: `${delayMs}ms` }}
+      className={cn(
+        'animate-group-in flex h-16 flex-col items-center justify-center rounded-lg text-center sm:h-20',
+        LEVEL_BG[group.level],
+      )}
+    >
       <p className="text-sm font-bold uppercase">{group.title}</p>
       <p className="text-xs uppercase sm:text-sm">{group.words.join(', ')}</p>
     </div>
