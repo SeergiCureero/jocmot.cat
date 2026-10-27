@@ -180,6 +180,34 @@ function findUserByName(app, name) {
   return { user: app.findRecordById('users', rows[0].id) };
 }
 
+/**
+ * Cerca d'usuaris pel nom (per afegir amics): primer els que hi comencen, després els que el contenen.
+ * Retorna també la relació amb qui cerca: 'friend', 'sent', 'received' o null.
+ */
+function searchUsers(app, me, query) {
+  const q = lib.normalizeName(query).replace(/[\\%_]/g, (c) => '\\' + c);
+  if (q.length < 2) return [];
+  const rows = arrayOf(new DynamicModel({ id: '', name: '' }));
+  app
+    .db()
+    .newQuery(
+      `SELECT id, name FROM users
+       WHERE LOWER(name) LIKE {:contains} ESCAPE '\\' AND id != {:me}
+       ORDER BY CASE WHEN LOWER(name) LIKE {:prefix} ESCAPE '\\' THEN 0 ELSE 1 END, LENGTH(name), name
+       LIMIT 8`,
+    )
+    .bind({ contains: '%' + q + '%', prefix: q + '%', me })
+    .all(rows);
+
+  const relation = {};
+  for (const f of friendshipsOf(app, me)) {
+    const sent = f.getString('from') === me;
+    const other = sent ? f.getString('to') : f.getString('from');
+    relation[other] = f.getString('status') === 'accepted' ? 'friend' : sent ? 'sent' : 'received';
+  }
+  return rows.map((r) => ({ id: r.id, name: r.name, relation: relation[r.id] || null }));
+}
+
 // ── Lligues ──
 
 function newLeagueCode(app) {
@@ -227,6 +255,7 @@ module.exports = {
   ranking,
   friendshipsOf,
   findUserByName,
+  searchUsers,
   newLeagueCode,
   membersOf,
   membershipsOf,
