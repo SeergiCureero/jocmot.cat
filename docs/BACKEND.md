@@ -47,17 +47,31 @@ Regles principals (detall a la migració):
 
 ## 4. Producció
 
-Opcions:
+Servidor propi a **Hetzner Cloud** (projecte `jocmot`, Ubuntu 26.04, IP `2.31.96.199`). La web continua a Cloudflare; el servidor només fa d'API a **https://api.jocmot.cat** (registre `A` a Cloudflare, en mode *DNS only*). El frontend hi apunta amb `VITE_POCKETBASE_URL` a `.env.production`.
 
-- **[PocketHost](https://pockethost.io)** (gestionat, el més senzill): crear una instància, pujar el contingut de `backend/pb_migrations/` a la carpeta `pb_migrations` de la instància (per FTP, segons la seva documentació) i reiniciar-la.
-- **VPS propi** (p. ex. Hetzner): PocketBase darrere d'HTTPS (Caddy o nginx) a `api.jocmot.cat`, amb `--migrationsDir` apuntant a `backend/pb_migrations`.
+| Peça | On |
+| --- | --- |
+| PocketBase | `/opt/pocketbase` (usuari `pocketbase`), servei `pocketbase.service`, escolta a `127.0.0.1:8090` |
+| Migracions | `/opt/pocketbase/pb_migrations` (còpia de `backend/pb_migrations/`) |
+| Dades | `/opt/pocketbase/pb_data` |
+| HTTPS | Caddy (repositori oficial), `/etc/caddy/Caddyfile`; certificat automàtic de Let's Encrypt |
+| Seguretat | `ufw` (només 22, 80, 443), SSH només amb clau, `fail2ban`, actualitzacions automàtiques (inclòs Caddy) |
+| Còpies | PocketBase en fa una cada dia a les 4:00 i en guarda 14 (panell → *Settings → Backups*); a més, les còpies diàries de Hetzner si estan activades |
 
-Després, al build del frontend: `VITE_POCKETBASE_URL=https://…` (a `.env.production` o a les variables de build de Cloudflare) i tornar a desplegar.
+Entrar al servidor: `ssh jocmot` (clau `~/.ssh/jocmot`).
 
-Cal també:
+**Canviar l'esquema:** afegir una migració nova a `backend/pb_migrations/`, copiar-la al servidor i reiniciar:
+
+```bash
+scp backend/pb_migrations/NOVA.js jocmot:/opt/pocketbase/pb_migrations/
+ssh jocmot 'chown pocketbase: /opt/pocketbase/pb_migrations/* && systemctl restart pocketbase'
+```
+
+**Actualitzar PocketBase:** des del panell no es pot; cal baixar el binari nou de GitHub, comprovar-ne el `checksums.txt`, substituir `/opt/pocketbase/pocketbase` i `systemctl restart pocketbase`. Fer abans una còpia des del panell.
+
+Pendent:
 
 - Configurar **SMTP** al panell (verificació de correu i recuperació de contrasenya).
-- **Còpies de seguretat** de `pb_data` (PocketHost i el panell en permeten).
 - **RGPD**: política de privacitat i dret a esborrar el compte.
 
 ## Canviar de proveïdor
