@@ -147,6 +147,23 @@ expect('deixar de ser amics', r.status === 204, r);
 r = await get('/jocmot/amics', cesc.token);
 expect('… i ja no surt al rànquing', r.body.ranking.length === 1, r.body);
 
+// ── Cerca d'usuaris ──
+r = await get('/jocmot/usuaris?q=bi', anna.token);
+expect(
+  'la cerca troba en Biel i diu que ja sou amics',
+  r.body.users?.[0]?.name === 'Biel' && r.body.users[0].relation === 'friend',
+  r.body,
+);
+r = await get('/jocmot/usuaris?q=e', anna.token);
+expect('cal escriure com a mínim 2 lletres', r.body.users?.length === 0, r.body);
+r = await get('/jocmot/usuaris?q=ann', anna.token);
+expect('no et trobes a tu mateix', r.body.users?.length === 0, r.body);
+r = await get('/jocmot/usuaris?q=%25%25', anna.token);
+expect('els comodins de SQL no ho troben tot', r.body.users?.length === 0, r.body);
+expect('la cerca no exposa correus', !JSON.stringify(r.body).includes('@'), r.body);
+r = await get('/jocmot/usuaris?q=bi');
+expect('cal sessió per cercar', r.status === 401, r);
+
 // ── Lligues ──
 r = await post('/jocmot/lligues', { name: '  Els de la colla  ' }, anna.token);
 expect('crear una lliga dona un codi', /^[A-Z2-9]{6}$/.test(r.body.code), r.body);

@@ -38,6 +38,11 @@ export interface FriendRequest {
   user: Person;
 }
 
+export interface UserMatch extends Person {
+  /** Relació amb qui cerca. */
+  relation: 'friend' | 'sent' | 'received' | null;
+}
+
 export interface Friends {
   month: string;
   ranking: RankingRow[];
@@ -79,6 +84,8 @@ export const social = {
   score: (game: string, puzzle: number) => backend.call<Score>(`/puntuacio/${game}/${puzzle}`),
 
   friends: () => backend.call<Friends>('/amics'),
+  searchUsers: (q: string) =>
+    backend.call<{ users: UserMatch[] }>(`/usuaris?q=${encodeURIComponent(q)}`),
   addFriend: (username: string) =>
     backend.call<{ status: 'pending' | 'accepted' }>('/amics', {
       method: 'POST',

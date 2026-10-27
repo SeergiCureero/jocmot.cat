@@ -94,6 +94,18 @@ routerAdd(
   $apis.requireAuth('users'),
 );
 
+/** Cerca d'usuaris per afegir com a amics (?q=, mínim 2 lletres). */
+routerAdd(
+  'GET',
+  '/api/jocmot/usuaris',
+  (e) => {
+    const db = require(`${__hooks}/jocmot_db.js`);
+    const q = e.request.url.query().get('q');
+    return e.json(200, { users: db.searchUsers(e.app, e.auth.id, q) });
+  },
+  $apis.requireAuth('users'),
+);
+
 routerAdd(
   'POST',
   '/api/jocmot/amics',
