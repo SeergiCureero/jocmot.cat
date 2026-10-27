@@ -7,7 +7,7 @@ import { SITE } from '@/config/site';
 import { useGameProgress } from '@/features/progress/useGameProgress';
 import { formatSeconds } from '@/lib/date';
 import { cn } from '@/lib/cn';
-import { isModalOpen } from '@/lib/dom';
+import { isModalOpen, isTypingInField } from '@/lib/dom';
 import { pickByNumber } from '../puzzles';
 import type { GameProps } from '../types';
 import CrosswordGrid from './components/CrosswordGrid';
@@ -25,13 +25,13 @@ import {
   wrongCells,
 } from './logic';
 import { meta } from './meta';
-import type { Cell, Direction, Entry } from './types';
+import type { Cell, Direction, Entry, MiniPuzzle } from './types';
 
-export default function MiniGame({ puzzleNumber, date }: GameProps) {
-  const puzzle = pickByNumber(PUZZLES, puzzleNumber);
+export default function MiniGame({ puzzleNumber, date, puzzle: groupPuzzle, preview }: GameProps) {
+  const puzzle = (groupPuzzle as MiniPuzzle | undefined) ?? pickByNumber(PUZZLES, puzzleNumber);
   const { numbers, entries } = useMemo(() => buildEntries(puzzle), [puzzle]);
   const initialState = useMemo(() => initialStateFor(puzzle), [puzzle]);
-  const { state, update, status } = useGameProgress({ gameId: meta.id, puzzleId: puzzleNumber, initialState, getStatus });
+  const { state, update, status } = useGameProgress({ gameId: meta.id, puzzleId: puzzleNumber, initialState, getStatus, persist: !preview });
 
   const [cursor, setCursor] = useState<Cell>(entries[0].cells[0]);
   const [direction, setDirection] = useState<Direction>('across');
@@ -94,7 +94,7 @@ export default function MiniGame({ puzzleNumber, date }: GameProps) {
   // Fletxes per moure's per la graella.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (isModalOpen()) return;
+      if (isModalOpen() || isTypingInField(e)) return;
       const moves: Record<string, [number, number, Direction]> = {
         ArrowUp: [-1, 0, 'down'],
         ArrowDown: [1, 0, 'down'],
@@ -139,6 +139,7 @@ export default function MiniGame({ puzzleNumber, date }: GameProps) {
 
   return (
     <GameShell
+      preview={preview}
       meta={meta}
       puzzleNumber={puzzleNumber}
       date={date}

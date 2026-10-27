@@ -8,6 +8,7 @@ import { cn } from '@/lib/cn';
 import { shuffle } from '@/lib/random';
 import { pickByNumber } from '../puzzles';
 import type { GameProps } from '../types';
+import type { ConnexionsPuzzle } from './types';
 import GroupBar from './components/GroupBar';
 import { PUZZLES } from './data/puzzles';
 import {
@@ -22,13 +23,13 @@ import {
 } from './logic';
 import { meta } from './meta';
 
-export default function ConnexionsGame({ puzzleNumber, date }: GameProps) {
-  const puzzle = pickByNumber(PUZZLES, puzzleNumber);
+export default function ConnexionsGame({ puzzleNumber, date, puzzle: groupPuzzle, preview }: GameProps) {
+  const puzzle = (groupPuzzle as ConnexionsPuzzle | undefined) ?? pickByNumber(PUZZLES, puzzleNumber);
   const { state, update, status } = useGameProgress({
     gameId: meta.id,
     puzzleId: puzzleNumber,
     initialState,
-    getStatus,
+    getStatus, persist: !preview,
   });
   const [order, setOrder] = useState(() => initialOrder(puzzle, puzzleNumber));
   const [selected, setSelected] = useState<string[]>([]);
@@ -72,7 +73,7 @@ export default function ConnexionsGame({ puzzleNumber, date }: GameProps) {
         };
 
   return (
-    <GameShell meta={meta} puzzleNumber={puzzleNumber} date={date} result={result} help={<Help />}>
+    <GameShell preview={preview} meta={meta} puzzleNumber={puzzleNumber} date={date} result={result} help={<Help />}>
       <p className="mb-3 text-sm text-stone-600">Fes quatre grups de quatre!</p>
 
       <div className="grid w-full gap-2">

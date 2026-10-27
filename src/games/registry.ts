@@ -3,6 +3,7 @@ import { meta as connexions } from './connexions/meta';
 import { meta as fils } from './fils/meta';
 import { meta as mini } from './mini/meta';
 import { meta as paraula } from './paraula/meta';
+import type { DesignableGameId } from '@/services/backend';
 import type { GameDefinition } from './types';
 
 /**
@@ -16,3 +17,8 @@ export const GAMES: GameDefinition[] = [
   { ...fils, Component: lazy(() => import('./fils/FilsGame')) },
   { ...mini, Component: lazy(() => import('./mini/MiniGame')) },
 ];
+
+/** Jocs amb puzles que el grup pot dissenyar des de /editor. */
+export const DESIGNABLE_GAMES: readonly DesignableGameId[] = ['connexions', 'fils', 'mini'];
+
+export const isDesignable = (id: string): id is DesignableGameId => (DESIGNABLE_GAMES as readonly string[]).includes(id);

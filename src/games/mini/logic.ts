@@ -92,3 +92,26 @@ export function buildShareText(puzzleNumber: number, state: MiniState, url: stri
   const line = state.status === 'won' ? `resolt en ${format(state.elapsedSeconds)} ⏱️` : 'resolt amb ajuda';
   return `Mini #${puzzleNumber} ${line}\n\n${url}`;
 }
+
+/** Valida que un puzle és coherent (tests i editor). Retorna la llista d'errors. */
+export function validatePuzzle(p: MiniPuzzle): string[] {
+  const errors: string[] = [];
+  const size = p.grid.length;
+  if (size < 3 || p.grid.some((row) => row.length !== size)) errors.push('la graella ha de ser quadrada');
+  if (p.grid.some((row) => /[^A-ZÇ#]/.test(row))) errors.push('hi ha caselles buides o caràcters no vàlids');
+
+  const { entries } = buildEntries(p);
+  const covered = new Set(entries.flatMap((e) => e.cells.map((c) => c.join())));
+  p.grid.forEach((row, r) =>
+    [...row].forEach((ch, c) => {
+      if (ch !== BLOCK && !covered.has(`${r},${c}`)) errors.push(`la casella ${r + 1},${c + 1} no forma part de cap paraula`);
+    }),
+  );
+  for (const e of entries) {
+    if (!e.clue.trim()) errors.push(`${e.number}${e.direction === 'across' ? 'H' : 'V'} (${e.answer}): falta la definició`);
+  }
+  const clueCount = Object.keys(p.clues.across).length + Object.keys(p.clues.down).length;
+  if (clueCount > entries.length) errors.push('hi ha definicions que no corresponen a cap paraula');
+  if (!entries.length) errors.push('no hi ha cap paraula');
+  return errors;
+}

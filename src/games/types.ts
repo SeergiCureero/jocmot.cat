@@ -8,6 +8,10 @@ export interface GameProps {
   puzzleNumber: number;
   /** Data "AAAA-MM-DD" del puzle. */
   date: string;
+  /** Puzle del grup (de la base de dades). Si no n'hi ha, el joc fa servir els del repositori. */
+  puzzle?: unknown;
+  /** Mode prova de l'editor: no desa el progrés. */
+  preview?: boolean;
 }
 
 /** Metadades lleugeres (no carreguen el codi del joc). */

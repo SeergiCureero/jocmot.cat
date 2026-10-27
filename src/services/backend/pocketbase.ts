@@ -1,7 +1,15 @@
 import type { GameId } from '@/games/types';
 import { storage } from '@/lib/storage';
 import { createAuthEmitter } from './emitter';
-import { BackendError, type Backend, type ProgressRecord, type User } from './types';
+import {
+  BackendError,
+  type Backend,
+  type PersonRef,
+  type ProgressRecord,
+  type PuzzleRecord,
+  type ReviewRecord,
+  type User,
+} from './types';
 
 /**
  * Backend amb PocketBase (https://pocketbase.io) via REST, sense SDK.
@@ -17,7 +25,35 @@ interface PbUserRecord {
   email: string;
   username?: string;
   name?: string;
+  editor?: boolean;
 }
+
+interface PbReviewRecord {
+  id: string;
+  puzzle: string;
+  approved: boolean;
+  comment: string;
+  created: string;
+  updated: string;
+  expand?: { author?: PbUserRecord };
+}
+
+interface PbPuzzleRecord {
+  id: string;
+  game: PuzzleRecord['game'];
+  data: unknown;
+  author: string;
+  status: PuzzleRecord['status'];
+  number: number;
+  releaseAt: string;
+  created: string;
+  updated: string;
+  expand?: { author?: PbUserRecord; reviews_via_puzzle?: PbReviewRecord[] };
+}
+
+/** PocketBase escriu les dates amb un espai ("2026-10-26 12:00:00.000Z"). */
+const toIso = (pbDate: string) => new Date(pbDate.replace(' ', 'T')).toISOString();
+const PUZZLE_EXPAND = 'expand=author,reviews_via_puzzle.author';
 
 interface PbProgressRecord {
   id: string;
@@ -66,11 +102,37 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
     id: r.id,
     email: r.email,
     username: r.username ?? r.name ?? r.email.split('@')[0],
+    editor: Boolean(r.editor),
+  });
+
+  const toPerson = (id: string, r?: PbUserRecord): PersonRef => ({ id, username: r?.name || r?.username || '?' });
+
+  const toReview = (r: PbReviewRecord): ReviewRecord => ({
+    id: r.id,
+    puzzleId: r.puzzle,
+    author: toPerson(r.expand?.author?.id ?? '', r.expand?.author),
+    approved: r.approved,
+    comment: r.comment,
+    created: toIso(r.created),
+    updated: toIso(r.updated),
+  });
+
+  const toPuzzle = (r: PbPuzzleRecord): PuzzleRecord => ({
+    id: r.id,
+    game: r.game,
+    data: r.data,
+    author: toPerson(r.author, r.expand?.author),
+    status: r.status,
+    number: r.number || null,
+    releaseAt: r.releaseAt ? toIso(r.releaseAt) : null,
+    created: toIso(r.created),
+    updated: toIso(r.updated),
+    reviews: (r.expand?.reviews_via_puzzle ?? []).map(toReview),
   });
 
   const toProgress = (r: PbProgressRecord): ProgressRecord => {
     recordIds.set(cacheKey(r.game, r.puzzle), r.id);
-    return { gameId: r.game, puzzleId: r.puzzle, status: r.status, state: r.state, updatedAt: new Date(r.updated.replace(' ', 'T')).toISOString() };
+    return { gameId: r.game, puzzleId: r.puzzle, status: r.status, state: r.state, updatedAt: toIso(r.updated) };
   };
 
   const requireUser = () => {
@@ -141,7 +203,72 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
       );
       return res.items.map(toProgress);
     },
+
+    async getPublishedPuzzle(game, number) {
+      const q = filter(`game="${game}" && number=${number} && status="published" && releaseAt <= @now`);
+      const res = await request<{ items: Pick<PbPuzzleRecord, 'data'>[] }>(
+        `/collections/puzzles/records?${q}&perPage=1&fields=data`,
+      );
+      return res.items[0]?.data ?? null;
+    },
+
+    async listPuzzles() {
+      requireUser();
+      const res = await request<{ items: PbPuzzleRecord[] }>(
+        `/collections/puzzles/records?${PUZZLE_EXPAND}&perPage=500&sort=-created`,
+      );
+      return res.items.map(toPuzzle);
+    },
+
+    async getPuzzle(id) {
+      requireUser();
+      return toPuzzle(await request<PbPuzzleRecord>(`/collections/puzzles/records/${id}?${PUZZLE_EXPAND}`));
+    },
+
+    async proposePuzzle(game, data) {
+      const user = requireUser();
+      const created = await request<PbPuzzleRecord>(`/collections/puzzles/records?${PUZZLE_EXPAND}`, {
+        method: 'POST',
+        body: JSON.stringify({ game, data, author: user.id, status: 'proposed' }),
+      });
+      return toPuzzle(created);
+    },
+
+    async updatePuzzle(id, data) {
+      await request(`/collections/puzzles/records/${id}`, { method: 'PATCH', body: JSON.stringify({ data }) });
+    },
+
+    async deletePuzzle(id) {
+      await request(`/collections/puzzles/records/${id}`, { method: 'DELETE' });
+    },
+
+    async publishPuzzle(id, number, releaseAt) {
+      await request(`/collections/puzzles/records/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'published', number, releaseAt }),
+      });
+    },
+
+    async saveReview(puzzleId, { approved, comment }) {
+      const user = requireUser();
+      const q = filter(`puzzle="${puzzleId}" && author="${user.id}"`);
+      const existing = await request<{ items: PbReviewRecord[] }>(`/collections/reviews/records?${q}&perPage=1`);
+      const id = existing.items[0]?.id;
+      await request(id ? `/collections/reviews/records/${id}` : '/collections/reviews/records', {
+        method: id ? 'PATCH' : 'POST',
+        body: JSON.stringify({ puzzle: puzzleId, author: user.id, approved, comment }),
+      });
+    },
   };
+
+  // Refresca la sessió en obrir l'app (p. ex. per saber si ara és editor).
+  if (auth) {
+    request<{ token: string; record: PbUserRecord }>('/collections/users/auth-refresh', { method: 'POST' })
+      .then((res) => setAuth({ token: res.token, user: toUser(res.record) }))
+      .catch(() => {
+        /* sense connexió: mantenim la sessió desada; un 401 ja la tanca */
+      });
+  }
 
   return api;
 }

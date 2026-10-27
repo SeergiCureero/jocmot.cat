@@ -18,11 +18,13 @@ interface Props {
   result?: { title: string; body?: ReactNode; shareText: string } | null;
   /** Accions extra a la capçalera (p. ex. cronòmetre). */
   headerExtra?: ReactNode;
+  /** Mode prova de l'editor: sense número, data ni botó de compartir. */
+  preview?: boolean;
   children: ReactNode;
 }
 
 /** Marc comú de tots els jocs: capçalera, ajuda, resultat i compartir. */
-export default function GameShell({ meta, puzzleNumber, date, help, result, headerExtra, children }: Props) {
+export default function GameShell({ meta, puzzleNumber, date, help, result, headerExtra, preview, children }: Props) {
   const helpKey = `help-seen:${meta.id}`;
   const [helpOpen, setHelpOpen] = useState(() => !storage.get<boolean>(helpKey));
   const toast = useToast();
@@ -45,9 +47,9 @@ export default function GameShell({ meta, puzzleNumber, date, help, result, head
         <div>
           <h1 className="text-xl font-bold">
             <span className="mr-1">{meta.icon}</span> {meta.name}{' '}
-            <span className="text-base font-medium text-stone-500">#{puzzleNumber}</span>
+            <span className="text-base font-medium text-stone-500">{preview ? '· prova' : `#${puzzleNumber}`}</span>
           </h1>
-          <p className="text-xs text-stone-500">{formatDateCa(date)}</p>
+          {!preview && <p className="text-xs text-stone-500">{formatDateCa(date)}</p>}
         </div>
         <div className="flex items-center gap-2">
           {headerExtra}
@@ -63,13 +65,15 @@ export default function GameShell({ meta, puzzleNumber, date, help, result, head
         <section className="mt-6 w-full rounded-2xl border border-stone-200 bg-white p-5 text-center shadow-sm">
           <h2 className="text-lg font-bold">{result.title}</h2>
           {result.body && <div className="mt-2 text-sm text-stone-600">{result.body}</div>}
-          <Button className="mt-4" onClick={handleShare}>
-            Comparteix
-          </Button>
+          {!preview && (
+            <Button className="mt-4" onClick={handleShare}>
+              Comparteix
+            </Button>
+          )}
         </section>
       )}
 
-      <AdSlot id="game-bottom" className="mt-8 w-full" />
+      {!preview && <AdSlot id="game-bottom" className="mt-8 w-full" />}
 
       <Modal open={helpOpen} onClose={closeHelp} title={`Com es juga a ${meta.name}`}>
         {help}

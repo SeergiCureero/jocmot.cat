@@ -45,3 +45,29 @@ export function formatSeconds(totalSeconds: number): string {
   const s = totalSeconds % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
 }
+
+/** Instant en què comença el dia "AAAA-MM-DD" a la zona horària indicada (té en compte l'horari d'estiu). */
+export function startOfDayInTimeZone(isoDate: string, timeZone: string): Date {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const target = Date.UTC(y, m - 1, d);
+  const offsetAt = (instant: number) => {
+    const parts = Object.fromEntries(
+      new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        hourCycle: 'h23',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+      })
+        .formatToParts(new Date(instant))
+        .map((p) => [p.type, Number(p.value)]),
+    );
+    return Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second) - instant;
+  };
+  let instant = target - offsetAt(target);
+  instant = target - offsetAt(instant);
+  return new Date(instant);
+}
