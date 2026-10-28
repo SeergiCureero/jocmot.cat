@@ -6,6 +6,12 @@ export const SITE = {
   /** Data del puzle #1 de tots els jocs (zona horària de Madrid). */
   launchDate: import.meta.env.VITE_LAUNCH_DATE ?? '2026-10-14',
   timeZone: 'Europe/Madrid',
+  /** Adreça de contacte (Cloudflare Email Routing la reenvia). */
+  email: 'hola@jocmot.cat',
+  /** Responsable del lloc i de les dades personals (pàgina /legal). */
+  owner: 'Sergi Curero',
+  /** Data de l'última revisió dels textos legals. */
+  legalUpdated: '28 d’octubre de 2026',
 } as const;
 
 /** Funcionalitats que es poden activar o desactivar. */

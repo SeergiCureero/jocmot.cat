@@ -5,8 +5,10 @@ import Spinner from './components/ui/Spinner';
 import { FEATURES } from './config/site';
 import { GAMES } from './games/registry';
 import GameRoute from './games/GameRoute';
+import AboutPage from './pages/AboutPage';
 import ArchivePage from './pages/ArchivePage';
 import HomePage from './pages/HomePage';
+import LegalPage from './pages/LegalPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LoginPage from './features/auth/LoginPage';
 import RegisterPage from './features/auth/RegisterPage';
@@ -36,6 +38,8 @@ export default function App() {
           ))}
 
           {FEATURES.archive && <Route path="arxiu" element={<ArchivePage />} />}
+          <Route path="sobre" element={<AboutPage />} />
+          <Route path="legal" element={<LegalPage />} />
 
           {FEATURES.accounts && (
             <Route path="compte">
