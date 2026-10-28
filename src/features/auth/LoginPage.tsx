@@ -34,6 +34,12 @@ export default function LoginPage() {
           >
             Crea’n un
           </Link>
+          <Link
+            to="/compte/recupera"
+            className="mt-3 block text-stone-500 hover:text-stone-800 hover:underline"
+          >
+            Has oblidat la contrasenya?
+          </Link>
         </>
       }
     />

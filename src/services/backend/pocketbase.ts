@@ -176,6 +176,20 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
 
     logout: () => setAuth(null),
 
+    async requestPasswordReset(email) {
+      await request('/collections/users/request-password-reset', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+    },
+
+    async confirmPasswordReset(token, password) {
+      await request('/collections/users/confirm-password-reset', {
+        method: 'POST',
+        body: JSON.stringify({ token, password, passwordConfirm: password }),
+      });
+    },
+
     async getProgress(gameId, puzzleId) {
       const user = requireUser();
       const q = filter(`user="${user.id}" && game="${gameId}" && puzzle=${puzzleId}`);
