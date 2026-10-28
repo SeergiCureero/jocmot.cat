@@ -8,10 +8,12 @@ import type { ProgressRecord } from '@/services/backend';
 import { computeStats } from '@/features/progress/stats';
 import { syncLocalProgress } from '@/features/progress/useGameProgress';
 import { useAuth } from './AuthContext';
+import DeleteAccount from './DeleteAccount';
 
 export default function ProfilePage() {
   const { user, logout, backendKind } = useAuth();
   const [records, setRecords] = useState<ProgressRecord[] | null>(null);
+  const [deleted, setDeleted] = useState(false);
 
   // Depèn de l'id i no de l'objecte: refrescar la sessió crea un objecte nou i no ha de tornar a sincronitzar.
   const userId = user?.id;
@@ -22,7 +24,7 @@ export default function ProfilePage() {
       .catch(() => setRecords([]));
   }, [userId]);
 
-  if (!user) return <Navigate to="/compte/entrar" replace />;
+  if (!user) return <Navigate to={deleted ? '/' : '/compte/entrar'} replace />;
 
   return (
     <div className="mx-auto max-w-2xl py-8">
@@ -74,6 +76,8 @@ export default function ProfilePage() {
           );
         })}
       </div>
+
+      {backendKind === 'pocketbase' && <DeleteAccount onDeleted={() => setDeleted(true)} />}
     </div>
   );
 }
