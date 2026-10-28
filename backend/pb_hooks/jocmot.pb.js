@@ -353,16 +353,21 @@ routerAdd(
       u: e.auth.id,
     });
     if (!membership) throw new NotFoundError('Lliga no trobada');
-    e.app.runInTransaction((tx) => {
-      tx.delete(membership);
-      const league = tx.findRecordById('leagues', id);
-      const rest = db.membersOf(tx, id);
-      if (!rest.length) tx.delete(league);
-      else if (league.getString('owner') === e.auth.id) {
-        league.set('owner', rest[0].getString('user'));
-        tx.save(league);
-      }
-    });
+    e.app.runInTransaction((tx) => db.leaveLeague(tx, membership));
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
+// ── Compte ──
+
+/** Esborra el compte de qui fa la petició, amb totes les seves dades. Cal la contrasenya. */
+routerAdd(
+  'DELETE',
+  '/api/jocmot/compte',
+  (e) => {
+    const db = require(`${__hooks}/jocmot_db.js`);
+    db.deleteAccount(e.app, e.auth, e.requestInfo().body.password);
     return e.noContent(204);
   },
   $apis.requireAuth('users'),

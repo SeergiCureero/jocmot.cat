@@ -236,6 +236,50 @@ r = await req(`/collections/users/records/${cesc.id}`, {
 });
 expect('no es pot canviar el nom pel d’un altre', r.status === 400, r);
 
+// ── Esborrar el compte ──
+const dani = await user('dani');
+const eva = await user('eva');
+const shared = (await post('/jocmot/lligues', { name: 'De la Dani' }, dani.token)).body;
+await post('/jocmot/lligues/unir', { code: shared.code }, eva.token);
+const alone = (await post('/jocmot/lligues', { name: 'Només la Dani' }, dani.token)).body;
+await post('/jocmot/amics', { username: 'eva' }, dani.token);
+await finish(dani, 'paraula', today, 'won', { guesses: ['a'], status: 'won' });
+const deleteAccount = (u, password) =>
+  req('/jocmot/compte', { method: 'DELETE', token: u.token, body: JSON.stringify({ password }) });
+
+r = await deleteAccount(dani, 'malament');
+expect('esborrar el compte demana la contrasenya bona', r.status === 400, r);
+r = await deleteAccount(dani, 'contrasenya123');
+expect('esborrar el compte', r.status === 204, r);
+r = await post('/collections/users/auth-with-password', {
+  identity: 'dani@test.local',
+  password: 'contrasenya123',
+});
+expect('… ja no pot entrar', r.status === 400, r);
+r = await get(`/jocmot/lligues/${shared.id}`, eva.token);
+expect(
+  '… la seva lliga passa a l’altre membre',
+  r.body.isOwner === true && r.body.ranking.length === 1,
+  r.body,
+);
+r = await post('/jocmot/lligues/unir', { code: alone.code }, eva.token);
+expect('… la lliga on era sol s’esborra', r.status === 404, r);
+r = await get('/jocmot/amics', eva.token);
+expect('… i la sol·licitud d’amistat desapareix', r.body.incoming.length === 0, r.body);
+
+const admin = await post('/collections/_superusers/auth-with-password', {
+  identity: 'admin@test.local',
+  password: 'adminadmin123',
+});
+const fran = await user('fran');
+await req(`/collections/users/records/${fran.id}`, {
+  method: 'PATCH',
+  token: admin.body.token,
+  body: JSON.stringify({ editor: true }),
+});
+r = await deleteAccount(fran, 'contrasenya123');
+expect('un editor no es pot esborrar sol', r.status === 400, r);
+
 // ── Recalcular (administració) ──
 r = await post('/jocmot/admin/recalcula', {}, anna.token);
 expect('recalcular és només per a superusuaris', r.status === 401 || r.status === 403, r);

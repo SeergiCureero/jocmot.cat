@@ -224,6 +224,43 @@ const membersOf = (app, leagueId) =>
 const membershipsOf = (app, userId) =>
   app.findRecordsByFilter('league_members', 'user = {:u}', 'created', 0, 0, { u: userId });
 
+/** Treu un membre de la seva lliga. Si en surt el creador, passa a ser-ho el membre més antic; si queda buida, s'esborra. */
+function leaveLeague(app, membership) {
+  const leagueId = membership.getString('league');
+  const userId = membership.getString('user');
+  app.delete(membership);
+  const league = app.findRecordById('leagues', leagueId);
+  const rest = membersOf(app, leagueId);
+  if (!rest.length) app.delete(league);
+  else if (league.getString('owner') === userId) {
+    league.set('owner', rest[0].getString('user'));
+    app.save(league);
+  }
+}
+
+/**
+ * Esborra el compte i totes les seves dades. Progrés, punts, amistats i membres de lligues
+ * s'esborren en cascada; abans, cada lliga on és passa a un altre membre (o s'esborra si queda buida).
+ * Els editors no es poden esborrar sols: els puzles publicats necessiten autor.
+ */
+function deleteAccount(app, user, password) {
+  if (!user.validatePassword(password || ''))
+    throw new BadRequestError('La contrasenya no és correcta.');
+  if (user.getBool('editor'))
+    throw new BadRequestError(
+      'Ets editor de puzles: escriu a hola@jocmot.cat i esborrarem el compte a mà.',
+    );
+  app.runInTransaction((tx) => {
+    for (const m of membershipsOf(tx, user.id)) leaveLeague(tx, m);
+    // Lligues creades on ja no és membre (no hauria de passar): en traiem el creador.
+    for (const l of tx.findRecordsByFilter('leagues', 'owner = {:u}', '', 0, 0, { u: user.id })) {
+      l.set('owner', '');
+      tx.save(l);
+    }
+    tx.delete(tx.findRecordById('users', user.id));
+  });
+}
+
 /** Mesos (AAAA-MM) des que existeix la lliga fins ara, del més recent al més antic. */
 function leagueMonths(league) {
   const first = lib.madridDate(toMs(league.getString('created')));
@@ -259,5 +296,7 @@ module.exports = {
   newLeagueCode,
   membersOf,
   membershipsOf,
+  leaveLeague,
+  deleteAccount,
   leagueMonths,
 };

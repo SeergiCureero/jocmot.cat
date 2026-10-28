@@ -111,8 +111,9 @@ export default function LegalPage() {
 
         <h3>Quant de temps</h3>
         <p>
-          Mentre tinguis el compte. Si el tanques, l’esborrem amb totes les dades associades; les
-          còpies de seguretat del servidor s’eliminen soles al cap de 14 dies.
+          Mentre tinguis el compte. Quan l’esborres (des del teu <Link to="/compte">perfil</Link>, a
+          baix de tot), s’esborren a l’instant totes les dades associades; les còpies de seguretat
+          del servidor s’eliminen soles al cap de 14 dies.
         </p>
 
         <h3>Els teus drets</h3>
