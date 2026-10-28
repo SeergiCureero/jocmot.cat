@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { backend } from '@/services/backend';
 import AuthForm from './AuthForm';
+import Icon from '@/components/ui/Icon';
 
 /** Demana el correu per canviar la contrasenya. */
 export default function ForgotPasswordPage() {
@@ -10,7 +11,7 @@ export default function ForgotPasswordPage() {
   if (sentTo) {
     return (
       <div className="animate-rise mx-auto w-full max-w-sm py-10 text-center">
-        <p className="text-4xl">📬</p>
+        <Icon name="correu" className="size-12" />
         <h1 className="mt-2 text-2xl font-bold">Mira el correu</h1>
         <p className="mt-2 text-sm text-stone-600">
           Si <strong>{sentTo}</strong> té un compte, hi trobaràs un enllaç per triar una contrasenya

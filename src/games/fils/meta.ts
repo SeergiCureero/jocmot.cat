@@ -6,6 +6,6 @@ export const meta: GameMeta = {
   name: 'Fils',
   inspiredBy: 'Strands (NYT)',
   tagline: 'Descobreix les paraules amagades i el fil conductor',
-  icon: '🧵',
+  icon: 'joc-fils',
   theme: { bg: 'bg-sky-100', text: 'text-sky-800', soft: 'bg-sky-50' },
 };

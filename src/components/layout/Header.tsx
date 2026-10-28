@@ -3,6 +3,7 @@ import { FEATURES } from '@/config/site';
 import { useAuth } from '@/features/auth/AuthContext';
 import { GAMES } from '@/games/registry';
 import { cn } from '@/lib/cn';
+import Icon from '@/components/ui/Icon';
 
 const pill = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -34,17 +35,17 @@ export default function Header() {
         <div className="ml-auto flex items-center gap-2">
           {FEATURES.archive && (
             <NavLink to="/arxiu" className={pill} aria-label="Arxiu">
-              📅 <span className="hidden sm:inline">Arxiu</span>
+              <Icon name="arxiu" /> <span className="hidden sm:inline">Arxiu</span>
             </NavLink>
           )}
           {FEATURES.social && (
             <NavLink to="/lligues" className={pill} aria-label="Lligues">
-              🏆 <span className="hidden sm:inline">Lligues</span>
+              <Icon name="trofeu" /> <span className="hidden sm:inline">Lligues</span>
             </NavLink>
           )}
           {FEATURES.accounts && user?.editor && (
             <NavLink to="/editor" className={pill} aria-label="Editor">
-              ✏️ <span className="hidden sm:inline">Editor</span>
+              <Icon name="editor" /> <span className="hidden sm:inline">Editor</span>
             </NavLink>
           )}
           {FEATURES.accounts && (

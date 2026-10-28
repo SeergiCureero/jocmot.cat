@@ -23,6 +23,7 @@ import {
   submitSelection,
 } from './logic';
 import { meta } from './meta';
+import { Swatch } from '@/components/ui/Icon';
 
 export default function ConnexionsGame({
   puzzleNumber,
@@ -206,7 +207,10 @@ function Help() {
         Cada puzle té una sola solució. Compte amb les paraules que semblen encaixar en més d’un
         grup!
       </p>
-      <p>Dificultat: 🟨 fàcil · 🟩 · 🟦 · 🟪 difícil.</p>
+      <p>
+        Dificultat: <Swatch className="bg-level-0" /> fàcil · <Swatch className="bg-level-1" /> ·{' '}
+        <Swatch className="bg-level-2" /> · <Swatch className="bg-level-3" /> difícil.
+      </p>
     </>
   );
 }

@@ -9,6 +9,7 @@ import { getPuzzleDate, getTodayPuzzleNumber } from '@/games/puzzles';
 import { GAMES } from '@/games/registry';
 import type { GameMeta } from '@/games/types';
 import { startOfDayInTimeZone } from '@/lib/date';
+import Icon from '@/components/ui/Icon';
 
 interface Props {
   open: boolean;
@@ -84,7 +85,7 @@ export default function ResultModal({ open, onClose, meta, puzzleNumber, result,
               onClick={onClose}
               className="rounded-full bg-stone-100 px-3 py-1.5 text-sm font-semibold transition-colors hover:bg-stone-200"
             >
-              {g.icon} {g.name}
+              <Icon name={g.icon} /> {g.name}
             </Link>
           ))}
         </div>

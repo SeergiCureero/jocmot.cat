@@ -8,6 +8,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { formatMonth, social, type League } from './api';
 import PointsHelp from './PointsHelp';
 import { ErrorBox, RankingTable, RequireLogin, useLoad } from './ui';
+import Icon from '@/components/ui/Icon';
 
 /** Classificació d'una lliga per mesos, amb el codi per convidar-hi gent. */
 export default function LeaguePage() {
@@ -37,7 +38,9 @@ function LeagueView() {
     <>
       <div className="mt-2 mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">🏆 {league.name}</h1>
+          <h1 className="text-2xl font-bold">
+            <Icon name="trofeu" /> {league.name}
+          </h1>
           <p className="text-sm text-stone-600">
             {league.ranking.length} {league.ranking.length === 1 ? 'membre' : 'membres'}
           </p>
@@ -64,7 +67,13 @@ function LeagueView() {
             Lliga de {formatMonth(league.month)} acabada
           </p>
           <p className="mt-1 text-lg font-bold">
-            {league.winner ? <>👑 Guanyador: {league.winner.name}</> : 'Ningú no hi va sumar punts'}
+            {league.winner ? (
+              <>
+                <Icon name="corona" /> Guanyador: {league.winner.name}
+              </>
+            ) : (
+              'Ningú no hi va sumar punts'
+            )}
           </p>
         </div>
       ) : (

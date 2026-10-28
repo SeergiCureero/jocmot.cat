@@ -10,6 +10,7 @@ import { getTodayPuzzleNumber } from '@/games/puzzles';
 import type { GameMeta } from '@/games/types';
 import { formatDateCa } from '@/lib/date';
 import { storage } from '@/lib/storage';
+import Icon from '@/components/ui/Icon';
 
 interface Props {
   meta: GameMeta;
@@ -61,7 +62,7 @@ export default function GameShell({
       <div className="mb-4 flex w-full items-center justify-between">
         <div>
           <h1 className="text-xl font-bold">
-            <span className="mr-1">{meta.icon}</span> {meta.name}{' '}
+            <Icon name={meta.icon} className="mr-1" /> {meta.name}{' '}
             <span className="text-base font-medium text-stone-500">
               {preview ? '· prova' : `#${puzzleNumber}`}
             </span>

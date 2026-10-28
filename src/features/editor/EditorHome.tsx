@@ -8,6 +8,7 @@ import { drafts } from './drafts';
 import { KITS } from './kits';
 import { APPROVALS_NEEDED } from './schedule';
 import { GameLabel, gameMeta, ROW, Section, statusText } from './ui';
+import Icon from '@/components/ui/Icon';
 
 export default function EditorHome() {
   const { user } = useAuth();
@@ -55,7 +56,7 @@ export default function EditorHome() {
                 <span
                   className={`grid size-11 shrink-0 place-items-center rounded-xl text-xl ${meta.theme.bg}`}
                 >
-                  {meta.icon}
+                  <Icon name={meta.icon} />
                 </span>
                 <span className="font-bold">{meta.name}</span>
               </button>

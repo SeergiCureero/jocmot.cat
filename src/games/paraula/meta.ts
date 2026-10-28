@@ -6,6 +6,6 @@ export const meta: GameMeta = {
   name: 'Paraula',
   inspiredBy: 'Wordle (NYT)',
   tagline: 'Endevina la paraula de 5 lletres en 6 intents',
-  icon: '🟩',
+  icon: 'joc-paraula',
   theme: { bg: 'bg-green-100', text: 'text-green-800', soft: 'bg-green-50' },
 };

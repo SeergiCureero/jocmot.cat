@@ -1,4 +1,5 @@
 import type { ComponentType, LazyExoticComponent } from 'react';
+import type { IconName } from '@/components/ui/Icon';
 
 export type GameId = 'paraula' | 'connexions' | 'fils' | 'mini';
 
@@ -23,7 +24,7 @@ export interface GameMeta {
   /** Joc original en què s'inspira (per a la documentació interna). */
   inspiredBy: string;
   tagline: string;
-  icon: string;
+  icon: IconName;
   theme: { bg: string; text: string; soft: string };
 }
 

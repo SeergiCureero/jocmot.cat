@@ -7,6 +7,7 @@ import type { FilsPuzzle } from '@/games/fils/types';
 import { cn } from '@/lib/cn';
 import { normalizeWord } from '@/lib/text';
 import { INPUT, result, type EditorKit, type FormProps } from './types';
+import { Swatch } from '@/components/ui/Icon';
 
 export interface FilsDraft {
   theme: string;
@@ -102,7 +103,9 @@ function Form({ value, onChange, readOnly }: FormProps<FilsDraft>) {
       {!readOnly && (
         <>
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-stone-700">Fil conductor 🟡</span>
+            <span className="mb-1 block text-sm font-medium text-stone-700">
+              Fil conductor <Swatch className="rounded-full bg-amber-300" />
+            </span>
             <input
               value={value.spangram}
               placeholder="p. ex. FRUITES"
@@ -112,7 +115,7 @@ function Form({ value, onChange, readOnly }: FormProps<FilsDraft>) {
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium text-stone-700">
-              Paraules del tema 🔵 (separades per comes)
+              Paraules del tema <Swatch className="rounded-full bg-sky-300" /> (separades per comes)
             </span>
             <textarea
               value={value.words}

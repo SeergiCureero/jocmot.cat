@@ -6,6 +6,7 @@ import { GAMES } from '@/games/registry';
 import { cn } from '@/lib/cn';
 import { storage } from '@/lib/storage';
 import { backend, type GameStatus, type ProgressRecord } from '@/services/backend';
+import Icon from '@/components/ui/Icon';
 
 const STATUS: Record<GameStatus, { label: string; className: string }> = {
   won: { label: '✓ Resolt', className: 'bg-green-100 text-green-800' },
@@ -45,7 +46,7 @@ export default function ArchivePage() {
               g.id === game.id ? 'bg-stone-900 text-white' : 'bg-stone-200 hover:bg-stone-300',
             )}
           >
-            {g.icon} {g.name}
+            <Icon name={g.icon} /> {g.name}
           </button>
         ))}
       </div>

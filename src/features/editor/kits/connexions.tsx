@@ -2,12 +2,13 @@ import { validatePuzzle } from '@/games/connexions/logic';
 import type { ConnexionsGroup, ConnexionsPuzzle, Level } from '@/games/connexions/types';
 import { cn } from '@/lib/cn';
 import { INPUT, result, type EditorKit, type FormProps } from './types';
+import { Swatch } from '@/components/ui/Icon';
 
-const LEVELS: { level: Level; label: string; bg: string }[] = [
-  { level: 0, label: '🟨 Fàcil', bg: 'bg-level-0/30' },
-  { level: 1, label: '🟩 Mitjà', bg: 'bg-level-1/30' },
-  { level: 2, label: '🟦 Difícil', bg: 'bg-level-2/30' },
-  { level: 3, label: '🟪 Molt difícil', bg: 'bg-level-3/30' },
+const LEVELS: { level: Level; label: string; bg: string; swatch: string }[] = [
+  { level: 0, label: 'Fàcil', bg: 'bg-level-0/30', swatch: 'bg-level-0' },
+  { level: 1, label: 'Mitjà', bg: 'bg-level-1/30', swatch: 'bg-level-1' },
+  { level: 2, label: 'Difícil', bg: 'bg-level-2/30', swatch: 'bg-level-2' },
+  { level: 3, label: 'Molt difícil', bg: 'bg-level-3/30', swatch: 'bg-level-3' },
 ];
 
 const clean = (p: ConnexionsPuzzle): ConnexionsPuzzle => ({
@@ -34,7 +35,9 @@ function Form({ value, onChange, readOnly }: FormProps<ConnexionsPuzzle>) {
         <fieldset key={group.level} className={cn('rounded-xl p-4', LEVELS[i].bg)}>
           <legend className="sr-only">Grup {i + 1}</legend>
           <div className="mb-2 flex items-center justify-between gap-2">
-            <span className="text-sm font-semibold">{LEVELS[i].label}</span>
+            <span className="text-sm font-semibold">
+              <Swatch className={LEVELS[i].swatch} /> {LEVELS[i].label}
+            </span>
           </div>
           <input
             aria-label={`Títol del grup ${i + 1}`}

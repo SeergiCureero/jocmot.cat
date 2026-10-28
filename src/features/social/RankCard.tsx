@@ -1,6 +1,8 @@
 import { Link } from 'react-router';
 import { social } from './api';
 import { StreakBadge, useLoad } from './ui';
+import Icon from '@/components/ui/Icon';
+import { rankIcon } from './PointsHelp';
 
 /** Rang, punts i ratxa de l'usuari, amb el progrés cap al rang següent (per al perfil). */
 export default function RankCard() {
@@ -14,7 +16,7 @@ export default function RankCard() {
     <section className="animate-rise mb-8 rounded-2xl border border-stone-200 bg-white p-5">
       <div className="flex items-center gap-4">
         <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-amber-100 text-4xl">
-          {rank.icon}
+          <Icon name={rankIcon(rank.name)} />
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold text-stone-500 uppercase">El teu rang</p>
@@ -39,7 +41,8 @@ export default function RankCard() {
             />
           </div>
           <p className="mt-1 text-xs text-stone-500">
-            {rank.next.min - p.total} punts per arribar a {rank.next.icon} {rank.next.name}
+            {rank.next.min - p.total} punts per arribar a <Icon name={rankIcon(rank.next.name)} />{' '}
+            {rank.next.name}
           </p>
         </div>
       )}

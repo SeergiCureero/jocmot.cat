@@ -22,6 +22,7 @@ import {
 } from './logic';
 import { meta } from './meta';
 import type { Cell, FilsPuzzle } from './types';
+import Icon, { Swatch } from '@/components/ui/Icon';
 
 export default function FilsGame({ puzzleNumber, date, puzzle: groupPuzzle, preview }: GameProps) {
   const puzzle = (groupPuzzle as FilsPuzzle | undefined) ?? pickByNumber(PUZZLES, puzzleNumber);
@@ -41,7 +42,7 @@ export default function FilsGame({ puzzleNumber, date, puzzle: groupPuzzle, prev
     setSelection([]);
     if (feedback === 'too-short') return toast('Massa curta');
     if (feedback === 'already-found') return toast('Ja l’has trobada');
-    if (feedback === 'spangram') toast('Fil conductor! 🟡');
+    if (feedback === 'spangram') toast('Fil conductor!');
     if (feedback === 'not-theme') toast('No és del tema');
     update(() => next);
   };
@@ -116,10 +117,13 @@ function Help() {
         enviar.
       </p>
       <p>
-        El <strong>fil conductor</strong> 🟡 descriu el tema i travessa la graella d’un costat a
-        l’altre.
+        El <strong>fil conductor</strong> <Swatch className="rounded-full bg-amber-300" /> descriu
+        el tema i travessa la graella d’un costat a l’altre.
       </p>
-      <p>Cada {HINT_COST} intents que no siguin del tema desbloquegen una pista 💡.</p>
+      <p>
+        Cada {HINT_COST} intents que no siguin del tema desbloquegen una pista <Icon name="pista" />
+        .
+      </p>
       <p>Les paraules omplen tota la graella sense encavalcar-se.</p>
     </>
   );
