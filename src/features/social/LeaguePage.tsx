@@ -15,7 +15,7 @@ export default function LeaguePage() {
   return (
     <div className="mx-auto max-w-2xl py-8">
       <Link to="/lligues" className="text-brand-700 text-sm hover:underline">
-        ← Lligues
+        <Icon name="fletxa-esquerra" /> Lligues
       </Link>
       <RequireLogin>
         <LeagueView />

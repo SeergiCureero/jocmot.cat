@@ -16,6 +16,10 @@ Cada icona és un fitxer `<nom>.svg` en aquesta carpeta. Mentre falti, la web mo
 | amics.svg | 👥 | Pestanya "Amics" |
 | editor.svg | ✏️ | Botó "Editor" (només editors) |
 | correu.svg | 📬 | "Mira el correu" (recuperar contrasenya) |
+| fletxa-dreta.svg | → | Enllaços "Juga el d'avui", "Lligues", "Juga els puzles anteriors"… |
+| fletxa-esquerra.svg | ← | Enllaços "Torna": "← Lligues", "← Torna a entrar", editor |
+| fet.svg | ✓ | "Copiat!", "Resolt" a l'arxiu, aprovacions de l'editor |
+| esborra.svg | ⌫ | Tecla d'esborrar del teclat de Paraula |
 | ratxa.svg | 🔥 | Ratxa de dies |
 | pista.svg | 💡 | Pistes de Fils |
 | corona.svg | 👑 | Guanyador d'una lliga |

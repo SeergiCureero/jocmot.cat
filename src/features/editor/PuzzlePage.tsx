@@ -11,6 +11,7 @@ import PreviewPlayer from './PreviewPlayer';
 import { APPROVALS_NEEDED, publishIfReady, validApprovals } from './schedule';
 import { ErrorList, GameLabel, statusText } from './ui';
 import { INPUT } from './kits/types';
+import Icon from '@/components/ui/Icon';
 
 /** Un puzle proposat o publicat: jugar-hi, veure la solució, revisar-lo i (si és teu) editar-lo. */
 export default function PuzzlePage() {
@@ -98,7 +99,7 @@ function PuzzleView({
   return (
     <div className="mx-auto max-w-2xl py-8">
       <Link to="/editor" className="text-brand-700 text-sm hover:underline">
-        ← Editor
+        <Icon name="fletxa-esquerra" /> Editor
       </Link>
       <div className="mt-2 mb-1 flex items-center justify-between gap-3">
         <h1 className="text-xl font-bold">
@@ -117,7 +118,7 @@ function PuzzleView({
       {playing ? (
         <>
           <Button variant="secondary" onClick={() => setPlaying(false)}>
-            ← Torna
+            <Icon name="fletxa-esquerra" /> Torna
           </Button>
           <PreviewPlayer game={record.game} puzzle={editable ? built.puzzle : record.data} />
         </>
@@ -191,7 +192,7 @@ function PuzzleView({
                             stale ? 'text-stone-400 line-through' : 'text-correct',
                           )}
                         >
-                          ✓ aprovat
+                          <Icon name="fet" /> aprovat
                         </span>
                       )}
                       {stale && (

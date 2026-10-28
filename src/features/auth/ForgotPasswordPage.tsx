@@ -21,7 +21,7 @@ export default function ForgotPasswordPage() {
           to="/compte/entrar"
           className="text-brand-700 mt-6 inline-block text-sm font-semibold hover:underline"
         >
-          ← Torna a entrar
+          <Icon name="fletxa-esquerra" /> Torna a entrar
         </Link>
       </div>
     );
@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
       }}
       footer={
         <Link to="/compte/entrar" className="text-brand-700 font-semibold hover:underline">
-          ← Torna a entrar
+          <Icon name="fletxa-esquerra" /> Torna a entrar
         </Link>
       }
     />

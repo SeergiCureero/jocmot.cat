@@ -17,6 +17,10 @@ export const ICONS = {
   amics: '👥',
   editor: '✏️',
   correu: '📬',
+  'fletxa-dreta': '→',
+  'fletxa-esquerra': '←',
+  fet: '✓',
+  esborra: '⌫',
   // Joc i punts
   ratxa: '🔥',
   pista: '💡',

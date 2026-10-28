@@ -38,7 +38,8 @@ export default function PointsEarned({ game, puzzle }: { game: string; puzzle: n
         to={`/compte/registre?seguent=${encodeURIComponent(pathname)}`}
         className="block rounded-xl bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-900 hover:bg-amber-100"
       >
-        <Icon name="trofeu" /> Crea un compte per guanyar punts i competir amb amics →
+        <Icon name="trofeu" /> Crea un compte per guanyar punts i competir amb amics{' '}
+        <Icon name="fletxa-dreta" />
       </Link>
     );
   }

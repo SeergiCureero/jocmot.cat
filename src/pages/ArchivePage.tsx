@@ -8,8 +8,8 @@ import { storage } from '@/lib/storage';
 import { backend, type GameStatus, type ProgressRecord } from '@/services/backend';
 import Icon from '@/components/ui/Icon';
 
-const STATUS: Record<GameStatus, { label: string; className: string }> = {
-  won: { label: '✓ Resolt', className: 'bg-green-100 text-green-800' },
+const STATUS: Record<GameStatus, { label: string; className: string; icon?: 'fet' }> = {
+  won: { label: 'Resolt', icon: 'fet', className: 'bg-green-100 text-green-800' },
   lost: { label: 'No resolt', className: 'bg-stone-200 text-stone-600' },
   playing: { label: 'A mitges', className: 'bg-amber-100 text-amber-800' },
 };
@@ -83,10 +83,11 @@ export default function ArchivePage() {
                 {status && (
                   <span
                     className={cn(
-                      'rounded-full px-2 py-0.5 text-xs font-semibold',
+                      'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold',
                       STATUS[status].className,
                     )}
                   >
+                    {STATUS[status].icon && <Icon name={STATUS[status].icon} />}
                     {STATUS[status].label}
                   </span>
                 )}

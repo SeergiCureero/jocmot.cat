@@ -54,7 +54,7 @@ export default function RankCard() {
           )}
         </span>
         <Link to="/lligues" className="text-brand-700 font-semibold hover:underline">
-          Lligues →
+          Lligues <Icon name="fletxa-dreta" />
         </Link>
       </div>
     </section>

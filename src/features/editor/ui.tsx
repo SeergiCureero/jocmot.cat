@@ -33,7 +33,7 @@ export function ErrorList({ errors }: { errors: string[] }) {
   if (!errors.length) {
     return (
       <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800">
-        ✓ Tot correcte: ja el pots provar.
+        <Icon name="fet" /> Tot correcte: ja el pots provar.
       </p>
     );
   }

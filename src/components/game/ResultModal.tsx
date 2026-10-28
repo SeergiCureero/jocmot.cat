@@ -63,7 +63,13 @@ export default function ResultModal({ open, onClose, meta, puzzleNumber, result,
           </pre>
           <div className="flex gap-2">
             <Button className="flex-1" onClick={copy}>
-              {copied ? 'Copiat! ✓' : 'Copia el resultat'}
+              {copied ? (
+                <>
+                  Copiat! <Icon name="fet" />
+                </>
+              ) : (
+                'Copia el resultat'
+              )}
             </Button>
             {canNativeShare() && (
               <Button variant="secondary" className="flex-1" onClick={share}>

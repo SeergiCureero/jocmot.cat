@@ -96,7 +96,7 @@ export default function GameShell({
         <p className="animate-fade-in mb-4 w-full rounded-lg bg-stone-100 px-3 py-2 text-center text-sm text-stone-600">
           Estàs jugant un puzle de l’arxiu.{' '}
           <Link to={`/${meta.slug}`} className="text-brand-700 font-semibold hover:underline">
-            Juga el d’avui →
+            Juga el d’avui <Icon name="fletxa-dreta" />
           </Link>
         </p>
       )}
