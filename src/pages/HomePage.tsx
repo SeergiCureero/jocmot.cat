@@ -3,6 +3,7 @@ import AdSlot from '@/components/ads/AdSlot';
 import { FEATURES, SITE } from '@/config/site';
 import { GAMES } from '@/games/registry';
 import { getTodayPuzzleNumber } from '@/games/puzzles';
+import Icon from '@/components/ui/Icon';
 
 export default function HomePage() {
   const today = getTodayPuzzleNumber();
@@ -30,7 +31,7 @@ export default function HomePage() {
               <span
                 className={`grid size-14 shrink-0 place-items-center rounded-xl text-2xl transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6 ${game.theme.bg}`}
               >
-                {game.icon}
+                <Icon name={game.icon} />
               </span>
               <span>
                 <span className="block text-lg font-bold group-hover:underline">{game.name}</span>
@@ -45,7 +46,8 @@ export default function HomePage() {
       {FEATURES.archive && today > 1 && (
         <p className="animate-rise mt-6 text-center" style={{ animationDelay: '400ms' }}>
           <Link to="/arxiu" className="text-brand-700 text-sm font-semibold hover:underline">
-            📅 T’has perdut algun dia? Juga els puzles anteriors →
+            <Icon name="arxiu" /> T’has perdut algun dia? Juga els puzles anteriors{' '}
+            <Icon name="fletxa-dreta" />
           </Link>
         </p>
       )}

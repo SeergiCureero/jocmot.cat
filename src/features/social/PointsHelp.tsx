@@ -1,3 +1,5 @@
+import Icon, { type IconName } from '@/components/ui/Icon';
+
 /** Rangs per punts totals. Han de coincidir amb `backend/pb_hooks/jocmot.js` (ho comprova un test). */
 export const RANKS = [
   { name: 'Aprenent', icon: '🌱', min: 0 },
@@ -7,6 +9,18 @@ export const RANKS = [
   { name: 'Mestre de mots', icon: '🏛️', min: 2500 },
   { name: 'Gran Mestre', icon: '👑', min: 5000 },
 ];
+
+const RANK_ICONS: Record<string, IconName> = {
+  Aprenent: 'rang-aprenent',
+  Lletraferit: 'rang-lletraferit',
+  Paraulaire: 'rang-paraulaire',
+  Erudit: 'rang-erudit',
+  'Mestre de mots': 'rang-mestre-de-mots',
+  'Gran Mestre': 'rang-gran-mestre',
+};
+
+/** Icona d'un rang pel seu nom (el servidor només en dona el nom i l'emoji). */
+export const rankIcon = (name: string): IconName => RANK_ICONS[name] ?? 'rang-aprenent';
 
 /** Explicació de com es guanyen els punts i quins rangs hi ha. */
 export default function PointsHelp() {
@@ -33,16 +47,16 @@ export default function PointsHelp() {
           </li>
         </ul>
         <p>
-          🔥 <strong>Ratxa:</strong> cada dia seguit que acabes algun joc del dia suma +1 punt a
-          cada joc, fins a +5.
+          <Icon name="ratxa" /> <strong>Ratxa:</strong> cada dia seguit que acabes algun joc del dia
+          suma +1 punt a cada joc, fins a +5.
         </p>
         <p>
-          📅 <strong>Arxiu:</strong> els puzles de dies anteriors donen la meitat de punts i no
-          compten per a la ratxa.
+          <Icon name="arxiu" /> <strong>Arxiu:</strong> els puzles de dies anteriors donen la meitat
+          de punts i no compten per a la ratxa.
         </p>
         <p>
-          🏆 <strong>Lligues:</strong> cada mes comença de zero. Qui en sumi més a final de mes
-          guanya la lliga.
+          <Icon name="trofeu" /> <strong>Lligues:</strong> cada mes comença de zero. Qui en sumi més
+          a final de mes guanya la lliga.
         </p>
         <div>
           <p className="mb-1">
@@ -51,7 +65,8 @@ export default function PointsHelp() {
           <ul className="grid gap-1 sm:grid-cols-2">
             {RANKS.map((r) => (
               <li key={r.name}>
-                {r.icon} {r.name} <span className="text-stone-500">· des de {r.min}</span>
+                <Icon name={rankIcon(r.name)} /> {r.name}{' '}
+                <span className="text-stone-500">· des de {r.min}</span>
               </li>
             ))}
           </ul>

@@ -6,6 +6,6 @@ export const meta: GameMeta = {
   name: 'Connexions',
   inspiredBy: 'Connections (NYT)',
   tagline: 'Troba els quatre grups de quatre paraules',
-  icon: '🟪',
+  icon: 'joc-connexions',
   theme: { bg: 'bg-purple-100', text: 'text-purple-800', soft: 'bg-purple-50' },
 };

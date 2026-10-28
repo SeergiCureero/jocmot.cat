@@ -9,6 +9,7 @@ import { computeStats } from '@/features/progress/stats';
 import { syncLocalProgress } from '@/features/progress/useGameProgress';
 import { useAuth } from './AuthContext';
 import DeleteAccount from './DeleteAccount';
+import Icon from '@/components/ui/Icon';
 
 export default function ProfilePage() {
   const { user, logout, backendKind } = useAuth();
@@ -59,7 +60,7 @@ export default function ProfilePage() {
                 <span
                   className={`grid size-8 place-items-center rounded-lg ${game.theme.bg} text-white`}
                 >
-                  {game.icon}
+                  <Icon name={game.icon} />
                 </span>
                 {game.name}
               </div>

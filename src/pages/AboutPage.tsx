@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import Prose from '@/components/ui/Prose';
 import { FEATURES, SITE } from '@/config/site';
 import { GAMES } from '@/games/registry';
+import Icon from '@/components/ui/Icon';
 
 export default function AboutPage() {
   return (
@@ -31,7 +32,7 @@ export default function AboutPage() {
                 <span
                   className={`grid size-11 shrink-0 place-items-center rounded-xl text-xl ${g.theme.bg}`}
                 >
-                  {g.icon}
+                  <Icon name={g.icon} />
                 </span>
                 <span>
                   <strong className="block">{g.name}</strong>

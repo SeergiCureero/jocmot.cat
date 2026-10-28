@@ -3,6 +3,8 @@ import { Link, NavLink, useLocation } from 'react-router';
 import { useAuth } from '@/features/auth/AuthContext';
 import { cn } from '@/lib/cn';
 import type { Rank, RankingRow } from './api';
+import Icon from '@/components/ui/Icon';
+import { rankIcon } from './PointsHelp';
 
 export function RankBadge({
   rank,
@@ -19,7 +21,7 @@ export function RankBadge({
       )}
       title={`Rang: ${rank.name}`}
     >
-      {rank.icon} {rank.name}
+      <Icon name={rankIcon(rank.name)} /> {rank.name}
     </span>
   );
 }
@@ -28,12 +30,12 @@ export function StreakBadge({ days }: { days: number }) {
   if (!days) return null;
   return (
     <span className="text-sm font-semibold text-orange-600" title={`Ratxa de ${days} dies seguits`}>
-      🔥 {days}
+      <Icon name="ratxa" /> {days}
     </span>
   );
 }
 
-const MEDALS = ['🥇', '🥈', '🥉'];
+const MEDALS = ['medalla-or', 'medalla-plata', 'medalla-bronze'] as const;
 
 /** Classificació del mes: posició, nom, rang, ratxa i punts. */
 export function RankingTable({
@@ -57,9 +59,11 @@ export function RankingTable({
             style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}
           >
             <span className="w-7 text-center text-lg font-bold text-stone-500 tabular-nums">
-              {row.monthPoints > 0 && MEDALS[row.position - 1]
-                ? MEDALS[row.position - 1]
-                : row.position}
+              {row.monthPoints > 0 && MEDALS[row.position - 1] ? (
+                <Icon name={MEDALS[row.position - 1]} />
+              ) : (
+                row.position
+              )}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate font-semibold">
@@ -92,10 +96,10 @@ export function SocialTabs() {
   return (
     <nav className="mb-6 flex gap-2" aria-label="Competició">
       <NavLink to="/lligues" end className={tab}>
-        🏆 Lligues
+        <Icon name="trofeu" /> Lligues
       </NavLink>
       <NavLink to="/amics" className={tab}>
-        👥 Amics
+        <Icon name="amics" /> Amics
       </NavLink>
     </nav>
   );
@@ -109,7 +113,7 @@ export function RequireLogin({ children }: { children: ReactNode }) {
   const next = `?seguent=${encodeURIComponent(pathname)}`;
   return (
     <div className="animate-rise rounded-2xl border border-stone-200 bg-white p-6 text-center">
-      <p className="text-4xl">🏆</p>
+      <Icon name="trofeu" className="size-12" />
       <h2 className="mt-2 text-lg font-bold">Competeix amb els teus amics</h2>
       <p className="mt-1 text-sm text-stone-600">
         Amb un compte sumes punts cada dia, mantens la ratxa i puges de rang.

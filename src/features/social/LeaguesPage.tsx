@@ -7,6 +7,7 @@ import { cn } from '@/lib/cn';
 import { formatMonth, social } from './api';
 import PointsHelp from './PointsHelp';
 import { ErrorBox, RequireLogin, SocialTabs, useLoad } from './ui';
+import Icon from '@/components/ui/Icon';
 
 /** Les meves lligues + crear-ne una o unir-s'hi amb un codi. */
 export default function LeaguesPage() {
@@ -47,7 +48,7 @@ function Leagues() {
                   className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-amber-100 text-2xl">
-                    🏆
+                    <Icon name="trofeu" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-bold">{l.name}</span>

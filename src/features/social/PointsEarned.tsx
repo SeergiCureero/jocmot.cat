@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { useAuth } from '@/features/auth/AuthContext';
 import { social, type Score } from './api';
+import Icon from '@/components/ui/Icon';
 
 /**
  * Punts guanyats amb aquesta partida (a la finestra de resultat).
@@ -37,7 +38,8 @@ export default function PointsEarned({ game, puzzle }: { game: string; puzzle: n
         to={`/compte/registre?seguent=${encodeURIComponent(pathname)}`}
         className="block rounded-xl bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-900 hover:bg-amber-100"
       >
-        🏆 Crea un compte per guanyar punts i competir amb amics →
+        <Icon name="trofeu" /> Crea un compte per guanyar punts i competir amb amics{' '}
+        <Icon name="fletxa-dreta" />
       </Link>
     );
   }
@@ -55,7 +57,7 @@ export default function PointsEarned({ game, puzzle }: { game: string; puzzle: n
       </div>
       {score.daily && score.streak > 0 && (
         <p className="text-right text-sm font-semibold text-orange-600">
-          🔥 {score.streak} {score.streak === 1 ? 'dia' : 'dies'}
+          <Icon name="ratxa" /> {score.streak} {score.streak === 1 ? 'dia' : 'dies'}
           <span className="block text-xs font-normal text-stone-500">de ratxa</span>
         </p>
       )}

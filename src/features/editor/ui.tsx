@@ -4,6 +4,7 @@ import { GAMES } from '@/games/registry';
 import { formatDateCa } from '@/lib/date';
 import type { DesignableGameId, PuzzleRecord } from '@/services/backend';
 import { APPROVALS_NEEDED, validApprovals } from './schedule';
+import Icon from '@/components/ui/Icon';
 
 export const gameMeta = (id: DesignableGameId) => GAMES.find((g) => g.id === id)!;
 
@@ -12,7 +13,7 @@ export function GameLabel({ game }: { game: DesignableGameId }) {
   return (
     <span className="inline-flex items-center gap-1.5 font-semibold">
       <span className={`grid size-7 place-items-center rounded-lg text-sm ${meta.theme.bg}`}>
-        {meta.icon}
+        <Icon name={meta.icon} />
       </span>
       {meta.name}
     </span>
@@ -32,7 +33,7 @@ export function ErrorList({ errors }: { errors: string[] }) {
   if (!errors.length) {
     return (
       <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800">
-        ✓ Tot correcte: ja el pots provar.
+        <Icon name="fet" /> Tot correcte: ja el pots provar.
       </p>
     );
   }

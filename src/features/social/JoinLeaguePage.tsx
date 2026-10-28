@@ -4,6 +4,7 @@ import Spinner from '@/components/ui/Spinner';
 import { useAuth } from '@/features/auth/AuthContext';
 import { social } from './api';
 import { ErrorBox, RequireLogin } from './ui';
+import Icon from '@/components/ui/Icon';
 
 /** Enllaç d'invitació (/lligues/unir/CODI): hi uneix l'usuari i el porta a la lliga. */
 export default function JoinLeaguePage() {
@@ -35,7 +36,7 @@ function Join() {
     <div className="space-y-3 text-center">
       <ErrorBox>{error}</ErrorBox>
       <Link to="/lligues" className="text-brand-700 text-sm font-semibold hover:underline">
-        Ves a les lligues →
+        Ves a les lligues <Icon name="fletxa-dreta" />
       </Link>
     </div>
   );

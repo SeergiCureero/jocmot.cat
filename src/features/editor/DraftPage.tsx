@@ -7,6 +7,7 @@ import { drafts } from './drafts';
 import { KITS } from './kits';
 import PreviewPlayer from './PreviewPlayer';
 import { ErrorList, GameLabel } from './ui';
+import Icon from '@/components/ui/Icon';
 
 /** Esborrany local: s'edita, es prova i es proposa al grup. */
 export default function DraftPage() {
@@ -49,7 +50,7 @@ export default function DraftPage() {
   return (
     <div className="mx-auto max-w-2xl py-8">
       <Link to="/editor" className="text-brand-700 text-sm hover:underline">
-        ← Editor
+        <Icon name="fletxa-esquerra" /> Editor
       </Link>
       <div className="mt-2 mb-6 flex items-center justify-between gap-3">
         <h1 className="text-xl font-bold">
@@ -64,7 +65,7 @@ export default function DraftPage() {
       {playing ? (
         <>
           <Button variant="secondary" onClick={() => setPlaying(false)}>
-            ← Torna a l’editor
+            <Icon name="fletxa-esquerra" /> Torna a l’editor
           </Button>
           <PreviewPlayer game={draft.game} puzzle={puzzle} />
         </>
