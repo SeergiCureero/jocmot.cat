@@ -29,6 +29,17 @@ export default function RegisterPage() {
       }}
       footer={
         <>
+          <span className="mb-3 block text-xs text-stone-500">
+            En crear el compte acceptes les{' '}
+            <Link to="/legal#condicions" className="underline hover:text-stone-800">
+              condicions d’ús
+            </Link>{' '}
+            i la{' '}
+            <Link to="/legal#privadesa" className="underline hover:text-stone-800">
+              política de privadesa
+            </Link>
+            .
+          </span>
           Ja tens compte?{' '}
           <Link
             to={`/compte/entrar${query}`}
