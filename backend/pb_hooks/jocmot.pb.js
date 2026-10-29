@@ -373,6 +373,21 @@ routerAdd(
   $apis.requireAuth('users'),
 );
 
+// ── Editor ──
+
+/** Canvia el dia d'un puzle programat (o l'intercanvia amb el que hi hagi). Només editors. */
+routerAdd(
+  'POST',
+  '/api/jocmot/puzles/{id}/dia',
+  (e) => {
+    if (!e.auth.getBool('editor')) throw new ForbiddenError('Només per a editors.');
+    const db = require(`${__hooks}/jocmot_db.js`);
+    db.movePuzzle(e.app, e.request.pathValue('id'), e.requestInfo().body.number);
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
 // ── Administració ──
 
 /** Calcula les puntuacions que faltin a partir del progrés ja desat (p. ex. partides d'abans d'aquesta funció). */

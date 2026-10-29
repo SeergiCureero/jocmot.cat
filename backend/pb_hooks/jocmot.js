@@ -47,6 +47,12 @@ function madridDate(ms) {
   return isoFromUtc(ms + (summer ? 2 : 1) * 3600000);
 }
 
+/** Instant (ms) en què comença el dia "AAAA-MM-DD" a Madrid: les 00:00 són les 22:00 o 23:00 UTC del dia abans. */
+function madridMidnight(iso) {
+  const utc = utcFromIso(iso);
+  return madridDate(utc - 2 * 3600000) === iso ? utc - 2 * 3600000 : utc - 3600000;
+}
+
 const addDays = (iso, n) => isoFromUtc(utcFromIso(iso) + n * DAY_MS);
 const puzzleDate = (number) => addDays(LAUNCH_DATE, number - 1);
 const puzzleNumberForDate = (iso) =>
@@ -137,6 +143,7 @@ module.exports = {
   MAX_STREAK_BONUS,
   RANKS,
   madridDate,
+  madridMidnight,
   addDays,
   puzzleDate,
   puzzleNumberForDate,

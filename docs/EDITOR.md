@@ -8,13 +8,14 @@ A **jocmot.cat/editor** el grup dissenya, prova i revisa puzles de **Connexions*
 2. **Prova'l.** Hi jugues amb el joc de veritat. No es desa res.
 3. **Proposa'l.** Passa a *Pendents de revisió* i la resta del grup el pot veure.
 4. **Revisió.** Els altres editors hi juguen (sense veure la solució, si volen), comenten i l'**aproven**.
-5. **Publicació automàtica.** Amb **2 aprovacions** d'altres editors, el puzle es programa sol al **primer dia lliure a partir de demà** per a aquell joc. El públic no el pot veure fins aquell dia.
+5. **Publicació automàtica.** Amb **1 aprovació** d'un altre editor, el puzle es programa sol al **primer dia lliure a partir de demà** per a aquell joc. El públic no el pot veure fins aquell dia.
+6. **Calendari.** A *Calendari* (o a la pàgina del puzle, *Canvia el dia*) es veu quin puzle surt cada dia i es pot moure qualsevol puzle programat a un altre dia a partir de demà. Si aquell dia ja en té un, s'intercanvien. Els que ja han sortit no es poden moure.
 
 Detalls:
 
 - No pots aprovar els teus puzles.
 - Si l'autor canvia el puzle, les aprovacions anteriors deixen de comptar i s'han de repetir.
-- Mentre està en revisió, l'autor el pot retirar. Un cop programat ja no es pot modificar.
+- Mentre està en revisió, l'autor el pot retirar. Un cop programat ja no se'n pot canviar el contingut, només el dia.
 - Els dies sense cap puzle del grup, la web fa servir els puzles del repositori.
 
 ## Consells per joc

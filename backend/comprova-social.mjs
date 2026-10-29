@@ -280,6 +280,70 @@ await req(`/collections/users/records/${fran.id}`, {
 r = await deleteAccount(fran, 'contrasenya123');
 expect('un editor no es pot esborrar sol', r.status === 400, r);
 
+// ── Calendari de puzles (editors) ──
+const gina = await user('gina');
+for (const u of [gina, cesc])
+  await req(`/collections/users/records/${u.id}`, {
+    method: 'PATCH',
+    token: admin.body.token,
+    body: JSON.stringify({ editor: true }),
+  });
+// Cal tornar a entrar perquè el token reflecteixi el rol d'editor.
+for (const u of [gina, cesc])
+  u.token = (
+    await post('/collections/users/auth-with-password', {
+      identity: `${u.name}@test.local`,
+      password: 'contrasenya123',
+    })
+  ).body.token;
+const releaseAt = (n) => new Date(lib.madridMidnight(lib.puzzleDate(n))).toISOString();
+async function scheduled(number) {
+  const p = await post(
+    '/collections/puzzles/records',
+    { game: 'mini', data: { n: number }, author: gina.id, status: 'proposed' },
+    gina.token,
+  );
+  await req(`/collections/puzzles/records/${p.body.id}`, {
+    method: 'PATCH',
+    token: cesc.token,
+    body: JSON.stringify({ status: 'published', number, releaseAt: releaseAt(number) }),
+  });
+  return p.body.id;
+}
+const getPuzzle = async (id) => (await get(`/collections/puzzles/records/${id}`, gina.token)).body;
+const moveTo = (id, number, token = gina.token) =>
+  post(`/jocmot/puzles/${id}/dia`, { number }, token);
+
+const pa = await scheduled(today + 3);
+const pb = await scheduled(today + 6);
+const pToday = await scheduled(today);
+r = await moveTo(pa, today + 5, anna.token);
+expect('només els editors poden canviar el dia', r.status === 403, r);
+r = await moveTo(pa, today);
+expect('no es pot moure a avui', r.status === 400, r);
+r = await moveTo(pToday, today + 9);
+expect('el puzle d’avui (ja publicat) no es mou', r.status === 400, r);
+r = await moveTo(pa, today + 5);
+let a = await getPuzzle(pa);
+expect(
+  'moure a un dia lliure: número i hora (mitjanit a Madrid)',
+  r.status === 204 &&
+    a.number === today + 5 &&
+    new Date(a.releaseAt.replace(' ', 'T')).toISOString() === releaseAt(today + 5),
+  { r, a },
+);
+r = await moveTo(pa, today + 6);
+a = await getPuzzle(pa);
+const b = await getPuzzle(pb);
+expect(
+  'moure a un dia ocupat els intercanvia',
+  r.status === 204 &&
+    a.number === today + 6 &&
+    b.number === today + 5 &&
+    new Date(b.releaseAt.replace(' ', 'T')).toISOString() === releaseAt(today + 5),
+  { r, a, b },
+);
+
 // ── Recalcular (administració) ──
 r = await post('/jocmot/admin/recalcula', {}, anna.token);
 expect('recalcular és només per a superusuaris', r.status === 401 || r.status === 403, r);

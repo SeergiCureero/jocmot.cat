@@ -79,7 +79,7 @@ src/
 
 ## Editor de puzles
 
-A `/editor`, els editors del grup dissenyen, proven i revisen puzles de Connexions, Fils i Mini. Amb 2 aprovacions, cada puzle es programa sol al primer dia lliure. Cal el backend (PocketBase). Veure [docs/EDITOR.md](docs/EDITOR.md).
+A `/editor`, els editors del grup dissenyen, proven i revisen puzles de Connexions, Fils i Mini. Amb 1 aprovació, cada puzle es programa sol al primer dia lliure, i des del calendari es pot canviar de dia. Cal el backend (PocketBase). Veure [docs/EDITOR.md](docs/EDITOR.md).
 
 ## Documentació
 
