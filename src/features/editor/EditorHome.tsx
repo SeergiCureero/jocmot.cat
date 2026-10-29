@@ -6,7 +6,7 @@ import { DESIGNABLE_GAMES } from '@/games/registry';
 import { backend, type PuzzleRecord } from '@/services/backend';
 import { drafts } from './drafts';
 import { KITS } from './kits';
-import { APPROVALS_NEEDED } from './schedule';
+import { publishIfReady, validApprovals, APPROVALS_NEEDED } from './schedule';
 import { GameLabel, gameMeta, ROW, Section, statusText } from './ui';
 
 export default function EditorHome() {
@@ -17,7 +17,15 @@ export default function EditorHome() {
   const myDrafts = drafts.list();
 
   useEffect(() => {
-    backend.listPuzzles().then(setPuzzles, (e: Error) => setError(e.message));
+    (async () => {
+      const list = await backend.listPuzzles();
+      // Propostes que ja tenen prou aprovacions però no s'han programat (p. ex. si n'han calgut menys).
+      const ready = list.filter(
+        (p) => p.status === 'proposed' && validApprovals(p).length >= APPROVALS_NEEDED,
+      );
+      for (const p of ready) await publishIfReady(p.id);
+      setPuzzles(ready.length ? await backend.listPuzzles() : list);
+    })().catch((e: Error) => setError(e.message));
   }, []);
 
   const startDraft = (game: (typeof DESIGNABLE_GAMES)[number]) =>
@@ -37,9 +45,21 @@ export default function EditorHome() {
     <div className="mx-auto max-w-2xl py-8">
       <h1 className="text-2xl font-bold">Editor de puzles</h1>
       <p className="mt-1 mb-6 text-sm text-stone-600">
-        Dissenya, prova i revisa puzles amb el grup. Amb {APPROVALS_NEEDED} aprovacions d’altres
-        editors, el puzle es programa sol al següent dia lliure.
+        Dissenya, prova i revisa puzles amb el grup. Quan un altre editor l’aprova, el puzle es
+        programa sol al següent dia lliure, i des del calendari el pots canviar de dia.
       </p>
+      <Link
+        to="/editor/calendari"
+        className="mb-8 flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg"
+      >
+        <span>
+          <span className="block font-bold">📅 Calendari</span>
+          <span className="block text-sm text-stone-600">
+            Quin puzle surt cada dia. Canvia’ls de dia.
+          </span>
+        </span>
+        <span className="text-brand-700 font-semibold">→</span>
+      </Link>
 
       <section className="mb-8">
         <h2 className="mb-3 text-lg font-semibold">Nou puzle</h2>

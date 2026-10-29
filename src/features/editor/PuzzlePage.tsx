@@ -7,6 +7,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { cn } from '@/lib/cn';
 import { backend, type PuzzleRecord } from '@/services/backend';
 import { KITS } from './kits';
+import MoveDay from './MoveDay';
 import PreviewPlayer from './PreviewPlayer';
 import { APPROVALS_NEEDED, publishIfReady, validApprovals } from './schedule';
 import { ErrorList, GameLabel, statusText } from './ui';
@@ -109,6 +110,7 @@ function PuzzleView({
             Retira-la
           </Button>
         )}
+        <MoveDay puzzle={record} onMoved={() => backend.getPuzzle(record.id).then(onChange)} />
       </div>
       <p className="mb-6 text-sm text-stone-600">
         De {mine ? 'tu' : record.author.username} · {statusText(record)}
@@ -168,7 +170,8 @@ function PuzzleView({
             <h2 className="mb-3 text-lg font-semibold">
               Revisions{' '}
               <span className="text-sm font-normal text-stone-500">
-                ({validApprovals(record).length}/{APPROVALS_NEEDED} aprovacions)
+                ({validApprovals(record).length}/{APPROVALS_NEEDED}{' '}
+                {APPROVALS_NEEDED === 1 ? 'aprovació' : 'aprovacions'})
               </span>
             </h2>
             <ul className="mb-6 space-y-2">

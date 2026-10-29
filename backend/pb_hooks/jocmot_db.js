@@ -261,6 +261,45 @@ function deleteAccount(app, user, password) {
   });
 }
 
+/**
+ * Canvia el dia d'un puzle programat (`number` = número del dia nou). Només dies a partir de demà,
+ * i només puzles que encara no han sortit. Si el dia ja té un puzle del mateix joc, s'intercanvien.
+ */
+function movePuzzle(app, id, number) {
+  const todayNumber = lib.puzzleNumberForDate(today());
+  if (!Number.isInteger(number) || number <= todayNumber)
+    throw new BadRequestError('Tria un dia a partir de demà.');
+  const releaseAt = (n) =>
+    new Date(lib.madridMidnight(lib.puzzleDate(n))).toISOString().replace('T', ' ');
+
+  app.runInTransaction((tx) => {
+    const puzzle = tx.findRecordById('puzzles', id);
+    const from = puzzle.getInt('number');
+    if (puzzle.getString('status') !== 'published' || from <= todayNumber)
+      throw new BadRequestError(
+        'Només es poden moure els puzles programats que encara no han sortit.',
+      );
+    if (from === number) return;
+    const other = findFirst(tx, 'puzzles', 'game = {:g} && number = {:n}', {
+      g: puzzle.getString('game'),
+      n: number,
+    });
+    // L'índex únic (joc, número) no deixa tenir-ne dos al mateix dia: un passa pel 0 mentre s'intercanvien.
+    if (other) {
+      other.set('number', 0);
+      tx.save(other);
+    }
+    puzzle.set('number', number);
+    puzzle.set('releaseAt', releaseAt(number));
+    tx.save(puzzle);
+    if (other) {
+      other.set('number', from);
+      other.set('releaseAt', releaseAt(from));
+      tx.save(other);
+    }
+  });
+}
+
 /** Mesos (AAAA-MM) des que existeix la lliga fins ara, del més recent al més antic. */
 function leagueMonths(league) {
   const first = lib.madridDate(toMs(league.getString('created')));
@@ -298,5 +337,6 @@ module.exports = {
   membershipsOf,
   leaveLeague,
   deleteAccount,
+  movePuzzle,
   leagueMonths,
 };

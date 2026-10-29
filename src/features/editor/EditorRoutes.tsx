@@ -1,5 +1,6 @@
 import { Link, Navigate, Route, Routes } from 'react-router';
 import { useAuth } from '@/features/auth/AuthContext';
+import CalendarPage from './CalendarPage';
 import DraftPage from './DraftPage';
 import EditorHome from './EditorHome';
 import PuzzlePage from './PuzzlePage';
@@ -27,6 +28,7 @@ export default function EditorRoutes() {
       <Route index element={<EditorHome />} />
       <Route path="esborrany/:id" element={<DraftPage />} />
       <Route path="puzle/:id" element={<PuzzlePage />} />
+      <Route path="calendari" element={<CalendarPage />} />
       <Route path="*" element={<Navigate to="/editor" replace />} />
     </Routes>
   );

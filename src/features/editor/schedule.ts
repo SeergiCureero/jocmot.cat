@@ -4,7 +4,7 @@ import { startOfDayInTimeZone } from '@/lib/date';
 import { backend, BackendError, type PuzzleRecord } from '@/services/backend';
 
 /** Aprovacions d'altres editors necessàries per publicar un puzle. */
-export const APPROVALS_NEEDED = 2;
+export const APPROVALS_NEEDED = 1;
 
 /**
  * Aprovacions vàlides: d'altres editors i posteriors a l'última modificació del puzle.
@@ -30,7 +30,10 @@ export function firstFreeNumber(taken: number[], today: number): number {
 export const releaseAtFor = (number: number) =>
   startOfDayInTimeZone(getPuzzleDate(number), SITE.timeZone).toISOString();
 
-/** Si el puzle ja té prou aprovacions, l'assigna al primer dia lliure. Retorna el puzle actualitzat. */
+/**
+ * Si el puzle ja té prou aprovacions, l'assigna al primer dia lliure (després es pot canviar des
+ * del calendari). Retorna el puzle actualitzat.
+ */
 export async function publishIfReady(id: string): Promise<PuzzleRecord> {
   const puzzle = await backend.getPuzzle(id);
   if (puzzle.status !== 'proposed' || validApprovals(puzzle).length < APPROVALS_NEEDED)

@@ -20,6 +20,23 @@ describe('madridDate', () => {
   });
 });
 
+describe('madridMidnight', () => {
+  it('coincideix amb el frontend (startOfDayInTimeZone), també els dies de canvi d’hora', async () => {
+    const { startOfDayInTimeZone } = await import('../../src/lib/date');
+    for (const iso of [
+      '2026-10-25',
+      '2026-10-26',
+      '2026-12-31',
+      '2027-03-28',
+      '2027-03-29',
+      '2027-07-01',
+    ])
+      expect(new Date(lib.madridMidnight(iso)).toISOString()).toBe(
+        startOfDayInTimeZone(iso, 'Europe/Madrid').toISOString(),
+      );
+  });
+});
+
 describe('basePoints', () => {
   it('Paraula: menys intents, més punts', () => {
     expect(lib.basePoints('paraula', 'won', { guesses: ['a'] })).toBe(15);
