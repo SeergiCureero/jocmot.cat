@@ -48,6 +48,10 @@ export default function AboutPage() {
           entre nosaltres abans de publicar-los.
         </p>
         <p>
+          També en pots crear tu: amb un compte, entra a <Link to="/editor">✏️ Crea</Link>, dissenya
+          el teu puzle i proposa’l. Si ens agrada, el publicarem perquè hi jugui tothom.
+        </p>
+        <p>
           Els jocs s’inspiren en clàssics com el Wordle, el Connections, el Strands o el Mini
           Crossword, però tots els puzles són originals i pensats per al català.
         </p>
@@ -66,9 +70,24 @@ export default function AboutPage() {
         <h2>Gratuït i sense galetes de seguiment</h2>
         <p>
           Jugar és gratuït i no cal registrar-se. No fem servir galetes de publicitat ni
-          d’analítica, i les dades mínimes que guardem s’expliquen a la{' '}
+          d’analítica: per saber quanta gent hi juga, només comptem visites de manera agregada i
+          anònima. Les dades mínimes que guardem s’expliquen a la{' '}
           <Link to="/legal#privadesa">política de privadesa</Link>.
         </p>
+
+        {SITE.donateUrl && (
+          <>
+            <h2>Ajuda’ns a mantenir-lo</h2>
+            <p>
+              jocmot.cat és gratuït i sense publicitat, però el servidor i el domini costen diners.
+              Si t’agrada, ens pots{' '}
+              <a href={SITE.donateUrl} target="_blank" rel="noopener noreferrer">
+                convidar a un cafè ☕
+              </a>
+              . Qualsevol quantitat ens ajuda a continuar fent puzles cada dia.
+            </p>
+          </>
+        )}
 
         <h2>Parla amb nosaltres</h2>
         <p>

@@ -257,6 +257,16 @@ function deleteAccount(app, user, password) {
       l.set('owner', '');
       tx.save(l);
     }
+    // Editor obert: les propostes i els comentaris s'esborren; els puzles publicats es queden sense autor.
+    for (const r of tx.findRecordsByFilter('reviews', 'author = {:u}', '', 0, 0, { u: user.id }))
+      tx.delete(r);
+    for (const p of tx.findRecordsByFilter('puzzles', 'author = {:u}', '', 0, 0, { u: user.id })) {
+      if (p.getString('status') === 'proposed') tx.delete(p);
+      else {
+        p.set('author', '');
+        tx.saveNoValidate(p);
+      }
+    }
     tx.delete(tx.findRecordById('users', user.id));
   });
 }
@@ -300,6 +310,49 @@ function movePuzzle(app, id, number) {
   });
 }
 
+/** Nom (`title`) i dia preferit (`wantedNumber`, null per treure'l) d'un puzle. */
+function updatePuzzleInfo(app, user, id, body) {
+  const puzzle = app.findRecordById('puzzles', id);
+  const own = puzzle.getString('author') === user.id && puzzle.getString('status') === 'proposed';
+  if (!user.getBool('editor') && !own)
+    throw new ForbiddenError('Només en pots canviar el nom mentre és una proposta teva.');
+  if (body.title !== undefined) {
+    const title = String(body.title || '').trim();
+    if (title.length > 80) throw new BadRequestError('El nom pot tenir com a màxim 80 caràcters.');
+    puzzle.set('title', title);
+  }
+  if (body.wantedNumber !== undefined) {
+    if (puzzle.getString('status') !== 'proposed')
+      throw new BadRequestError(
+        'Aquest puzle ja està programat: canvia’l de dia des del calendari.',
+      );
+    const n = body.wantedNumber;
+    if (n !== null && (!Number.isInteger(n) || n <= lib.puzzleNumberForDate(today())))
+      throw new BadRequestError('Tria un dia a partir de demà.');
+    puzzle.set('wantedNumber', n || 0);
+  }
+  app.save(puzzle);
+}
+
+/** Propostes pendents com a màxim per persona (els editors no en tenen límit). */
+const MAX_PENDING_PROPOSALS = 5;
+
+function checkProposalLimit(app, user) {
+  if (user.getBool('editor')) return;
+  const pending = app.findRecordsByFilter(
+    'puzzles',
+    "author = {:u} && status = 'proposed'",
+    '',
+    MAX_PENDING_PROPOSALS,
+    0,
+    { u: user.id },
+  ).length;
+  if (pending >= MAX_PENDING_PROPOSALS)
+    throw new BadRequestError(
+      `Ja tens ${MAX_PENDING_PROPOSALS} propostes pendents de revisar. Espera que te’n revisin alguna.`,
+    );
+}
+
 /** Mesos (AAAA-MM) des que existeix la lliga fins ara, del més recent al més antic. */
 function leagueMonths(league) {
   const first = lib.madridDate(toMs(league.getString('created')));
@@ -338,5 +391,7 @@ module.exports = {
   leaveLeague,
   deleteAccount,
   movePuzzle,
+  checkProposalLimit,
+  updatePuzzleInfo,
   leagueMonths,
 };

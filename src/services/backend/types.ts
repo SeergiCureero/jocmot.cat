@@ -38,9 +38,20 @@ export interface PuzzleRecord {
   /** ISO 8601. Moment a partir del qual el públic el pot jugar. */
   releaseAt: string | null;
   created: string;
-  /** Última modificació. Les aprovacions anteriors a aquest moment no compten. */
   updated: string;
+  /** Última modificació del contingut. Les aprovacions anteriors a aquest moment no compten. */
+  contentUpdated: string;
+  /** Nom per identificar-lo a l'editor (pot ser buit). */
+  title: string;
+  /** Dia (número) en què l'autor voldria que sortís; null si li és igual. */
+  wantedNumber: number | null;
   reviews: ReviewRecord[];
+}
+
+/** Dades d'un puzle que no en canvien el contingut (no obliguen a tornar-lo a aprovar). */
+export interface PuzzleInfo {
+  title: string;
+  wantedNumber: number | null;
 }
 
 export type GameStatus = 'playing' | 'won' | 'lost';
@@ -86,8 +97,10 @@ export interface Backend {
   // Només per a editors:
   listPuzzles(): Promise<PuzzleRecord[]>;
   getPuzzle(id: string): Promise<PuzzleRecord>;
-  proposePuzzle(game: DesignableGameId, data: unknown): Promise<PuzzleRecord>;
+  proposePuzzle(game: DesignableGameId, data: unknown, info: PuzzleInfo): Promise<PuzzleRecord>;
   updatePuzzle(id: string, data: unknown): Promise<void>;
+  /** Nom (de qualsevol puzle) o dia preferit (només de les propostes). */
+  updatePuzzleInfo(id: string, info: Partial<PuzzleInfo>): Promise<void>;
   deletePuzzle(id: string): Promise<void>;
   /** Falla amb status 400 si el número ja és ocupat. */
   publishPuzzle(id: string, number: number, releaseAt: string): Promise<void>;

@@ -1,0 +1,11 @@
+Diccionari de jocmot.cat
+========================
+
+Les llistes de paraules d'aquest directori (v1/) deriven del diccionari obert de
+Softcatalà (catalan-dict-tools), https://github.com/Softcatala/catalan-dict-tools,
+que es distribueix amb llicència dual GPL-2.0 o posterior / LGPL-2.1 o posterior.
+Les distribuïm amb la mateixa llicència (vegeu gpl-2.0.txt i lgpl-2.1.txt).
+
+Modificacions: només s'hi han deixat les formes de lemes que tenen el DIEC o el
+diccionari de LanguageTool com a font, s'han normalitzat (majúscules, sense
+accents) i s'han dividit per inicial. Es generen amb scripts/build-dictionary.py.

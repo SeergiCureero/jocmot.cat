@@ -8,7 +8,9 @@ import { cn } from '@/lib/cn';
 import { backend, type PuzzleRecord } from '@/services/backend';
 import { KITS } from './kits';
 import MoveDay from './MoveDay';
+import DictionaryPanel from './DictionaryPanel';
 import PreviewPlayer from './PreviewPlayer';
+import { PuzzleName, RenameButton, WantedDayInput, wantedText } from './PuzzleInfo';
 import { APPROVALS_NEEDED, publishIfReady, validApprovals } from './schedule';
 import { ErrorList, GameLabel, statusText } from './ui';
 import { INPUT } from './kits/types';
@@ -46,6 +48,7 @@ function PuzzleView({
   const toast = useToast();
   const kit = KITS[record.game];
   const mine = record.author.id === user!.id;
+  const isEditor = Boolean(user!.editor);
   const editable = mine && record.status === 'proposed';
   const myReview = record.reviews.find((r) => r.author.id === user!.id);
   // Una aprovació anterior a l'últim canvi ja no compta: cal tornar a aprovar.
@@ -81,7 +84,9 @@ function PuzzleView({
   const review = (approved: boolean) =>
     run(async () => {
       await backend.saveReview(record.id, { approved, comment: comment.trim() });
-      const updated = await publishIfReady(record.id);
+      const updated = isEditor
+        ? await publishIfReady(record.id)
+        : await backend.getPuzzle(record.id);
       if (updated.status === 'published')
         toast(`Aprovat i programat! ${statusText(updated)}`, 4000);
       else toast(approved ? 'Aprovat' : 'Desat');
@@ -102,19 +107,51 @@ function PuzzleView({
         ← Editor
       </Link>
       <div className="mt-2 mb-1 flex items-center justify-between gap-3">
-        <h1 className="text-xl font-bold">
-          <GameLabel game={record.game} />
+        <h1 className="flex min-w-0 items-center gap-1 text-xl">
+          <span className="truncate">
+            <PuzzleName puzzle={record} />
+          </span>
+          <RenameButton puzzle={record} onSaved={(title) => onChange({ ...record, title })} />
         </h1>
-        {editable && (
-          <Button variant="ghost" onClick={remove} disabled={busy}>
-            Retira-la
-          </Button>
-        )}
-        <MoveDay puzzle={record} onMoved={() => backend.getPuzzle(record.id).then(onChange)} />
+        <div className="flex shrink-0 items-center gap-2">
+          {editable && (
+            <Button variant="ghost" onClick={remove} disabled={busy}>
+              Retira-la
+            </Button>
+          )}
+          {isEditor && (
+            <MoveDay puzzle={record} onMoved={() => backend.getPuzzle(record.id).then(onChange)} />
+          )}
+        </div>
       </div>
-      <p className="mb-6 text-sm text-stone-600">
-        De {mine ? 'tu' : record.author.username} · {statusText(record)}
+      <p className="mb-4 text-sm text-stone-600">
+        <GameLabel game={record.game} /> · De {mine ? 'tu' : record.author.username} ·{' '}
+        {statusText(record)}
+        {record.status === 'proposed' && record.wantedNumber && !mine && (
+          <> · {wantedText(record.wantedNumber)}</>
+        )}
       </p>
+      {record.status === 'proposed' && mine && !isEditor && (
+        <p className="bg-brand-50 text-brand-900 mb-4 rounded-xl px-3 py-2 text-sm">
+          L’equip de jocmot hi jugarà i, si li agrada, l’aprovarà i sortirà publicat. Si hi veu
+          alguna cosa a canviar, t’ho dirà aquí sota, als comentaris.
+        </p>
+      )}
+      {record.status === 'proposed' && mine && (
+        <div className="mb-6 rounded-xl border border-stone-200 bg-white p-3">
+          <WantedDayInput
+            game={record.game}
+            value={record.wantedNumber}
+            onChange={(wantedNumber) =>
+              run(async () => {
+                await backend.updatePuzzleInfo(record.id, { wantedNumber });
+                onChange({ ...record, wantedNumber });
+                toast(wantedNumber ? 'Dia preferit desat' : 'Dia preferit tret');
+              })
+            }
+          />
+        </div>
+      )}
 
       {playing ? (
         <>
@@ -163,6 +200,7 @@ function PuzzleView({
                   </Button>
                 </div>
               )}
+              <DictionaryPanel words={kit.words(draft)} />
             </div>
           )}
 
@@ -226,12 +264,12 @@ function PuzzleView({
                   />
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {!mine && !approvedByMe && (
+                  {isEditor && !mine && !approvedByMe && (
                     <Button disabled={busy} onClick={() => review(true)}>
                       Aprova’l
                     </Button>
                   )}
-                  {!mine && approvedByMe && (
+                  {isEditor && !mine && approvedByMe && (
                     <Button variant="secondary" disabled={busy} onClick={() => review(false)}>
                       Retira l’aprovació
                     </Button>

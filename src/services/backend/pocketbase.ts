@@ -48,6 +48,9 @@ interface PbPuzzleRecord {
   releaseAt: string;
   created: string;
   updated: string;
+  contentUpdated: string;
+  title: string;
+  wantedNumber: number;
   expand?: { author?: PbUserRecord; reviews_via_puzzle?: PbReviewRecord[] };
 }
 
@@ -107,7 +110,7 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
 
   const toPerson = (id: string, r?: PbUserRecord): PersonRef => ({
     id,
-    username: r?.name || r?.username || '?',
+    username: r?.name || r?.username || (id ? '?' : 'compte esborrat'),
   });
 
   const toReview = (r: PbReviewRecord): ReviewRecord => ({
@@ -130,6 +133,9 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
     releaseAt: r.releaseAt ? toIso(r.releaseAt) : null,
     created: toIso(r.created),
     updated: toIso(r.updated),
+    contentUpdated: toIso(r.contentUpdated || r.created),
+    title: r.title ?? '',
+    wantedNumber: r.wantedNumber || null,
     reviews: (r.expand?.reviews_via_puzzle ?? []).map(toReview),
   });
 
@@ -261,13 +267,20 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
       );
     },
 
-    async proposePuzzle(game, data) {
+    async proposePuzzle(game, data, { title, wantedNumber }) {
       const user = requireUser();
       const created = await request<PbPuzzleRecord>(
         `/collections/puzzles/records?${PUZZLE_EXPAND}`,
         {
           method: 'POST',
-          body: JSON.stringify({ game, data, author: user.id, status: 'proposed' }),
+          body: JSON.stringify({
+            game,
+            data,
+            author: user.id,
+            status: 'proposed',
+            title,
+            wantedNumber: wantedNumber ?? 0,
+          }),
         },
       );
       return toPuzzle(created);
@@ -278,6 +291,10 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
         method: 'PATCH',
         body: JSON.stringify({ data }),
       });
+    },
+
+    async updatePuzzleInfo(id, info) {
+      await api.call(`/puzles/${id}/info`, { method: 'POST', body: info });
     },
 
     async deletePuzzle(id) {

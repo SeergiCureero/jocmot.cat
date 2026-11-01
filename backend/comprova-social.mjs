@@ -344,9 +344,138 @@ expect(
   { r, a, b },
 );
 
+// ── Nom i dia preferit dels puzles ──
+const prop = (
+  await post(
+    '/collections/puzzles/records',
+    {
+      game: 'fils',
+      data: { v: 1 },
+      author: gina.id,
+      status: 'proposed',
+      title: 'Rius',
+      wantedNumber: today + 4,
+    },
+    gina.token,
+  )
+).body;
+expect(
+  'proposar amb nom i dia preferit',
+  prop.title === 'Rius' && prop.wantedNumber === today + 4 && prop.contentUpdated !== '',
+  prop,
+);
+const info = (id, body, token = cesc.token) => post(`/jocmot/puzles/${id}/info`, body, token);
+r = await info(prop.id, { title: '  Rius i muntanyes ' });
+let q = await getPuzzle(prop.id);
+expect(
+  'un altre editor hi posa nom, sense tocar contentUpdated',
+  r.status === 204 && q.title === 'Rius i muntanyes' && q.contentUpdated === prop.contentUpdated,
+  { r, q },
+);
+r = await info(prop.id, { title: 'x' }, anna.token);
+expect('qui no és editor no pot posar nom al puzle d’un altre', r.status === 403, r);
+// Editor obert: qui no és editor també proposa (amb un límit de propostes pendents).
+const proposeAs = (u, n) =>
+  post(
+    '/collections/puzzles/records',
+    { game: 'mini', data: { n }, author: u.id, status: 'proposed' },
+    u.token,
+  );
+const own = [];
+for (let n = 0; n < 5; n++) own.push((await proposeAs(anna, n)).body.id);
+expect('qui no és editor pot proposar puzles', own.every(Boolean), own);
+r = await proposeAs(anna, 99);
+expect('com a màxim 5 propostes pendents', r.status === 400, r);
+r = await info(own[0], { title: 'La meva' }, anna.token);
+expect('l’autor posa nom a la seva proposta', r.status === 204, r);
+r = await info(prop.id, { wantedNumber: today });
+expect('el dia preferit ha de ser a partir de demà', r.status === 400, r);
+r = await info(prop.id, { wantedNumber: null });
+q = await getPuzzle(prop.id);
+expect('treure el dia preferit', r.status === 204 && q.wantedNumber === 0, q);
+await req(`/collections/puzzles/records/${prop.id}`, {
+  method: 'PATCH',
+  token: gina.token,
+  body: JSON.stringify({ data: { v: 2 } }),
+});
+q = await getPuzzle(prop.id);
+expect(
+  'canviar el contingut sí que actualitza contentUpdated',
+  q.contentUpdated > prop.contentUpdated,
+  q,
+);
+r = await info(pa, { title: 'Programat' });
+expect('es pot posar nom a un puzle programat', r.status === 204, r);
+r = await info(pa, { wantedNumber: today + 9 });
+expect('però no dia preferit (es mou des del calendari)', r.status === 400, r);
+// ── Avís diari ──
+r = await get('/jocmot/avisos/clau');
+expect(
+  'la clau dels avisos és pública (null si el servidor no en té)',
+  r.status === 200 && (r.body.publicKey === null || /^B[A-Za-z0-9_-]{86}$/.test(r.body.publicKey)),
+  r,
+);
+const endpoint = 'https://updates.push.services.mozilla.com/wpush/v2/prova-' + Date.now();
+const subscription = { endpoint, keys: { p256dh: 'x', auth: 'y' }, hour: 9 };
+r = await post('/jocmot/avisos', subscription);
+expect('activar l’avís demana sessió', r.status === 401, r);
+r = await post(
+  '/jocmot/avisos',
+  { ...subscription, endpoint: 'https://127.0.0.1:8090/api/' },
+  anna.token,
+);
+expect('només s’accepten serveis de push dels navegadors', r.status === 400, r);
+r = await post('/jocmot/avisos', { ...subscription, hour: 24 }, anna.token);
+expect('l’hora ha de ser de 0 a 23', r.status === 400, r);
+r = await post('/jocmot/avisos', subscription, anna.token);
+expect('activar l’avís', r.status === 204, r);
+r = await post('/jocmot/avisos', { ...subscription, hour: 20 }, anna.token);
+expect('canviar-ne l’hora', r.status === 204, r);
+const su = await post('/collections/_superusers/auth-with-password', {
+  identity: 'admin@test.local',
+  password: 'adminadmin123',
+});
+const subsOf = async (u) =>
+  (await get(`/collections/push_subscriptions/records?filter=(user='${u.id}')`, su.body.token)).body
+    .items ?? [];
+let subs = await subsOf(anna);
+expect('una sola subscripció per navegador', subs.length === 1 && subs[0].hour === 20, subs);
+r = await get('/collections/push_subscriptions/records', anna.token);
+expect(
+  'els usuaris no poden llegir les subscripcions',
+  r.status === 403 || (r.body.items ?? []).length === 0,
+  r,
+);
+r = await post('/jocmot/avisos/treu', { endpoint }, biel.token);
+expect('no pots treure l’avís d’un altre', (await subsOf(anna)).length === 1, r);
+r = await post('/jocmot/avisos/treu', { endpoint }, anna.token);
+expect('desactivar l’avís', r.status === 204 && (await subsOf(anna)).length === 0, r);
+
 // ── Recalcular (administració) ──
 r = await post('/jocmot/admin/recalcula', {}, anna.token);
 expect('recalcular és només per a superusuaris', r.status === 401 || r.status === 403, r);
+
+// ── Esborrar el compte d'algú que ha proposat puzles ──
+r = await req(`/collections/puzzles/records/${own[1]}`, {
+  method: 'PATCH',
+  token: gina.token,
+  body: JSON.stringify({
+    status: 'published',
+    number: today + 30,
+    releaseAt: new Date(Date.now() + 30 * 86400000).toISOString().replace('T', ' '),
+  }),
+});
+expect('un editor publica la proposta d’una altra persona', r.status === 200, r);
+r = await req('/jocmot/compte', {
+  method: 'DELETE',
+  token: anna.token,
+  body: JSON.stringify({ password: 'contrasenya123' }),
+});
+expect('pot esborrar el compte encara que tingui puzles', r.status === 204, r);
+const after = (await get(`/collections/puzzles/records/${own[1]}`, gina.token)).body;
+expect('… el publicat es queda, sense autor', after.id === own[1] && after.author === '', after);
+r = await get(`/collections/puzzles/records/${own[0]}`, gina.token);
+expect('… les propostes s’esborren', r.status === 404, r);
 
 console.log(fails ? `\n${fails} comprovacions han fallat` : '\nTot correcte');
 process.exit(fails ? 1 : 0);

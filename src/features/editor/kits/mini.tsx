@@ -203,5 +203,9 @@ export const miniKit: EditorKit<MiniDraft> = {
     const puzzle = toPuzzle(draft);
     return result(puzzle, validatePuzzle(puzzle));
   },
+  words: (draft) =>
+    buildEntries({ grid: draft.grid, clues: { across: {}, down: {} } })
+      .entries.map((e) => e.answer)
+      .filter((w) => !w.includes(EMPTY)),
   Form,
 };

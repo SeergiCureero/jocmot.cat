@@ -4,7 +4,7 @@ import type { Cell, FilsPuzzle, FilsWord } from './types';
 export const ROWS = 8;
 export const COLS = 6;
 export const MIN_WORD = 4;
-/** Intents no temàtics necessaris per desbloquejar una pista. */
+/** Paraules del diccionari no temàtiques necessàries per desbloquejar una pista. */
 export const HINT_COST = 3;
 
 export type LogEntry = 'theme' | 'spangram' | 'hint';
@@ -15,6 +15,8 @@ export interface FilsState {
   log: LogEntry[];
   hintProgress: number;
   hintWord: string | null;
+  /** Paraules del diccionari no temàtiques ja comptades per a la pista (falta als estats desats abans que existissin). */
+  bonus?: string[];
   status: GameStatus;
 }
 
@@ -23,6 +25,7 @@ export const initialState = (): FilsState => ({
   log: [],
   hintProgress: 0,
   hintWord: null,
+  bonus: [],
   status: 'playing',
 });
 export const getStatus = (s: FilsState): GameStatus => s.status;
@@ -37,20 +40,45 @@ export function wordFromPath(puzzle: FilsPuzzle, path: Cell[]): string {
   return path.map(([r, c]) => puzzle.grid[r][c]).join('');
 }
 
-const samePath = (a: Cell[], b: Cell[]) => a.length === b.length && a.every((cell, i) => sameCell(cell, b[i]));
+const samePath = (a: Cell[], b: Cell[]) =>
+  a.length === b.length && a.every((cell, i) => sameCell(cell, b[i]));
 
-export type Feedback = 'theme' | 'spangram' | 'already-found' | 'too-short' | 'not-theme';
+export type Feedback =
+  | 'theme'
+  | 'spangram'
+  | 'already-found'
+  | 'too-short'
+  /** Paraula del diccionari que no és del tema: suma cap a la pista. */
+  | 'bonus'
+  | 'bonus-repeated'
+  | 'not-a-word';
 
+/**
+ * Aplica un recorregut. `inDictionary` diu si la paraula formada és al diccionari
+ * (null si no se sap, p. ex. sense connexió: llavors es compta com a vàlida).
+ */
 export function submitPath(
   state: FilsState,
   puzzle: FilsPuzzle,
   path: Cell[],
+  inDictionary: boolean | null = null,
 ): { state: FilsState; feedback: Feedback } {
   if (path.length < MIN_WORD) return { state, feedback: 'too-short' };
 
   const match = allWords(puzzle).find((w) => samePath(w.path, path));
   if (!match) {
-    return { state: { ...state, hintProgress: Math.min(HINT_COST, state.hintProgress + 1) }, feedback: 'not-theme' };
+    if (inDictionary === false) return { state, feedback: 'not-a-word' };
+    const word = wordFromPath(puzzle, path);
+    const bonus = state.bonus ?? [];
+    if (bonus.includes(word)) return { state, feedback: 'bonus-repeated' };
+    return {
+      feedback: 'bonus',
+      state: {
+        ...state,
+        bonus: [...bonus, word],
+        hintProgress: Math.min(HINT_COST, state.hintProgress + 1),
+      },
+    };
   }
   if (state.found.includes(match.word)) return { state, feedback: 'already-found' };
 
@@ -68,7 +96,8 @@ export function submitPath(
   };
 }
 
-export const canUseHint = (s: FilsState) => s.status === 'playing' && s.hintProgress >= HINT_COST && !s.hintWord;
+export const canUseHint = (s: FilsState) =>
+  s.status === 'playing' && s.hintProgress >= HINT_COST && !s.hintWord;
 
 /** Marca la següent paraula temàtica pendent (mai l'spangram). */
 export function applyHint(state: FilsState, puzzle: FilsPuzzle): FilsState {
@@ -80,7 +109,12 @@ export function applyHint(state: FilsState, puzzle: FilsPuzzle): FilsState {
 
 const EMOJI: Record<LogEntry, string> = { theme: '🔵', spangram: '🟡', hint: '💡' };
 
-export function buildShareText(puzzleNumber: number, state: FilsState, puzzle: FilsPuzzle, url: string) {
+export function buildShareText(
+  puzzleNumber: number,
+  state: FilsState,
+  puzzle: FilsPuzzle,
+  url: string,
+) {
   const emojis = state.log.map((e) => EMOJI[e]);
   const rows: string[] = [];
   for (let i = 0; i < emojis.length; i += 4) rows.push(emojis.slice(i, i + 4).join(''));
@@ -90,18 +124,22 @@ export function buildShareText(puzzleNumber: number, state: FilsState, puzzle: F
 /** Valida que un puzle és coherent (s'usa als tests). Retorna la llista d'errors. */
 export function validatePuzzle(p: FilsPuzzle): string[] {
   const errors: string[] = [];
-  if (p.grid.length !== ROWS || p.grid.some((r) => r.length !== COLS)) errors.push('mida de graella incorrecta');
+  if (p.grid.length !== ROWS || p.grid.some((r) => r.length !== COLS))
+    errors.push('mida de graella incorrecta');
   const used = new Set<string>();
   for (const w of allWords(p)) {
+    if (w.word.length < MIN_WORD) errors.push(`${w.word}: massa curta (mínim ${MIN_WORD} lletres)`);
     if (wordFromPath(p, w.path) !== w.word) errors.push(`${w.word}: les lletres no coincideixen`);
     w.path.forEach((cell, i) => {
       const k = cell.join(',');
       if (used.has(k)) errors.push(`${w.word}: cel·la ${k} repetida`);
       used.add(k);
-      if (i > 0 && !isAdjacent(w.path[i - 1], cell)) errors.push(`${w.word}: salt no adjacent a ${k}`);
+      if (i > 0 && !isAdjacent(w.path[i - 1], cell))
+        errors.push(`${w.word}: salt no adjacent a ${k}`);
     });
   }
-  if (used.size !== ROWS * COLS) errors.push(`no cobreix tota la graella (${used.size}/${ROWS * COLS})`);
+  if (used.size !== ROWS * COLS)
+    errors.push(`no cobreix tota la graella (${used.size}/${ROWS * COLS})`);
   const rows = new Set(p.spangram.path.map((c) => c[0]));
   const cols = new Set(p.spangram.path.map((c) => c[1]));
   const spans = (rows.has(0) && rows.has(ROWS - 1)) || (cols.has(0) && cols.has(COLS - 1));

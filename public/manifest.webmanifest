@@ -1,0 +1,16 @@
+{
+  "name": "jocmot.cat",
+  "short_name": "jocmot",
+  "description": "Jocs de paraules diaris en català: Paraula, Connexions, Fils i Mini.",
+  "lang": "ca",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fafaf9",
+  "theme_color": "#0f766e",
+  "icons": [
+    { "src": "/icona-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icona-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

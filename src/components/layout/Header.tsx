@@ -42,9 +42,13 @@ export default function Header() {
               🏆 <span className="hidden sm:inline">Lligues</span>
             </NavLink>
           )}
-          {FEATURES.accounts && user?.editor && (
-            <NavLink to="/editor" className={pill} aria-label="Editor">
-              ✏️ <span className="hidden sm:inline">Editor</span>
+          {FEATURES.accounts && user && (
+            <NavLink
+              to="/editor"
+              className={pill}
+              aria-label={user.editor ? 'Editor' : 'Crea un puzle'}
+            >
+              ✏️ <span className="hidden sm:inline">{user.editor ? 'Editor' : 'Crea'}</span>
             </NavLink>
           )}
           {FEATURES.accounts && (

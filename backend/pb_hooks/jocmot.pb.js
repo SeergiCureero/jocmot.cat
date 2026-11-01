@@ -375,6 +375,33 @@ routerAdd(
 
 // ── Editor ──
 
+// Les aprovacions valen fins que canvia el contingut del puzle (no el nom ni el dia preferit).
+onRecordCreateRequest((e) => {
+  // Editor obert: qui no és editor només pot tenir unes quantes propostes pendents.
+  if (!e.hasSuperuserAuth() && e.auth)
+    require(`${__hooks}/jocmot_db.js`).checkProposalLimit(e.app, e.auth);
+  e.record.set('contentUpdated', new DateTime());
+  e.next();
+}, 'puzzles');
+
+onRecordUpdateRequest((e) => {
+  if (e.record.original().getString('data') !== e.record.getString('data'))
+    e.record.set('contentUpdated', new DateTime());
+  e.next();
+}, 'puzzles');
+
+/** Canvia el nom d'un puzle o el dia preferit d'una proposta. Editors, o l'autor mentre és una proposta. */
+routerAdd(
+  'POST',
+  '/api/jocmot/puzles/{id}/info',
+  (e) => {
+    const db = require(`${__hooks}/jocmot_db.js`);
+    db.updatePuzzleInfo(e.app, e.auth, e.request.pathValue('id'), e.requestInfo().body);
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
 /** Canvia el dia d'un puzle programat (o l'intercanvia amb el que hi hagi). Només editors. */
 routerAdd(
   'POST',
@@ -401,6 +428,60 @@ routerAdd(
     for (const p of finished)
       if (db.recordScore(e.app, p, db.toMs(p.getString('updated')))) created++;
     return e.json(200, { checked: finished.length, created });
+  },
+  $apis.requireSuperuserAuth(),
+);
+
+// ── Avís diari (notificacions) ──
+
+/** Clau pública VAPID perquè el navegador es pugui subscriure (null = avisos desactivats). */
+routerAdd('GET', '/api/jocmot/avisos/clau', (e) => {
+  return e.json(200, { publicKey: require(`${__hooks}/jocmot_avisos.js`).publicKey() });
+});
+
+routerAdd(
+  'POST',
+  '/api/jocmot/avisos',
+  (e) => {
+    require(`${__hooks}/jocmot_avisos.js`).subscribe(e.app, e.auth, e.requestInfo().body);
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
+routerAdd(
+  'POST',
+  '/api/jocmot/avisos/treu',
+  (e) => {
+    require(`${__hooks}/jocmot_avisos.js`).unsubscribe(
+      e.app,
+      e.auth,
+      e.requestInfo().body.endpoint,
+    );
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
+routerAdd(
+  'POST',
+  '/api/jocmot/avisos/prova',
+  (e) => e.json(200, require(`${__hooks}/jocmot_avisos.js`).sendTest(e.app, e.auth)),
+  $apis.requireAuth('users'),
+);
+
+// Cada hora en punt: els avisos de l'hora (de Madrid) que toca.
+cronAdd('jocmot_avisos', '0 * * * *', () => {
+  require(`${__hooks}/jocmot_avisos.js`).sendDailyReminders($app);
+});
+
+/** Executa ara els avisos de l'hora actual (com el cron). Per provar-ho. */
+routerAdd(
+  'POST',
+  '/api/jocmot/admin/avisos',
+  (e) => {
+    require(`${__hooks}/jocmot_avisos.js`).sendDailyReminders(e.app);
+    return e.noContent(204);
   },
   $apis.requireSuperuserAuth(),
 );

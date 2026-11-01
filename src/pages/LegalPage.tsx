@@ -49,6 +49,18 @@ export default function LegalPage() {
           compartir i comentar lliurement, però no copiar-los en bloc per publicar-los en un altre
           lloc sense permís.
         </p>
+        <p>
+          Les llistes de paraules que els jocs accepten deriven del{' '}
+          <a
+            href="https://github.com/Softcatala/catalan-dict-tools"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            diccionari obert de Softcatalà
+          </a>{' '}
+          i es distribueixen, com l’original, amb llicència GPL o LGPL (
+          <a href="/diccionari/LLEGEIX-ME.txt">detalls i llicències</a>).
+        </p>
 
         <h2 id="privadesa">Política de privadesa</h2>
         <p>
@@ -81,6 +93,19 @@ export default function LegalPage() {
             triïs.
           </li>
           <li>
+            <strong>Avís diari</strong>, només si l’actives al perfil: l’adreça que el teu navegador
+            ens dona per enviar-te notificacions i l’hora que has triat. Les notificacions passen
+            pel servei del teu navegador (Google, Mozilla, Apple o Microsoft) i no porten cap dada
+            teva. Quan el desactives, l’esborrem.
+          </li>
+          {SITE.donateUrl && (
+            <li>
+              <strong>Donatius:</strong> si en fas un, el pagament el gestiona la plataforma de
+              donatius (amb el seu proveïdor de pagament) i nosaltres no veiem les dades de la
+              targeta. Només en rebem el nom i el missatge que hi vulguis deixar, i la quantitat.
+            </li>
+          )}
+          <li>
             <strong>Registres tècnics</strong> (adreça IP i data de les peticions): per seguretat i
             per evitar abusos. Es guarden uns quants dies.
           </li>
@@ -97,6 +122,12 @@ export default function LegalPage() {
           <li>
             <strong>Hetzner Online</strong> (Alemanya): el servidor on hi ha els comptes, a
             Falkenstein.
+          </li>
+          <li>
+            <strong>Cloudflare Web Analytics</strong>: compta les visites (pàgines vistes, país,
+            tipus de dispositiu i navegador) de manera agregada. No fa servir galetes ni crea cap
+            identificador, i no guarda la teva adreça IP. Ho fem per l’interès legítim de saber
+            quanta gent fa servir el lloc (art. 6.1.f del RGPD).
           </li>
           <li>
             <strong>Brevo</strong> (França): envia els correus del compte, com el de recuperar la
@@ -143,11 +174,19 @@ export default function LegalPage() {
           demanem consentiment. Les pots esborrar quan vulguis des de la configuració del navegador.
         </p>
         <p>
-          Si algun dia afegim publicitat o analítica, t’ho demanarem abans i ho explicarem aquí.
+          Per comptar visites fem servir Cloudflare Web Analytics, que{' '}
+          <strong>no guarda galetes</strong> ni res al teu navegador (vegeu{' '}
+          <a href="#privadesa">privadesa</a>).
         </p>
+        <p>Si algun dia afegim publicitat, t’ho demanarem abans i ho explicarem aquí.</p>
 
         <h2 id="condicions">Condicions d’ús</h2>
         <ul>
+          <li>
+            Si proposes un puzle a l’editor, ens autoritzes a publicar-lo a {SITE.name}, de franc, i
+            a corregir-ne o adaptar-ne el contingut. Ha de ser original teu. Podem no publicar-lo, i
+            no hi pot haver res ofensiu.
+          </li>
           <li>Jugar és gratuït. Crear un compte també.</li>
           <li>
             Tria un nom d’usuari i noms de lliga respectuosos: els veuen altres persones. Podem

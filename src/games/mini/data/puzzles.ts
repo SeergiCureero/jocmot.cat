@@ -5,7 +5,7 @@ import type { MiniPuzzle } from '../types';
  * La numeració es calcula automàticament; els tests comproven que cada
  * paraula de la graella té definició i a l'inrevés.
  */
-export const PUZZLES: readonly MiniPuzzle[] = [
+const FIRST: readonly MiniPuzzle[] = [
   {
     grid: ['##TAP', '#TALL', 'PORTA', 'ARTS#', 'UNA##'],
     clues: {
@@ -121,3 +121,71 @@ export const PUZZLES: readonly MiniPuzzle[] = [
     },
   },
 ];
+
+/** Més difícils: graelles més plenes (moltes paraules de 5 lletres) i definicions menys directes. */
+const HARDER: readonly MiniPuzzle[] = [
+  {
+    grid: ['#CAL#', 'COLLA', 'ALTAR', 'SORRA', '#RES#'],
+    clues: {
+      across: {
+        1: 'No ___: no fa falta',
+        4: 'Grup d’amics, o de castellers',
+        6: 'Taula de l’església',
+        7: 'N’hi ha molta al desert',
+        8: 'Zero coses',
+      },
+      down: {
+        1: 'El blau n’és un',
+        2: 'Un ___ cop: de nou',
+        3: 'Cases, dit amb afecte',
+        4: 'En ___ de pluja, no sortim',
+        5: 'En aquest precís moment',
+      },
+    },
+  },
+  {
+    grid: ['#CAMA', 'TELES', 'ALTRE', 'LLACS', 'PARE#'],
+    clues: {
+      across: {
+        1: 'Extremitat amb genoll',
+        5: 'Les d’aranya atrapen mosques',
+        6: 'No aquest, sinó l’___',
+        7: 'Masses d’aigua dolça envoltades de terra',
+        8: 'Progenitor',
+      },
+      down: {
+        1: 'Arc de pèls damunt de l’ull',
+        2: 'Hi celebra la missa el capellà',
+        3: 'Festa major de Barcelona, al setembre',
+        4: 'Rucs',
+        5: 'Mamífer que excava galeries',
+      },
+    },
+  },
+  {
+    grid: ['#SAP#', 'COLLA', 'UNTAR', 'CARTA', '#RES#'],
+    clues: {
+      across: {
+        1: 'No ho ___ ningú: és un secret',
+        4: 'Grup de diables o de geganters',
+        6: 'Posar mantega al pa',
+        7: 'S’envia dins d’un sobre',
+        8: 'No en queda ___',
+      },
+      down: {
+        1: 'Fer soroll el despertador',
+        2: 'Ni aquest ni l’___',
+        3: 'Primer i segon, al menú',
+        4: 'Viu dins la poma',
+        5: '___ o mai',
+      },
+    },
+  },
+];
+
+/**
+ * Els dies que ja havien passat (o estaven programats) quan es van afegir els HARDER
+ * repetien els primers puzles perquè la llista donava la volta. Es conserven igual:
+ * canviar-los canviaria puzles que la gent ja ha jugat.
+ */
+export const PUZZLES: readonly MiniPuzzle[] = [...FIRST, FIRST[0], FIRST[1], ...HARDER];
