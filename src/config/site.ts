@@ -14,7 +14,7 @@ export const SITE = {
    * Pàgina de donatius (p. ex. https://ko-fi.com/<usuari>). Buit = no es mostra l'enllaç.
    * La plataforma gestiona el pagament: aquí no passa cap dada de pagament.
    */
-  donateUrl: '',
+  donateUrl: 'https://ko-fi.com/jocmot',
   /** Data de l'última revisió dels textos legals. */
   legalUpdated: '1 de novembre de 2026',
 } as const;
