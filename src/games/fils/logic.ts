@@ -93,6 +93,7 @@ export function validatePuzzle(p: FilsPuzzle): string[] {
   if (p.grid.length !== ROWS || p.grid.some((r) => r.length !== COLS)) errors.push('mida de graella incorrecta');
   const used = new Set<string>();
   for (const w of allWords(p)) {
+    if (w.word.length < MIN_WORD) errors.push(`${w.word}: massa curta (mínim ${MIN_WORD} lletres)`);
     if (wordFromPath(p, w.path) !== w.word) errors.push(`${w.word}: les lletres no coincideixen`);
     w.path.forEach((cell, i) => {
       const k = cell.join(',');
