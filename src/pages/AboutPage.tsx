@@ -66,7 +66,8 @@ export default function AboutPage() {
         <h2>Gratuït i sense galetes de seguiment</h2>
         <p>
           Jugar és gratuït i no cal registrar-se. No fem servir galetes de publicitat ni
-          d’analítica, i les dades mínimes que guardem s’expliquen a la{' '}
+          d’analítica: per saber quanta gent hi juga, només comptem visites de manera agregada i
+          anònima. Les dades mínimes que guardem s’expliquen a la{' '}
           <Link to="/legal#privadesa">política de privadesa</Link>.
         </p>
 

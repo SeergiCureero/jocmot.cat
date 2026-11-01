@@ -111,6 +111,12 @@ export default function LegalPage() {
             Falkenstein.
           </li>
           <li>
+            <strong>Cloudflare Web Analytics</strong>: compta les visites (pàgines vistes, país,
+            tipus de dispositiu i navegador) de manera agregada. No fa servir galetes ni crea cap
+            identificador, i no guarda la teva adreça IP. Ho fem per l’interès legítim de saber
+            quanta gent fa servir el lloc (art. 6.1.f del RGPD).
+          </li>
+          <li>
             <strong>Brevo</strong> (França): envia els correus del compte, com el de recuperar la
             contrasenya.
           </li>
@@ -155,8 +161,11 @@ export default function LegalPage() {
           demanem consentiment. Les pots esborrar quan vulguis des de la configuració del navegador.
         </p>
         <p>
-          Si algun dia afegim publicitat o analítica, t’ho demanarem abans i ho explicarem aquí.
+          Per comptar visites fem servir Cloudflare Web Analytics, que{' '}
+          <strong>no guarda galetes</strong> ni res al teu navegador (vegeu{' '}
+          <a href="#privadesa">privadesa</a>).
         </p>
+        <p>Si algun dia afegim publicitat, t’ho demanarem abans i ho explicarem aquí.</p>
 
         <h2 id="condicions">Condicions d’ús</h2>
         <ul>

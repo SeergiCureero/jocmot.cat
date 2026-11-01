@@ -11,7 +11,7 @@ export const SITE = {
   /** Responsable del lloc i de les dades personals (pàgina /legal). */
   owner: 'Sergi Curero',
   /** Data de l'última revisió dels textos legals. */
-  legalUpdated: '28 d’octubre de 2026',
+  legalUpdated: '1 de novembre de 2026',
 } as const;
 
 /** Funcionalitats que es poden activar o desactivar. */

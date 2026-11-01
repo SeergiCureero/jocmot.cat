@@ -4,7 +4,10 @@ import { BrowserRouter } from 'react-router';
 import App from './App';
 import { AuthProvider } from './features/auth/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
+import { startAnalytics } from './lib/analytics';
 import './index.css';
+
+startAnalytics();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
