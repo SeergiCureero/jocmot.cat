@@ -49,6 +49,18 @@ export default function LegalPage() {
           compartir i comentar lliurement, però no copiar-los en bloc per publicar-los en un altre
           lloc sense permís.
         </p>
+        <p>
+          Les llistes de paraules que els jocs accepten deriven del{' '}
+          <a
+            href="https://github.com/Softcatala/catalan-dict-tools"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            diccionari obert de Softcatalà
+          </a>{' '}
+          i es distribueixen, com l’original, amb llicència GPL o LGPL (
+          <a href="/diccionari/LLEGEIX-ME.txt">detalls i llicències</a>).
+        </p>
 
         <h2 id="privadesa">Política de privadesa</h2>
         <p>

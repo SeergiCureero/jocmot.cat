@@ -19,6 +19,15 @@ Detalls:
 - Mentre està en revisió, l'autor el pot retirar. Un cop programat ja no se'n pot canviar el contingut, només el dia.
 - Els dies sense cap puzle del grup, la web fa servir els puzles del repositori.
 
+## Diccionari
+
+Sota el formulari hi ha el quadre **📖 Diccionari**:
+
+- Avisa de les paraules del puzle que no són al diccionari de jocmot (pot ser correcte si són noms propis o expressions). Toca'n una per consultar-la.
+- Busca qualsevol paraula: diu si és al diccionari de jocmot, en mostra les definicions del Viccionari i té enllaços al **DIEC**, al Viccionari i als sinònims de Softcatalà.
+
+El DIEC no té cap API pública, i per això només hi enllacem. Per decidir si una paraula és normativa, consulta sempre el DIEC.
+
 ## Consells per joc
 
 **Connexions.** Quatre grups de quatre paraules, del més fàcil (🟨) al més difícil (🟪). Els millors puzles tenen paraules "trampa" que semblen encaixar en més d'un grup.

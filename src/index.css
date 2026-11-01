@@ -37,6 +37,8 @@
   --animate-wave: wave 600ms ease-in-out both;
   --animate-draw: draw 400ms ease-out both;
   --animate-glow: glow 1.6s ease-in-out infinite;
+  /* Fils: la paraula extra puja i s'esvaeix cap al botó de pista. */
+  --animate-bonus: bonus 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-confetti: confetti var(--fall, 2.6s) cubic-bezier(0.25, 0.6, 0.5, 1) both;
 
   @keyframes pop {
@@ -199,6 +201,24 @@
     }
     50% {
       box-shadow: 0 0 0 6px rgb(14 165 233 / 0);
+    }
+  }
+  @keyframes bonus {
+    0% {
+      opacity: 0;
+      transform: translateY(16px) scale(0.8);
+    }
+    20% {
+      opacity: 1;
+      transform: translateY(0) scale(1.05);
+    }
+    70% {
+      opacity: 1;
+      transform: translateY(-4px) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(40px, 28px) scale(0.5);
     }
   }
   @keyframes confetti {

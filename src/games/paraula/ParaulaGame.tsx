@@ -4,13 +4,13 @@ import Keyboard, { BACKSPACE, ENTER } from '@/components/game/Keyboard';
 import { useToast } from '@/components/ui/Toast';
 import { SITE } from '@/config/site';
 import { useGameProgress } from '@/features/progress/useGameProgress';
+import { loadFiveLetterWords } from '@/lib/dictionary';
 import { prefersReducedMotion } from '@/lib/dom';
 import { normalizeWord } from '@/lib/text';
 import { pickByNumber } from '../puzzles';
 import type { GameProps } from '../types';
 import Board, { REVEAL_MS } from './components/Board';
 import { ANSWERS } from './data/answers';
-import { EXTRA_VALID, STRICT_DICTIONARY } from './data/dictionary';
 import {
   buildShareText,
   getStatus,
@@ -22,8 +22,7 @@ import {
 } from './logic';
 import { meta } from './meta';
 
-const DICTIONARY = new Set([...ANSWERS, ...EXTRA_VALID].map(normalizeWord));
-const isValidWord = (w: string) => !STRICT_DICTIONARY || DICTIONARY.has(w);
+const SOLUTIONS = new Set(ANSWERS.map(normalizeWord));
 
 const PRAISE = ['Genial!', 'Magnífic!', 'Impressionant!', 'Molt bé!', 'Bé!', 'Pel pèl!'];
 
@@ -48,6 +47,15 @@ export default function ParaulaGame({ puzzleNumber, date }: GameProps) {
   // La partida s'ha acabat en aquesta visita? (per celebrar-ho només llavors)
   const [justFinished, setJustFinished] = useState(false);
   const toast = useToast();
+  // Diccionari de 5 lletres. Mentre es descarrega (o si falla) s'accepta qualsevol paraula.
+  const [dictionary, setDictionary] = useState<Set<string> | null>(null);
+  useEffect(() => {
+    loadFiveLetterWords().then(setDictionary);
+  }, []);
+  const isValidWord = useCallback(
+    (w: string) => !dictionary || dictionary.has(w) || SOLUTIONS.has(w),
+    [dictionary],
+  );
 
   const keyStates = useMemo(
     () => keyboardStates(revealing ? state.guesses.slice(0, -1) : state.guesses, answer),
@@ -84,7 +92,7 @@ export default function ParaulaGame({ puzzleNumber, date }: GameProps) {
       setRevealing(true);
       setJustFinished(getStatus(result.state) !== 'playing');
     },
-    [status, revealing, state, current, answer, update, toast],
+    [status, revealing, state, current, answer, isValidWord, update, toast],
   );
 
   const shareUrl = `${SITE.url}/${meta.slug}`;
@@ -144,6 +152,10 @@ function Help() {
           <span className="text-absent font-bold">Gris</span>: la lletra no hi és.
         </li>
       </ul>
+      <p>
+        Cada intent ha de ser una paraula del diccionari: també valen plurals, femenins i formes
+        verbals.
+      </p>
       <p>Els accents no compten. La Ç és una lletra pròpia.</p>
     </>
   );

@@ -4,6 +4,7 @@ import Button from '@/components/ui/Button';
 import { INPUT } from '@/components/ui/styles';
 import { useToast } from '@/components/ui/Toast';
 import { backend } from '@/services/backend';
+import DictionaryPanel from './DictionaryPanel';
 import { drafts } from './drafts';
 import { KITS } from './kits';
 import PreviewPlayer from './PreviewPlayer';
@@ -75,6 +76,7 @@ export default function DraftPage() {
       ) : (
         <>
           <kit.Form value={data} onChange={change} />
+          <DictionaryPanel words={kit.words(data)} />
           <div className="sticky bottom-0 mt-6 space-y-3 border-t border-stone-200 bg-stone-50/95 py-4 backdrop-blur">
             <ErrorList errors={errors} />
             {Boolean(puzzle) && (
