@@ -6,6 +6,8 @@
 export function startAnalytics() {
   const token = import.meta.env.VITE_CF_ANALYTICS_TOKEN;
   if (!token) return;
+  // Cloudflare també el pot injectar sol a l'HTML: si ja hi és, no l'afegim (comptaria dues vegades).
+  if (document.querySelector('script[src*="static.cloudflareinsights.com"]')) return;
   const script = document.createElement('script');
   script.defer = true;
   script.src = 'https://static.cloudflareinsights.com/beacon.min.js';
