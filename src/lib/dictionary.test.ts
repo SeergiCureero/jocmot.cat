@@ -37,7 +37,11 @@ describe('fitxers del diccionari', () => {
   });
 
   it('les paraules temàtiques de Fils hi són (l’spangram pot ser una expressió)', () => {
-    const missing = FILS.flatMap((p) => p.words.map((w) => w.word)).filter((w) => !all.has(w));
+    // Noms propis i expressions que no són al diccionari però sí que són bones paraules del tema.
+    const allowed = new Set(['VIALACTIA', 'ORIO']);
+    const missing = FILS.flatMap((p) => p.words.map((w) => w.word)).filter(
+      (w) => !all.has(w) && !allowed.has(w),
+    );
     expect(missing).toEqual([]);
   });
 });
