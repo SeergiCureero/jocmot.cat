@@ -32,6 +32,7 @@ Els calcula **el servidor**, amb JavaScript de PocketBase a `backend/pb_hooks/`:
 
 - `jocmot.js`: lògica pura (punts, ratxes, rangs, dates de Madrid). Té tests amb Vitest (`npm test`).
 - `jocmot_db.js`: consultes a la base de dades.
+- `jocmot_avisos.js` i `jocmot_push.js`: avís diari (vegeu *Producció*).
 - `jocmot.pb.js`: en acabar una partida (`progress` amb estat `won`/`lost`) desa la puntuació a `scores`, i exposa les rutes `/api/jocmot/*` (perfil, amics, lligues).
 
 El navegador no pot escriure a `scores`, `friendships`, `leagues` ni `league_members`: només ho fan aquestes rutes. Les puntuacions es calculen una sola vegada per puzle, amb l'hora del servidor (així l'arxiu no es pot fer passar per puzle del dia). La data de llançament és a `jocmot.js` i ha de coincidir amb `.env.production` (un test ho comprova).
@@ -49,6 +50,7 @@ Si cal recalcular puntuacions que faltin (p. ex. partides d'abans d'activar els 
 | `scores` | Punts de cada usuari per puzle (els calcula el servidor). |
 | `friendships` | Sol·licituds d'amistat (`pending`/`accepted`). |
 | `leagues`, `league_members` | Lligues (amb codi de 6 caràcters) i qui hi és. |
+| `push_subscriptions` | Avís diari: subscripció Web Push de cada navegador, amb l'hora triada (Madrid). Només hi accedeix el servidor. |
 
 Regles principals (detall a la migració):
 
@@ -92,9 +94,18 @@ Primer el servidor i després el frontend: la web antiga continua funcionant amb
 
 **Correu.** Els correus (recuperar la contrasenya, avís d'inici de sessió nou…) surten de `hola@jocmot.cat` a través de [Brevo](https://www.brevo.com) (pla gratuït, 300 correus al dia). El domini està verificat a Brevo amb registres DNS a Cloudflare (SPF, DKIM, DMARC). Les credencials SMTP només són al panell: *Settings → Mail settings* (servidor `smtp-relay.brevo.com`, port 587). Les plantilles en català són a la migració `1761700000_correus.js`; l'enllaç per canviar la contrasenya porta a `jocmot.cat/compte/nova-contrasenya/:token`.
 
-Pendent:
+**Avís diari (notificacions).** Cada hora en punt, el servidor envia una notificació Web Push als qui han triat aquella hora al perfil. No l'envia si aquell dia ja han acabat els quatre jocs, i n'envia com a màxim una al dia. El codi és a `pb_hooks/jocmot_avisos.js` i `jocmot_push.js`. Les notificacions van sense contingut, i el text el posa `public/sw.js`.
 
-- **RGPD**: política de privacitat i dret a esborrar el compte.
+- Les signa amb una clau VAPID que només és al servidor, a `/opt/pocketbase/vapid/private.pem` (o al camí de la variable `JOCMOT_VAPID_KEY`), i fa servir `openssl`. Sense la clau, els avisos queden desactivats i la web no els ofereix.
+- Crear la clau (una sola vegada; si es canvia, tothom haurà de tornar a activar l'avís):
+
+  ```bash
+  ssh jocmot 'mkdir -p /opt/pocketbase/vapid && openssl ecparam -name prime256v1 -genkey -noout -out /opt/pocketbase/vapid/private.pem && chown -R pocketbase: /opt/pocketbase/vapid && chmod 700 /opt/pocketbase/vapid && chmod 600 /opt/pocketbase/vapid/private.pem'
+  ```
+
+- Provar-ho: al perfil, *Envia'm una prova*. També hi ha `POST /api/jocmot/admin/avisos` (superusuari), que fa ara mateix la tanda de l'hora actual.
+- Per seguretat, el servidor només envia avisos als serveis de push dels navegadors (Google, Mozilla, Apple i Microsoft).
+- A l'iPhone i l'iPad només funciona si la web s'ha afegit a la pantalla d'inici (`public/manifest.webmanifest`).
 
 ## Canviar de proveïdor
 

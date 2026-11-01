@@ -47,6 +47,13 @@ function madridDate(ms) {
   return isoFromUtc(ms + (summer ? 2 : 1) * 3600000);
 }
 
+/** Hora (0-23) a Madrid per a un instant (ms). */
+function madridHour(ms) {
+  const year = new Date(ms).getUTCFullYear();
+  const summer = ms >= lastSundayAt1Utc(year, 2) && ms < lastSundayAt1Utc(year, 9);
+  return new Date(ms + (summer ? 2 : 1) * 3600000).getUTCHours();
+}
+
 /** Instant (ms) en què comença el dia "AAAA-MM-DD" a Madrid: les 00:00 són les 22:00 o 23:00 UTC del dia abans. */
 function madridMidnight(iso) {
   const utc = utcFromIso(iso);
@@ -143,6 +150,7 @@ module.exports = {
   MAX_STREAK_BONUS,
   RANKS,
   madridDate,
+  madridHour,
   madridMidnight,
   addDays,
   puzzleDate,

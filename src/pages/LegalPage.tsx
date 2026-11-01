@@ -93,6 +93,12 @@ export default function LegalPage() {
             triïs.
           </li>
           <li>
+            <strong>Avís diari</strong>, només si l’actives al perfil: l’adreça que el teu navegador
+            ens dona per enviar-te notificacions i l’hora que has triat. Les notificacions passen
+            pel servei del teu navegador (Google, Mozilla, Apple o Microsoft) i no porten cap dada
+            teva. Quan el desactives, l’esborrem.
+          </li>
+          <li>
             <strong>Registres tècnics</strong> (adreça IP i data de les peticions): per seguretat i
             per evitar abusos. Es guarden uns quants dies.
           </li>
