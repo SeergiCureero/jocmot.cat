@@ -22,6 +22,16 @@ export default function Footer() {
         <a href={`mailto:${SITE.email}`} className="hover:text-stone-800 hover:underline">
           Contacte
         </a>
+        {SITE.donateUrl && (
+          <a
+            href={SITE.donateUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-700 font-semibold hover:underline"
+          >
+            ☕ Fes un donatiu
+          </a>
+        )}
       </nav>
       © {new Date().getFullYear()} {SITE.name} · {SITE.tagline}
     </footer>

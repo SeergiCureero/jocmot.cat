@@ -75,6 +75,20 @@ export default function AboutPage() {
           <Link to="/legal#privadesa">política de privadesa</Link>.
         </p>
 
+        {SITE.donateUrl && (
+          <>
+            <h2>Ajuda’ns a mantenir-lo</h2>
+            <p>
+              jocmot.cat és gratuït i sense publicitat, però el servidor i el domini costen diners.
+              Si t’agrada, ens pots{' '}
+              <a href={SITE.donateUrl} target="_blank" rel="noopener noreferrer">
+                convidar a un cafè ☕
+              </a>
+              . Qualsevol quantitat ens ajuda a continuar fent puzles cada dia.
+            </p>
+          </>
+        )}
+
         <h2>Parla amb nosaltres</h2>
         <p>
           Has trobat un error en un puzle? Tens una idea per a un joc nou? Escriu-nos a{' '}

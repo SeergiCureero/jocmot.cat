@@ -98,6 +98,13 @@ export default function LegalPage() {
             pel servei del teu navegador (Google, Mozilla, Apple o Microsoft) i no porten cap dada
             teva. Quan el desactives, l’esborrem.
           </li>
+          {SITE.donateUrl && (
+            <li>
+              <strong>Donatius:</strong> si en fas un, el pagament el gestiona la plataforma de
+              donatius (amb el seu proveïdor de pagament) i nosaltres no veiem les dades de la
+              targeta. Només en rebem el nom i el missatge que hi vulguis deixar, i la quantitat.
+            </li>
+          )}
           <li>
             <strong>Registres tècnics</strong> (adreça IP i data de les peticions): per seguretat i
             per evitar abusos. Es guarden uns quants dies.
