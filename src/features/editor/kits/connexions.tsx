@@ -81,5 +81,6 @@ export const connexionsKit: EditorKit<ConnexionsPuzzle> = {
     const puzzle = clean(draft);
     return result(puzzle, validatePuzzle(puzzle));
   },
+  words: (draft) => draft.groups.flatMap((g) => g.words),
   Form,
 };

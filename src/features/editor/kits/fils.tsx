@@ -184,5 +184,6 @@ export const filsKit: EditorKit<FilsDraft> = {
     const puzzle: FilsPuzzle = { ...draft.grid!, theme: draft.theme.trim() };
     return result(puzzle, validatePuzzle(puzzle));
   },
+  words: (draft) => [draft.spangram, ...parseWords(draft.words)],
   Form,
 };

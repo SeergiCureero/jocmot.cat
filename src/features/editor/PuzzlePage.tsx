@@ -8,6 +8,7 @@ import { cn } from '@/lib/cn';
 import { backend, type PuzzleRecord } from '@/services/backend';
 import { KITS } from './kits';
 import MoveDay from './MoveDay';
+import DictionaryPanel from './DictionaryPanel';
 import PreviewPlayer from './PreviewPlayer';
 import { APPROVALS_NEEDED, publishIfReady, validApprovals } from './schedule';
 import { ErrorList, GameLabel, statusText } from './ui';
@@ -163,6 +164,7 @@ function PuzzleView({
                   </Button>
                 </div>
               )}
+              <DictionaryPanel words={kit.words(draft)} />
             </div>
           )}
 

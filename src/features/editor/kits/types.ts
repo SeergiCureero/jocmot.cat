@@ -17,6 +17,8 @@ export interface EditorKit<D> {
   fromPuzzle(puzzle: unknown): D;
   /** Converteix l'esborrany en un puzle jugable, o retorna què hi falta. */
   build(draft: D): BuildResult;
+  /** Paraules de l'esborrany (encara que estigui a mig fer), per comprovar-les al diccionari. */
+  words(draft: D): string[];
   Form: ComponentType<FormProps<D>>;
 }
 
