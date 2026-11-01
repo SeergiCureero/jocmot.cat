@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import Spinner from '@/components/ui/Spinner';
 import { useAuth } from '@/features/auth/AuthContext';
+import { cn } from '@/lib/cn';
 import { DESIGNABLE_GAMES } from '@/games/registry';
 import { backend, type PuzzleRecord } from '@/services/backend';
 import { drafts } from './drafts';
+import { PuzzleName, RenameButton, wantedText } from './PuzzleInfo';
 import { KITS } from './kits';
 import { publishIfReady, validApprovals, APPROVALS_NEEDED } from './schedule';
 import { GameLabel, gameMeta, ROW, Section, statusText } from './ui';
@@ -27,6 +29,9 @@ export default function EditorHome() {
       setPuzzles(ready.length ? await backend.listPuzzles() : list);
     })().catch((e: Error) => setError(e.message));
   }, []);
+
+  const rename = (id: string, title: string) =>
+    setPuzzles((list) => list && list.map((p) => (p.id === id ? { ...p, title } : p)));
 
   const startDraft = (game: (typeof DESIGNABLE_GAMES)[number]) =>
     navigate(`/editor/esborrany/${drafts.create(game, KITS[game].empty()).id}`);
@@ -109,50 +114,85 @@ export default function EditorHome() {
               const reviewed = p.reviews.some((r) => r.author.id === user!.id);
               const mine = p.author.id === user!.id;
               return (
-                <li key={p.id}>
-                  <Link to={`/editor/puzle/${p.id}`} className={ROW}>
-                    <span className="flex flex-col gap-1">
-                      <GameLabel game={p.game} />
-                      <span className="text-xs text-stone-500">
-                        de {mine ? 'tu' : p.author.username} · {statusText(p)}
-                      </span>
+                <PuzzleRow key={p.id} puzzle={p} onRenamed={rename}>
+                  <span className="flex min-w-0 flex-col gap-1">
+                    <PuzzleHeading puzzle={p} />
+                    <span className="text-xs text-stone-500">
+                      de {mine ? 'tu' : p.author.username} · {statusText(p)}
+                      {p.wantedNumber && <> · {wantedText(p.wantedNumber)}</>}
                     </span>
-                    {!mine && !reviewed && (
-                      <span className="bg-brand-100 text-brand-900 rounded-full px-2 py-0.5 text-xs font-semibold">
-                        Revisa’l
-                      </span>
-                    )}
-                  </Link>
-                </li>
+                  </span>
+                  {!mine && !reviewed && (
+                    <span className="bg-brand-100 text-brand-900 shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold">
+                      Revisa’l
+                    </span>
+                  )}
+                </PuzzleRow>
               );
             })}
           </Section>
           <Section title="Programats" empty="Cap puzle programat.">
             {scheduled.map((p) => (
-              <li key={p.id}>
-                <Link to={`/editor/puzle/${p.id}`} className={ROW}>
-                  <GameLabel game={p.game} />
-                  <span className="text-right text-xs text-stone-500">
-                    {statusText(p)}
-                    <br />
-                    de {p.author.username}
+              <PuzzleRow key={p.id} puzzle={p} onRenamed={rename}>
+                <span className="flex min-w-0 flex-col gap-1">
+                  <PuzzleHeading puzzle={p} />
+                  <span className="text-xs text-stone-500">
+                    {statusText(p)} · de {p.author.username}
                   </span>
-                </Link>
-              </li>
+                </span>
+              </PuzzleRow>
             ))}
           </Section>
           <Section title="Publicats recentment" empty="Encara no se n’ha publicat cap.">
             {published.map((p) => (
-              <li key={p.id}>
-                <Link to={`/editor/puzle/${p.id}`} className={ROW}>
-                  <GameLabel game={p.game} />
-                  <span className="text-right text-xs text-stone-500">{statusText(p)}</span>
-                </Link>
-              </li>
+              <PuzzleRow key={p.id} puzzle={p} onRenamed={rename}>
+                <span className="flex min-w-0 flex-col gap-1">
+                  <PuzzleHeading puzzle={p} />
+                  <span className="text-xs text-stone-500">{statusText(p)}</span>
+                </span>
+              </PuzzleRow>
             ))}
           </Section>
         </>
       )}
     </div>
+  );
+}
+
+/** Fila d'una llista: enllaç al puzle i, al costat, el botó per posar-hi nom. */
+function PuzzleRow({
+  puzzle,
+  onRenamed,
+  children,
+}: {
+  puzzle: PuzzleRecord;
+  onRenamed: (id: string, title: string) => void;
+  children: ReactNode;
+}) {
+  return (
+    <li className="flex items-center gap-1">
+      <Link to={`/editor/puzle/${puzzle.id}`} className={cn(ROW, 'min-w-0 flex-1')}>
+        {children}
+      </Link>
+      <RenameButton puzzle={puzzle} onSaved={(title) => onRenamed(puzzle.id, title)} />
+    </li>
+  );
+}
+
+/** Icona del joc + nom del puzle. */
+function PuzzleHeading({ puzzle }: { puzzle: PuzzleRecord }) {
+  const meta = gameMeta(puzzle.game);
+  return (
+    <span className="flex min-w-0 items-center gap-1.5">
+      <span
+        className={`grid size-6 shrink-0 place-items-center rounded-md text-xs ${meta.theme.bg}`}
+        title={meta.name}
+      >
+        {meta.icon}
+      </span>
+      <span className="truncate">
+        <PuzzleName puzzle={puzzle} />
+      </span>
+    </span>
   );
 }

@@ -44,7 +44,7 @@ Si cal recalcular puntuacions que faltin (p. ex. partides d'abans d'activar els 
 | --- | --- |
 | `users` | Comptes. Camp `name` = nom d'usuari (únic, 2-24 caràcters). Camp `editor` (bool): pot dissenyar i revisar puzles. |
 | `progress` | Progrés de cada usuari en cada puzle. Únic per (usuari, joc, puzle). |
-| `puzzles` | Puzles del grup: `game`, `data` (JSON, mateixa forma que `src/games/<joc>/data`), `author`, `status` (`proposed`/`published`), `number`, `releaseAt`. |
+| `puzzles` | Puzles del grup: `game`, `data` (JSON, mateixa forma que `src/games/<joc>/data`), `author`, `status` (`proposed`/`published`), `number`, `releaseAt`, `title`, `wantedNumber` (dia preferit) i `contentUpdated` (últim canvi del contingut; el posa el servidor). |
 | `reviews` | Aprovacions i comentaris dels editors. Única per (puzle, editor). |
 | `scores` | Punts de cada usuari per puzle (els calcula el servidor). |
 | `friendships` | Sol·licituds d'amistat (`pending`/`accepted`). |

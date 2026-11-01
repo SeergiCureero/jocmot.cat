@@ -15,14 +15,17 @@ export function validApprovals(p: PuzzleRecord) {
     (r) =>
       r.approved &&
       r.author.id !== p.author.id &&
-      (p.status === 'published' || r.updated >= p.updated),
+      (p.status === 'published' || r.updated >= p.contentUpdated),
   );
 }
 
-/** Primer número lliure a partir de demà (avui la gent ja pot estar jugant el del dia). */
-export function firstFreeNumber(taken: number[], today: number): number {
+/**
+ * Primer número lliure a partir de demà (avui la gent ja pot estar jugant el del dia) o, si
+ * l'autor en va triar un, a partir d'aquell dia.
+ */
+export function firstFreeNumber(taken: number[], today: number, wanted?: number | null): number {
   const used = new Set(taken);
-  let n = today + 1;
+  let n = Math.max(today + 1, wanted ?? 0);
   while (used.has(n)) n++;
   return n;
 }
@@ -31,8 +34,8 @@ export const releaseAtFor = (number: number) =>
   startOfDayInTimeZone(getPuzzleDate(number), SITE.timeZone).toISOString();
 
 /**
- * Si el puzle ja té prou aprovacions, l'assigna al primer dia lliure (després es pot canviar des
- * del calendari). Retorna el puzle actualitzat.
+ * Si el puzle ja té prou aprovacions, l'assigna al dia que volia l'autor o, si és ocupat o ja ha
+ * passat, al primer dia lliure (després es pot canviar des del calendari). Retorna el puzle actualitzat.
  */
 export async function publishIfReady(id: string): Promise<PuzzleRecord> {
   const puzzle = await backend.getPuzzle(id);
@@ -44,7 +47,7 @@ export async function publishIfReady(id: string): Promise<PuzzleRecord> {
     const taken = (await backend.listPuzzles())
       .filter((p) => p.game === puzzle.game && p.number !== null)
       .map((p) => p.number!);
-    const number = firstFreeNumber(taken, getTodayPuzzleNumber());
+    const number = firstFreeNumber(taken, getTodayPuzzleNumber(), puzzle.wantedNumber);
     try {
       await backend.publishPuzzle(id, number, releaseAtFor(number));
       return backend.getPuzzle(id);

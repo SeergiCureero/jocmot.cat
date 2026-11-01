@@ -300,6 +300,27 @@ function movePuzzle(app, id, number) {
   });
 }
 
+/** Nom (`title`) i dia preferit (`wantedNumber`, null per treure'l) d'un puzle. */
+function updatePuzzleInfo(app, id, body) {
+  const puzzle = app.findRecordById('puzzles', id);
+  if (body.title !== undefined) {
+    const title = String(body.title || '').trim();
+    if (title.length > 80) throw new BadRequestError('El nom pot tenir com a màxim 80 caràcters.');
+    puzzle.set('title', title);
+  }
+  if (body.wantedNumber !== undefined) {
+    if (puzzle.getString('status') !== 'proposed')
+      throw new BadRequestError(
+        'Aquest puzle ja està programat: canvia’l de dia des del calendari.',
+      );
+    const n = body.wantedNumber;
+    if (n !== null && (!Number.isInteger(n) || n <= lib.puzzleNumberForDate(today())))
+      throw new BadRequestError('Tria un dia a partir de demà.');
+    puzzle.set('wantedNumber', n || 0);
+  }
+  app.save(puzzle);
+}
+
 /** Mesos (AAAA-MM) des que existeix la lliga fins ara, del més recent al més antic. */
 function leagueMonths(league) {
   const first = lib.madridDate(toMs(league.getString('created')));
@@ -338,5 +359,6 @@ module.exports = {
   leaveLeague,
   deleteAccount,
   movePuzzle,
+  updatePuzzleInfo,
   leagueMonths,
 };

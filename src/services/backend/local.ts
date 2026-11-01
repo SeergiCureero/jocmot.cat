@@ -63,6 +63,10 @@ export function createLocalBackend(): Backend {
   });
   const toRecord = ({ authorId, ...p }: StoredPuzzle): PuzzleRecord => ({
     ...p,
+    // Esborranys desats abans que existissin aquests camps.
+    contentUpdated: p.contentUpdated ?? p.updated,
+    title: p.title ?? '',
+    wantedNumber: p.wantedNumber ?? null,
     author: person(authorId),
     reviews: reviews()
       .filter((r) => r.puzzleId === p.id)
@@ -162,8 +166,9 @@ export function createLocalBackend(): Backend {
       return toRecord(findPuzzle(id));
     },
 
-    async proposePuzzle(game: DesignableGameId, data) {
+    async proposePuzzle(game: DesignableGameId, data, { title, wantedNumber }) {
       const user = requireUser();
+      const now = new Date().toISOString();
       const p: StoredPuzzle = {
         id: crypto.randomUUID(),
         game,
@@ -172,8 +177,11 @@ export function createLocalBackend(): Backend {
         status: 'proposed',
         number: null,
         releaseAt: null,
-        created: new Date().toISOString(),
-        updated: new Date().toISOString(),
+        created: now,
+        updated: now,
+        contentUpdated: now,
+        title: title.trim(),
+        wantedNumber,
       };
       storage.set(PUZZLES_KEY, [...puzzles(), p]);
       return toRecord(p);
@@ -182,7 +190,19 @@ export function createLocalBackend(): Backend {
     async updatePuzzle(id, data) {
       requireUser();
       if (findPuzzle(id).status !== 'proposed') throw new BackendError('Ja està publicat', 403);
-      writePuzzle(id, { data, updated: new Date().toISOString() });
+      const now = new Date().toISOString();
+      writePuzzle(id, { data, updated: now, contentUpdated: now });
+    },
+
+    async updatePuzzleInfo(id, { title, wantedNumber }) {
+      requireUser();
+      if (wantedNumber !== undefined && findPuzzle(id).status !== 'proposed')
+        throw new BackendError('Ja està programat', 400);
+      writePuzzle(id, {
+        ...(title !== undefined && { title: title.trim() }),
+        ...(wantedNumber !== undefined && { wantedNumber }),
+        updated: new Date().toISOString(),
+      });
     },
 
     async deletePuzzle(id) {

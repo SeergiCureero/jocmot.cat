@@ -9,6 +9,7 @@ import { backend, type PuzzleRecord } from '@/services/backend';
 import { KITS } from './kits';
 import MoveDay from './MoveDay';
 import PreviewPlayer from './PreviewPlayer';
+import { PuzzleName, RenameButton, WantedDayInput, wantedText } from './PuzzleInfo';
 import { APPROVALS_NEEDED, publishIfReady, validApprovals } from './schedule';
 import { ErrorList, GameLabel, statusText } from './ui';
 import { INPUT } from './kits/types';
@@ -102,19 +103,43 @@ function PuzzleView({
         ← Editor
       </Link>
       <div className="mt-2 mb-1 flex items-center justify-between gap-3">
-        <h1 className="text-xl font-bold">
-          <GameLabel game={record.game} />
+        <h1 className="flex min-w-0 items-center gap-1 text-xl">
+          <span className="truncate">
+            <PuzzleName puzzle={record} />
+          </span>
+          <RenameButton puzzle={record} onSaved={(title) => onChange({ ...record, title })} />
         </h1>
-        {editable && (
-          <Button variant="ghost" onClick={remove} disabled={busy}>
-            Retira-la
-          </Button>
-        )}
-        <MoveDay puzzle={record} onMoved={() => backend.getPuzzle(record.id).then(onChange)} />
+        <div className="flex shrink-0 items-center gap-2">
+          {editable && (
+            <Button variant="ghost" onClick={remove} disabled={busy}>
+              Retira-la
+            </Button>
+          )}
+          <MoveDay puzzle={record} onMoved={() => backend.getPuzzle(record.id).then(onChange)} />
+        </div>
       </div>
-      <p className="mb-6 text-sm text-stone-600">
-        De {mine ? 'tu' : record.author.username} · {statusText(record)}
+      <p className="mb-4 text-sm text-stone-600">
+        <GameLabel game={record.game} /> · De {mine ? 'tu' : record.author.username} ·{' '}
+        {statusText(record)}
+        {record.status === 'proposed' && record.wantedNumber && !mine && (
+          <> · {wantedText(record.wantedNumber)}</>
+        )}
       </p>
+      {record.status === 'proposed' && mine && (
+        <div className="mb-6 rounded-xl border border-stone-200 bg-white p-3">
+          <WantedDayInput
+            game={record.game}
+            value={record.wantedNumber}
+            onChange={(wantedNumber) =>
+              run(async () => {
+                await backend.updatePuzzleInfo(record.id, { wantedNumber });
+                onChange({ ...record, wantedNumber });
+                toast(wantedNumber ? 'Dia preferit desat' : 'Dia preferit tret');
+              })
+            }
+          />
+        </div>
+      )}
 
       {playing ? (
         <>

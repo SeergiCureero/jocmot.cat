@@ -375,6 +375,31 @@ routerAdd(
 
 // ── Editor ──
 
+// Les aprovacions valen fins que canvia el contingut del puzle (no el nom ni el dia preferit).
+onRecordCreateRequest((e) => {
+  e.record.set('contentUpdated', new DateTime());
+  e.next();
+}, 'puzzles');
+
+onRecordUpdateRequest((e) => {
+  if (e.record.original().getString('data') !== e.record.getString('data'))
+    e.record.set('contentUpdated', new DateTime());
+  e.next();
+}, 'puzzles');
+
+/** Canvia el nom d'un puzle (també dels programats) o el dia preferit d'una proposta. Només editors. */
+routerAdd(
+  'POST',
+  '/api/jocmot/puzles/{id}/info',
+  (e) => {
+    if (!e.auth.getBool('editor')) throw new ForbiddenError('Només per a editors.');
+    const db = require(`${__hooks}/jocmot_db.js`);
+    db.updatePuzzleInfo(e.app, e.request.pathValue('id'), e.requestInfo().body);
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
 /** Canvia el dia d'un puzle programat (o l'intercanvia amb el que hi hagi). Només editors. */
 routerAdd(
   'POST',
