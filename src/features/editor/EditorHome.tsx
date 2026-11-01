@@ -18,9 +18,14 @@ export default function EditorHome() {
   const [error, setError] = useState<string | null>(null);
   const myDrafts = drafts.list();
 
+  const isEditor = Boolean(user!.editor);
+
   useEffect(() => {
     (async () => {
-      const list = await backend.listPuzzles();
+      const all = await backend.listPuzzles();
+      // Qui no és editor també rep els puzles ja publicats de tothom: només li ensenyem els seus.
+      const list = isEditor ? all : all.filter((p) => p.author.id === user!.id);
+      if (!isEditor) return setPuzzles(list);
       // Propostes que ja tenen prou aprovacions però no s'han programat (p. ex. si n'han calgut menys).
       const ready = list.filter(
         (p) => p.status === 'proposed' && validApprovals(p).length >= APPROVALS_NEEDED,
@@ -28,7 +33,7 @@ export default function EditorHome() {
       for (const p of ready) await publishIfReady(p.id);
       setPuzzles(ready.length ? await backend.listPuzzles() : list);
     })().catch((e: Error) => setError(e.message));
-  }, []);
+  }, [isEditor, user]);
 
   const rename = (id: string, title: string) =>
     setPuzzles((list) => list && list.map((p) => (p.id === id ? { ...p, title } : p)));
@@ -48,23 +53,33 @@ export default function EditorHome() {
 
   return (
     <div className="mx-auto max-w-2xl py-8">
-      <h1 className="text-2xl font-bold">Editor de puzles</h1>
-      <p className="mt-1 mb-6 text-sm text-stone-600">
-        Dissenya, prova i revisa puzles amb el grup. Quan un altre editor l’aprova, el puzle es
-        programa sol al següent dia lliure, i des del calendari el pots canviar de dia.
-      </p>
-      <Link
-        to="/editor/calendari"
-        className="mb-8 flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg"
-      >
-        <span>
-          <span className="block font-bold">📅 Calendari</span>
-          <span className="block text-sm text-stone-600">
-            Quin puzle surt cada dia. Canvia’ls de dia.
+      <h1 className="text-2xl font-bold">{isEditor ? 'Editor de puzles' : 'Crea un puzle'}</h1>
+      {isEditor ? (
+        <p className="mt-1 mb-6 text-sm text-stone-600">
+          Dissenya, prova i revisa puzles. Qualsevol persona amb compte en pot proposar. Quan un
+          editor l’aprova, el puzle es programa sol al següent dia lliure, i des del calendari el
+          pots canviar de dia.
+        </p>
+      ) : (
+        <p className="mt-1 mb-6 text-sm text-stone-600">
+          Dissenya el teu puzle de Connexions, Fils o Mini, prova’l i proposa’l. L’equip de jocmot
+          hi jugarà i, si li agrada, el publicarà perquè hi jugui tothom.
+        </p>
+      )}
+      {isEditor && (
+        <Link
+          to="/editor/calendari"
+          className="mb-8 flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg"
+        >
+          <span>
+            <span className="block font-bold">📅 Calendari</span>
+            <span className="block text-sm text-stone-600">
+              Quin puzle surt cada dia. Canvia’ls de dia.
+            </span>
           </span>
-        </span>
-        <span className="text-brand-700 font-semibold">→</span>
-      </Link>
+          <span className="text-brand-700 font-semibold">→</span>
+        </Link>
+      )}
 
       <section className="mb-8">
         <h2 className="mb-3 text-lg font-semibold">Nou puzle</h2>
@@ -109,7 +124,10 @@ export default function EditorHome() {
       {!puzzles && !error && <Spinner />}
       {puzzles && (
         <>
-          <Section title="Pendents de revisió" empty="No hi ha cap proposta pendent.">
+          <Section
+            title={isEditor ? 'Pendents de revisió' : 'Les meves propostes'}
+            empty={isEditor ? 'No hi ha cap proposta pendent.' : 'Encara no n’has proposat cap.'}
+          >
             {proposed.map((p) => {
               const reviewed = p.reviews.some((r) => r.author.id === user!.id);
               const mine = p.author.id === user!.id;
@@ -122,7 +140,7 @@ export default function EditorHome() {
                       {p.wantedNumber && <> · {wantedText(p.wantedNumber)}</>}
                     </span>
                   </span>
-                  {!mine && !reviewed && (
+                  {isEditor && !mine && !reviewed && (
                     <span className="bg-brand-100 text-brand-900 shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold">
                       Revisa’l
                     </span>
@@ -131,7 +149,10 @@ export default function EditorHome() {
               );
             })}
           </Section>
-          <Section title="Programats" empty="Cap puzle programat.">
+          <Section
+            title={isEditor ? 'Programats' : 'Aprovats (sortiran aviat)'}
+            empty="Cap puzle programat."
+          >
             {scheduled.map((p) => (
               <PuzzleRow key={p.id} puzzle={p} onRenamed={rename}>
                 <span className="flex min-w-0 flex-col gap-1">
@@ -143,7 +164,10 @@ export default function EditorHome() {
               </PuzzleRow>
             ))}
           </Section>
-          <Section title="Publicats recentment" empty="Encara no se n’ha publicat cap.">
+          <Section
+            title={isEditor ? 'Publicats recentment' : 'Publicats'}
+            empty="Encara no se n’ha publicat cap."
+          >
             {published.map((p) => (
               <PuzzleRow key={p.id} puzzle={p} onRenamed={rename}>
                 <span className="flex min-w-0 flex-col gap-1">

@@ -373,7 +373,21 @@ expect(
   { r, q },
 );
 r = await info(prop.id, { title: 'x' }, anna.token);
-expect('només els editors poden posar nom', r.status === 403, r);
+expect('qui no és editor no pot posar nom al puzle d’un altre', r.status === 403, r);
+// Editor obert: qui no és editor també proposa (amb un límit de propostes pendents).
+const proposeAs = (u, n) =>
+  post(
+    '/collections/puzzles/records',
+    { game: 'mini', data: { n }, author: u.id, status: 'proposed' },
+    u.token,
+  );
+const own = [];
+for (let n = 0; n < 5; n++) own.push((await proposeAs(anna, n)).body.id);
+expect('qui no és editor pot proposar puzles', own.every(Boolean), own);
+r = await proposeAs(anna, 99);
+expect('com a màxim 5 propostes pendents', r.status === 400, r);
+r = await info(own[0], { title: 'La meva' }, anna.token);
+expect('l’autor posa nom a la seva proposta', r.status === 204, r);
 r = await info(prop.id, { wantedNumber: today });
 expect('el dia preferit ha de ser a partir de demà', r.status === 400, r);
 r = await info(prop.id, { wantedNumber: null });
@@ -440,6 +454,28 @@ expect('desactivar l’avís', r.status === 204 && (await subsOf(anna)).length =
 // ── Recalcular (administració) ──
 r = await post('/jocmot/admin/recalcula', {}, anna.token);
 expect('recalcular és només per a superusuaris', r.status === 401 || r.status === 403, r);
+
+// ── Esborrar el compte d'algú que ha proposat puzles ──
+r = await req(`/collections/puzzles/records/${own[1]}`, {
+  method: 'PATCH',
+  token: gina.token,
+  body: JSON.stringify({
+    status: 'published',
+    number: today + 30,
+    releaseAt: new Date(Date.now() + 30 * 86400000).toISOString().replace('T', ' '),
+  }),
+});
+expect('un editor publica la proposta d’una altra persona', r.status === 200, r);
+r = await req('/jocmot/compte', {
+  method: 'DELETE',
+  token: anna.token,
+  body: JSON.stringify({ password: 'contrasenya123' }),
+});
+expect('pot esborrar el compte encara que tingui puzles', r.status === 204, r);
+const after = (await get(`/collections/puzzles/records/${own[1]}`, gina.token)).body;
+expect('… el publicat es queda, sense autor', after.id === own[1] && after.author === '', after);
+r = await get(`/collections/puzzles/records/${own[0]}`, gina.token);
+expect('… les propostes s’esborren', r.status === 404, r);
 
 console.log(fails ? `\n${fails} comprovacions han fallat` : '\nTot correcte');
 process.exit(fails ? 1 : 0);

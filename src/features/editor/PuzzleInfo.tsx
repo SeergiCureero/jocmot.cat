@@ -4,6 +4,7 @@ import Modal from '@/components/ui/Modal';
 import { INPUT } from '@/components/ui/styles';
 import { useToast } from '@/components/ui/Toast';
 import { SITE } from '@/config/site';
+import { useAuth } from '@/features/auth/AuthContext';
 import { getPuzzleDate, getTodayPuzzleNumber } from '@/games/puzzles';
 import { formatDateCa, puzzleNumberForDate } from '@/lib/date';
 import { backend, type DesignableGameId, type PuzzleRecord } from '@/services/backend';
@@ -19,7 +20,15 @@ export function PuzzleName({ puzzle }: { puzzle: Pick<PuzzleRecord, 'title'> }) 
   );
 }
 
-/** Botó ✏️ per posar o canviar el nom d'un puzle (qualsevol editor, també dels programats). */
+/** Qui pot canviar el nom: els editors (també dels programats) i l'autor mentre és una proposta. */
+export function useCanRename(puzzle: PuzzleRecord): boolean {
+  const { user } = useAuth();
+  return Boolean(
+    user && (user.editor || (puzzle.author.id === user.id && puzzle.status === 'proposed')),
+  );
+}
+
+/** Botó ✏️ per posar o canviar el nom d'un puzle. */
 export function RenameButton({
   puzzle,
   onSaved,
@@ -28,6 +37,7 @@ export function RenameButton({
   onSaved: (title: string) => void;
 }) {
   const toast = useToast();
+  const canRename = useCanRename(puzzle);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(puzzle.title);
   const [busy, setBusy] = useState(false);
@@ -44,6 +54,8 @@ export function RenameButton({
       setBusy(false);
     }
   }
+
+  if (!canRename) return null;
 
   return (
     <>

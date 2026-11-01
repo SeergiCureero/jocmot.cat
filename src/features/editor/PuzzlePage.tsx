@@ -48,6 +48,7 @@ function PuzzleView({
   const toast = useToast();
   const kit = KITS[record.game];
   const mine = record.author.id === user!.id;
+  const isEditor = Boolean(user!.editor);
   const editable = mine && record.status === 'proposed';
   const myReview = record.reviews.find((r) => r.author.id === user!.id);
   // Una aprovació anterior a l'últim canvi ja no compta: cal tornar a aprovar.
@@ -83,7 +84,9 @@ function PuzzleView({
   const review = (approved: boolean) =>
     run(async () => {
       await backend.saveReview(record.id, { approved, comment: comment.trim() });
-      const updated = await publishIfReady(record.id);
+      const updated = isEditor
+        ? await publishIfReady(record.id)
+        : await backend.getPuzzle(record.id);
       if (updated.status === 'published')
         toast(`Aprovat i programat! ${statusText(updated)}`, 4000);
       else toast(approved ? 'Aprovat' : 'Desat');
@@ -116,7 +119,9 @@ function PuzzleView({
               Retira-la
             </Button>
           )}
-          <MoveDay puzzle={record} onMoved={() => backend.getPuzzle(record.id).then(onChange)} />
+          {isEditor && (
+            <MoveDay puzzle={record} onMoved={() => backend.getPuzzle(record.id).then(onChange)} />
+          )}
         </div>
       </div>
       <p className="mb-4 text-sm text-stone-600">
@@ -126,6 +131,12 @@ function PuzzleView({
           <> · {wantedText(record.wantedNumber)}</>
         )}
       </p>
+      {record.status === 'proposed' && mine && !isEditor && (
+        <p className="bg-brand-50 text-brand-900 mb-4 rounded-xl px-3 py-2 text-sm">
+          L’equip de jocmot hi jugarà i, si li agrada, l’aprovarà i sortirà publicat. Si hi veu
+          alguna cosa a canviar, t’ho dirà aquí sota, als comentaris.
+        </p>
+      )}
       {record.status === 'proposed' && mine && (
         <div className="mb-6 rounded-xl border border-stone-200 bg-white p-3">
           <WantedDayInput
@@ -253,12 +264,12 @@ function PuzzleView({
                   />
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {!mine && !approvedByMe && (
+                  {isEditor && !mine && !approvedByMe && (
                     <Button disabled={busy} onClick={() => review(true)}>
                       Aprova’l
                     </Button>
                   )}
-                  {!mine && approvedByMe && (
+                  {isEditor && !mine && approvedByMe && (
                     <Button variant="secondary" disabled={busy} onClick={() => review(false)}>
                       Retira l’aprovació
                     </Button>

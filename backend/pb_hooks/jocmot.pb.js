@@ -377,6 +377,9 @@ routerAdd(
 
 // Les aprovacions valen fins que canvia el contingut del puzle (no el nom ni el dia preferit).
 onRecordCreateRequest((e) => {
+  // Editor obert: qui no és editor només pot tenir unes quantes propostes pendents.
+  if (!e.hasSuperuserAuth() && e.auth)
+    require(`${__hooks}/jocmot_db.js`).checkProposalLimit(e.app, e.auth);
   e.record.set('contentUpdated', new DateTime());
   e.next();
 }, 'puzzles');
@@ -387,14 +390,13 @@ onRecordUpdateRequest((e) => {
   e.next();
 }, 'puzzles');
 
-/** Canvia el nom d'un puzle (també dels programats) o el dia preferit d'una proposta. Només editors. */
+/** Canvia el nom d'un puzle o el dia preferit d'una proposta. Editors, o l'autor mentre és una proposta. */
 routerAdd(
   'POST',
   '/api/jocmot/puzles/{id}/info',
   (e) => {
-    if (!e.auth.getBool('editor')) throw new ForbiddenError('Només per a editors.');
     const db = require(`${__hooks}/jocmot_db.js`);
-    db.updatePuzzleInfo(e.app, e.request.pathValue('id'), e.requestInfo().body);
+    db.updatePuzzleInfo(e.app, e.auth, e.request.pathValue('id'), e.requestInfo().body);
     return e.noContent(204);
   },
   $apis.requireAuth('users'),

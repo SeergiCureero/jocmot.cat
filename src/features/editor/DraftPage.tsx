@@ -37,7 +37,7 @@ export default function DraftPage() {
     try {
       const record = await backend.proposePuzzle(draft!.game, puzzle, { title, wantedNumber });
       drafts.remove(id);
-      toast('Proposat! Ara el grup el pot revisar.');
+      toast('Proposat! Ara l’equip de jocmot el revisarà.');
       navigate(`/editor/puzle/${record.id}`, { replace: true });
     } catch (e) {
       toast(e instanceof Error ? e.message : 'No s’ha pogut proposar');
@@ -99,7 +99,7 @@ export default function DraftPage() {
                 Prova’l
               </Button>
               <Button disabled={!puzzle || sending} onClick={propose}>
-                {sending ? 'Enviant…' : 'Proposa’l al grup'}
+                {sending ? 'Enviant…' : 'Proposa’l'}
               </Button>
             </div>
             <p className="text-xs text-stone-500">Es desa sol en aquest navegador.</p>

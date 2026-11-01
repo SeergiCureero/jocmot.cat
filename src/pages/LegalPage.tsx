@@ -175,6 +175,11 @@ export default function LegalPage() {
 
         <h2 id="condicions">Condicions d’ús</h2>
         <ul>
+          <li>
+            Si proposes un puzle a l’editor, ens autoritzes a publicar-lo a {SITE.name}, de franc, i
+            a corregir-ne o adaptar-ne el contingut. Ha de ser original teu. Podem no publicar-lo, i
+            no hi pot haver res ofensiu.
+          </li>
           <li>Jugar és gratuït. Crear un compte també.</li>
           <li>
             Tria un nom d’usuari i noms de lliga respectuosos: els veuen altres persones. Podem

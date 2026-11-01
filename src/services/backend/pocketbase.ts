@@ -110,7 +110,7 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
 
   const toPerson = (id: string, r?: PbUserRecord): PersonRef => ({
     id,
-    username: r?.name || r?.username || '?',
+    username: r?.name || r?.username || (id ? '?' : 'compte esborrat'),
   });
 
   const toReview = (r: PbReviewRecord): ReviewRecord => ({

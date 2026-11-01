@@ -44,8 +44,6 @@ expect('un usuari pot canviar el seu nom', r.status === 200, JSON.stringify(r.bo
 
 // Puzles
 const data = { groups: [] };
-r = await post('/collections/puzzles/records', { game: 'connexions', data, author: pau.id, status: 'proposed' }, pau.token);
-expect('no editor no pot proposar', r.status !== 200);
 r = await post('/collections/puzzles/records', { game: 'connexions', data, author: biel.id, status: 'proposed' }, anna.token);
 expect('no es pot proposar en nom d’un altre', r.status !== 200);
 r = await post('/collections/puzzles/records', { game: 'connexions', data, author: anna.id, status: 'published', number: 1 }, anna.token);
@@ -93,7 +91,12 @@ expect('el públic veu el puzle del dia', r.body.items?.length === 1, JSON.strin
 // Usuaris visibles entre editors, sense correu
 r = await req(`/collections/users/records/${anna.id}`, { token: biel.token });
 expect('un editor veu el nom d’un altre', r.status === 200 && r.body.name === 'anna' && !r.body.email, JSON.stringify(r.body));
+const quim = await user('quim', false);
 r = await req(`/collections/users/records/${anna.id}`, { token: pau.token });
+expect('tothom amb compte veu el nom dels editors', r.status === 200 && r.body.name === 'anna' && !r.body.email, JSON.stringify(r.body));
+r = await req(`/collections/users/records/${anna.id}`);
+expect('sense compte no es veuen els editors', r.status !== 200);
+r = await req(`/collections/users/records/${quim.id}`, { token: pau.token });
 expect('un no editor no veu altres usuaris', r.status !== 200);
 
 // Progrés
@@ -101,5 +104,44 @@ r = await post('/collections/progress/records', { user: pau.id, game: 'paraula',
 expect('desa progrés propi', r.status === 200 && r.body.updated, JSON.stringify(r.body));
 r = await post('/collections/progress/records', { user: anna.id, game: 'paraula', puzzle: 1, status: 'won', state: {} }, pau.token);
 expect('no desa progrés d’un altre', r.status !== 200);
+
+// Editor obert: qualsevol persona amb compte proposa; només els editors revisen i publiquen
+r = await post('/collections/puzzles/records', { game: 'mini', data, author: pau.id, status: 'proposed' }, pau.token);
+expect('qualsevol persona amb compte pot proposar', r.status === 200, JSON.stringify(r.body));
+const pp = r.body.id;
+r = await post('/collections/puzzles/records', { game: 'mini', data, author: pau.id, status: 'proposed', number: 9 }, pau.token);
+expect('no es pot proposar amb número de dia', r.status !== 200);
+r = await req(`/collections/puzzles/records/${pp}`, { token: quim.token });
+expect('un altre usuari no veu la proposta', r.status !== 200);
+r = await req(`/collections/puzzles/records/${pp}`);
+expect('el públic no veu la proposta', r.status !== 200);
+r = await req(`/collections/puzzles/records/${pp}`, { token: biel.token });
+expect('un editor veu la proposta', r.status === 200);
+r = await req(`/collections/puzzles/records?filter=${encodeURIComponent(`id="${pp}"`)}`, { token: pau.token });
+expect("l'autor veu la seva proposta", r.body.items?.length === 1, JSON.stringify(r.body));
+r = await patch(`/collections/puzzles/records/${pp}`, { data: { v: 2 } }, pau.token);
+expect("l'autor pot editar la seva proposta", r.status === 200, JSON.stringify(r.body));
+r = await patch(`/collections/puzzles/records/${pp}`, { status: 'published', number: 5, releaseAt: future }, pau.token);
+expect("l'autor no la pot publicar", r.status !== 200);
+r = await patch(`/collections/puzzles/records/${pp}`, { data: { v: 3 } }, quim.token);
+expect('un altre usuari no la pot editar', r.status !== 200);
+r = await post('/collections/reviews/records', { puzzle: pp, author: pau.id, approved: true }, pau.token);
+expect("l'autor no la pot aprovar", r.status !== 200);
+r = await post('/collections/reviews/records', { puzzle: pp, author: pau.id, approved: false, comment: 'gràcies' }, pau.token);
+expect("l'autor hi pot comentar", r.status === 200, JSON.stringify(r.body));
+r = await post('/collections/reviews/records', { puzzle: pp, author: quim.id, approved: false, comment: 'hola' }, quim.token);
+expect('un altre usuari no hi pot comentar', r.status !== 200);
+r = await post('/collections/reviews/records', { puzzle: pp, author: biel.id, approved: true, comment: 'bona!' }, biel.token);
+expect('un editor la pot aprovar', r.status === 200, JSON.stringify(r.body));
+r = await req(`/collections/reviews/records?filter=${encodeURIComponent(`puzzle="${pp}"`)}`, { token: pau.token });
+expect("l'autor veu les revisions del seu puzle", r.body.items?.length === 2, JSON.stringify(r.body));
+r = await req('/collections/reviews/records', { token: quim.token });
+expect('un altre usuari no veu revisions', r.body.items?.length === 0, JSON.stringify(r.body));
+r = await patch(`/collections/puzzles/records/${pp}`, { status: 'published', number: 5, releaseAt: future }, biel.token);
+expect('un editor la pot publicar', r.status === 200, JSON.stringify(r.body));
+r = await patch(`/collections/puzzles/records/${pp}`, { data: { v: 4 } }, pau.token);
+expect("publicada, l'autor ja no la pot editar", r.status !== 200);
+r = await req(`/collections/puzzles/records/${pp}`, { method: 'DELETE', token: pau.token });
+expect("publicada, l'autor ja no la pot esborrar", r.status !== 204);
 
 console.log(fails ? `${fails} FALLADES` : 'Tot correcte');

@@ -48,6 +48,10 @@ export default function AboutPage() {
           entre nosaltres abans de publicar-los.
         </p>
         <p>
+          També en pots crear tu: amb un compte, entra a <Link to="/editor">✏️ Crea</Link>, dissenya
+          el teu puzle i proposa’l. Si ens agrada, el publicarem perquè hi jugui tothom.
+        </p>
+        <p>
           Els jocs s’inspiren en clàssics com el Wordle, el Connections, el Strands o el Mini
           Crossword, però tots els puzles són originals i pensats per al català.
         </p>
