@@ -344,6 +344,57 @@ expect(
   { r, a, b },
 );
 
+// ── Nom i dia preferit dels puzles ──
+const prop = (
+  await post(
+    '/collections/puzzles/records',
+    {
+      game: 'fils',
+      data: { v: 1 },
+      author: gina.id,
+      status: 'proposed',
+      title: 'Rius',
+      wantedNumber: today + 4,
+    },
+    gina.token,
+  )
+).body;
+expect(
+  'proposar amb nom i dia preferit',
+  prop.title === 'Rius' && prop.wantedNumber === today + 4 && prop.contentUpdated !== '',
+  prop,
+);
+const info = (id, body, token = cesc.token) => post(`/jocmot/puzles/${id}/info`, body, token);
+r = await info(prop.id, { title: '  Rius i muntanyes ' });
+let q = await getPuzzle(prop.id);
+expect(
+  'un altre editor hi posa nom, sense tocar contentUpdated',
+  r.status === 204 && q.title === 'Rius i muntanyes' && q.contentUpdated === prop.contentUpdated,
+  { r, q },
+);
+r = await info(prop.id, { title: 'x' }, anna.token);
+expect('només els editors poden posar nom', r.status === 403, r);
+r = await info(prop.id, { wantedNumber: today });
+expect('el dia preferit ha de ser a partir de demà', r.status === 400, r);
+r = await info(prop.id, { wantedNumber: null });
+q = await getPuzzle(prop.id);
+expect('treure el dia preferit', r.status === 204 && q.wantedNumber === 0, q);
+await req(`/collections/puzzles/records/${prop.id}`, {
+  method: 'PATCH',
+  token: gina.token,
+  body: JSON.stringify({ data: { v: 2 } }),
+});
+q = await getPuzzle(prop.id);
+expect(
+  'canviar el contingut sí que actualitza contentUpdated',
+  q.contentUpdated > prop.contentUpdated,
+  q,
+);
+r = await info(pa, { title: 'Programat' });
+expect('es pot posar nom a un puzle programat', r.status === 204, r);
+r = await info(pa, { wantedNumber: today + 9 });
+expect('però no dia preferit (es mou des del calendari)', r.status === 400, r);
+
 // ── Recalcular (administració) ──
 r = await post('/jocmot/admin/recalcula', {}, anna.token);
 expect('recalcular és només per a superusuaris', r.status === 401 || r.status === 403, r);

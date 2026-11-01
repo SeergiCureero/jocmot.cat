@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import Button from '@/components/ui/Button';
+import { INPUT } from '@/components/ui/styles';
 import { useToast } from '@/components/ui/Toast';
 import { backend } from '@/services/backend';
 import { drafts } from './drafts';
 import { KITS } from './kits';
 import PreviewPlayer from './PreviewPlayer';
+import { TITLE_MAX, WantedDayInput } from './PuzzleInfo';
 import { ErrorList, GameLabel } from './ui';
 
 /** Esborrany local: s'edita, es prova i es proposa al grup. */
@@ -17,6 +19,8 @@ export default function DraftPage() {
   const [data, setData] = useState(draft?.data);
   const [playing, setPlaying] = useState(false);
   const [sending, setSending] = useState(false);
+  const [title, setTitle] = useState('');
+  const [wantedNumber, setWantedNumber] = useState<number | null>(null);
 
   if (!draft) return <Navigate to="/editor" replace />;
   const kit = KITS[draft.game];
@@ -30,7 +34,7 @@ export default function DraftPage() {
   async function propose() {
     setSending(true);
     try {
-      const record = await backend.proposePuzzle(draft!.game, puzzle);
+      const record = await backend.proposePuzzle(draft!.game, puzzle, { title, wantedNumber });
       drafts.remove(id);
       toast('Proposat! Ara el grup el pot revisar.');
       navigate(`/editor/puzle/${record.id}`, { replace: true });
@@ -73,6 +77,21 @@ export default function DraftPage() {
           <kit.Form value={data} onChange={change} />
           <div className="sticky bottom-0 mt-6 space-y-3 border-t border-stone-200 bg-stone-50/95 py-4 backdrop-blur">
             <ErrorList errors={errors} />
+            {Boolean(puzzle) && (
+              <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-3">
+                <label className="block text-sm">
+                  <span className="font-medium text-stone-700">Nom del puzle</span>
+                  <input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    maxLength={TITLE_MAX}
+                    placeholder="p. ex. Rius i muntanyes"
+                    className={`mt-1 ${INPUT}`}
+                  />
+                </label>
+                <WantedDayInput game={draft.game} value={wantedNumber} onChange={setWantedNumber} />
+              </div>
+            )}
             <div className="flex flex-wrap gap-2">
               <Button variant="secondary" disabled={!puzzle} onClick={() => setPlaying(true)}>
                 Prova’l

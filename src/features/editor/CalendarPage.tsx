@@ -6,6 +6,7 @@ import { getPuzzleDate, getTodayPuzzleNumber } from '@/games/puzzles';
 import { DESIGNABLE_GAMES } from '@/games/registry';
 import { backend, type DesignableGameId, type PuzzleRecord } from '@/services/backend';
 import MoveDay from './MoveDay';
+import { PuzzleName } from './PuzzleInfo';
 import { GameLabel, gameMeta } from './ui';
 
 /** Dies que es mostren com a mínim a partir d'avui. */
@@ -106,7 +107,8 @@ export default function CalendarPage() {
                         to={`/editor/puzle/${p.id}`}
                         className="min-w-0 flex-1 truncate text-sm font-medium hover:underline"
                       >
-                        de {p.author.username}
+                        <PuzzleName puzzle={p} />{' '}
+                        <span className="text-stone-500">· de {p.author.username}</span>
                       </Link>
                       {!isToday && <MoveDay puzzle={p} onMoved={load} />}
                     </>
