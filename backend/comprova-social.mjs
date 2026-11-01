@@ -344,6 +344,49 @@ expect(
   { r, a, b },
 );
 
+// ── Avís diari ──
+r = await get('/jocmot/avisos/clau');
+expect(
+  'la clau dels avisos és pública (null si el servidor no en té)',
+  r.status === 200 && (r.body.publicKey === null || /^B[A-Za-z0-9_-]{86}$/.test(r.body.publicKey)),
+  r,
+);
+const endpoint = 'https://updates.push.services.mozilla.com/wpush/v2/prova-' + Date.now();
+const subscription = { endpoint, keys: { p256dh: 'x', auth: 'y' }, hour: 9 };
+r = await post('/jocmot/avisos', subscription);
+expect('activar l’avís demana sessió', r.status === 401, r);
+r = await post(
+  '/jocmot/avisos',
+  { ...subscription, endpoint: 'https://127.0.0.1:8090/api/' },
+  anna.token,
+);
+expect('només s’accepten serveis de push dels navegadors', r.status === 400, r);
+r = await post('/jocmot/avisos', { ...subscription, hour: 24 }, anna.token);
+expect('l’hora ha de ser de 0 a 23', r.status === 400, r);
+r = await post('/jocmot/avisos', subscription, anna.token);
+expect('activar l’avís', r.status === 204, r);
+r = await post('/jocmot/avisos', { ...subscription, hour: 20 }, anna.token);
+expect('canviar-ne l’hora', r.status === 204, r);
+const su = await post('/collections/_superusers/auth-with-password', {
+  identity: 'admin@test.local',
+  password: 'adminadmin123',
+});
+const subsOf = async (u) =>
+  (await get(`/collections/push_subscriptions/records?filter=(user='${u.id}')`, su.body.token)).body
+    .items ?? [];
+let subs = await subsOf(anna);
+expect('una sola subscripció per navegador', subs.length === 1 && subs[0].hour === 20, subs);
+r = await get('/collections/push_subscriptions/records', anna.token);
+expect(
+  'els usuaris no poden llegir les subscripcions',
+  r.status === 403 || (r.body.items ?? []).length === 0,
+  r,
+);
+r = await post('/jocmot/avisos/treu', { endpoint }, biel.token);
+expect('no pots treure l’avís d’un altre', (await subsOf(anna)).length === 1, r);
+r = await post('/jocmot/avisos/treu', { endpoint }, anna.token);
+expect('desactivar l’avís', r.status === 204 && (await subsOf(anna)).length === 0, r);
+
 // ── Recalcular (administració) ──
 r = await post('/jocmot/admin/recalcula', {}, anna.token);
 expect('recalcular és només per a superusuaris', r.status === 401 || r.status === 403, r);

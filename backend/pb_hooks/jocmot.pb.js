@@ -404,3 +404,57 @@ routerAdd(
   },
   $apis.requireSuperuserAuth(),
 );
+
+// ── Avís diari (notificacions) ──
+
+/** Clau pública VAPID perquè el navegador es pugui subscriure (null = avisos desactivats). */
+routerAdd('GET', '/api/jocmot/avisos/clau', (e) => {
+  return e.json(200, { publicKey: require(`${__hooks}/jocmot_avisos.js`).publicKey() });
+});
+
+routerAdd(
+  'POST',
+  '/api/jocmot/avisos',
+  (e) => {
+    require(`${__hooks}/jocmot_avisos.js`).subscribe(e.app, e.auth, e.requestInfo().body);
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
+routerAdd(
+  'POST',
+  '/api/jocmot/avisos/treu',
+  (e) => {
+    require(`${__hooks}/jocmot_avisos.js`).unsubscribe(
+      e.app,
+      e.auth,
+      e.requestInfo().body.endpoint,
+    );
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
+routerAdd(
+  'POST',
+  '/api/jocmot/avisos/prova',
+  (e) => e.json(200, require(`${__hooks}/jocmot_avisos.js`).sendTest(e.app, e.auth)),
+  $apis.requireAuth('users'),
+);
+
+// Cada hora en punt: els avisos de l'hora (de Madrid) que toca.
+cronAdd('jocmot_avisos', '0 * * * *', () => {
+  require(`${__hooks}/jocmot_avisos.js`).sendDailyReminders($app);
+});
+
+/** Executa ara els avisos de l'hora actual (com el cron). Per provar-ho. */
+routerAdd(
+  'POST',
+  '/api/jocmot/admin/avisos',
+  (e) => {
+    require(`${__hooks}/jocmot_avisos.js`).sendDailyReminders(e.app);
+    return e.noContent(204);
+  },
+  $apis.requireSuperuserAuth(),
+);

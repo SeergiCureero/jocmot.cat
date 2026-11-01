@@ -8,6 +8,7 @@ import type { ProgressRecord } from '@/services/backend';
 import { computeStats } from '@/features/progress/stats';
 import { syncLocalProgress } from '@/features/progress/useGameProgress';
 import { useAuth } from './AuthContext';
+import DailyReminder from '@/features/notifications/DailyReminder';
 import DeleteAccount from './DeleteAccount';
 
 export default function ProfilePage() {
@@ -76,6 +77,8 @@ export default function ProfilePage() {
           );
         })}
       </div>
+
+      {backendKind === 'pocketbase' && <DailyReminder />}
 
       {backendKind === 'pocketbase' && <DeleteAccount onDeleted={() => setDeleted(true)} />}
     </div>

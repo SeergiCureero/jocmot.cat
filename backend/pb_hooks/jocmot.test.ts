@@ -143,3 +143,11 @@ it('els rangs que explica la web són els que calcula el servidor', async () => 
   const { RANKS } = await import('../../src/features/social/PointsHelp');
   expect(RANKS).toEqual(lib.RANKS);
 });
+
+describe('madridHour', () => {
+  it('té en compte l’horari d’estiu i d’hivern', () => {
+    expect(lib.madridHour(Date.UTC(2026, 6, 1, 6, 59))).toBe(8);
+    expect(lib.madridHour(Date.UTC(2026, 10, 2, 7, 0))).toBe(8);
+    expect(lib.madridHour(Date.UTC(2026, 11, 31, 23, 30))).toBe(0);
+  });
+});
