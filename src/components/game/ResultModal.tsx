@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import Button from '@/components/ui/Button';
+import DonateButton from '@/components/ui/DonateButton';
 import Modal from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
 import { FEATURES, SITE } from '@/config/site';
@@ -71,6 +72,9 @@ export default function ResultModal({ open, onClose, meta, puzzleNumber, result,
             )}
           </div>
           {puzzleNumber === getTodayPuzzleNumber() && <Countdown />}
+          <div className="text-center">
+            <DonateButton />
+          </div>
         </>
       )}
 
