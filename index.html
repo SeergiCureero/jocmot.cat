@@ -2,13 +2,43 @@
 <html lang="ca">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>jocmot.cat - Jocs de paraules en català</title>
+    <meta
+      name="description"
+      content="Jocs de paraules diaris en català: Paraula, Connexions, Fils i Mini."
+    />
+    <meta name="theme-color" content="#0f766e" />
+
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Jocs de paraules diaris en català: Paraula, Connexions, Fils i Mini." />
-    <meta name="theme-color" content="#0f766e" />
-    <title>jocmot.cat - Jocs de paraules en català</title>
+
+    <!-- Font principal precarregada: el text no canvia de lletra en carregar. -->
+    <link
+      rel="preload"
+      href="/node_modules/@fontsource-variable/inter/files/inter-latin-opsz-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <!-- Imatge i textos quan s'enganxa l'enllaç (WhatsApp, Telegram, xarxes). -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="jocmot.cat" />
+    <meta property="og:locale" content="ca_ES" />
+    <meta property="og:url" content="https://jocmot.cat/" />
+    <meta property="og:title" content="jocmot.cat - Jocs de paraules en català" />
+    <meta
+      property="og:description"
+      content="Paraula, Connexions, Fils i Mini. Puzles nous cada dia."
+    />
+    <meta property="og:image" content="https://jocmot.cat/compartir/jocmot.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="jocmot.cat: jocs de paraules en català, cada dia" />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body class="bg-stone-50 text-stone-900 antialiased">
     <div id="root"></div>
