@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { ChartIcon, MenuIcon } from '@/components/icons';
 import { ICON_BUTTON as iconButton } from '@/components/ui/styles';
 import Menu from './Menu';
+import logoText from '../../../public/logos/jocmot-text.svg?raw';
 
 /**
  * Capçalera fixa: logo (portada) a l'esquerra; estadístiques i menú a la dreta.
@@ -19,12 +20,11 @@ export default function Header() {
           className="-ml-2 flex h-11 items-center rounded-lg px-2"
           aria-label="jocmot.cat, inici"
         >
-          <img
-            src="/logos/jocmot-text.svg"
-            alt=""
-            width={113}
-            height={29}
-            className="h-[29px] w-auto"
+          {/* SVG en línia (de public/logos/, còpia d'identitat/): es pinta sense esperar cap descàrrega. */}
+          <span
+            aria-hidden
+            className="block h-[29px] w-[113px] [&>svg]:size-full"
+            dangerouslySetInnerHTML={{ __html: logoText }}
           />
         </Link>
 

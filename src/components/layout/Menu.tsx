@@ -38,69 +38,77 @@ export default function Menu({ open, onClose }: { open: boolean; onClose: () => 
       aria-label="Menú"
       className="open:animate-menu-in backdrop:animate-fade-in fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-[min(88vw,22rem)] bg-white p-0 shadow-xl outline-none backdrop:bg-black/40"
     >
-      <div className="flex h-full flex-col overflow-y-auto pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <div className="flex h-14 shrink-0 items-center justify-between pr-2 pl-5">
-          <p className="font-bold">Menú</p>
-          <button type="button" onClick={onClose} className={iconButton} aria-label="Tanca el menú">
-            <CloseIcon />
-          </button>
-        </div>
-
-        <nav aria-label="Jocs" className="px-2">
-          <ul>
-            {GAMES.map((g) => (
-              <li key={g.id}>
-                <Link to={`/${g.slug}`} className={row}>
-                  <GameIcon id={g.id} size={36} className="rounded-[9px]" />
-                  {g.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <hr className="mx-5 my-2 border-stone-200" />
-
-        <nav aria-label="Més" className="px-2">
-          <ul>
-            <Item to="/estadistiques">Estadístiques</Item>
-            <Item to="/configuracio">Configuració</Item>
-            <Item to="/com-es-juga">Com es juga</Item>
-            <li>
-              <a href={`mailto:${SITE.email}`} className={row}>
-                Contacte
-              </a>
-            </li>
-          </ul>
-        </nav>
-
-        {(FEATURES.archive || FEATURES.social || FEATURES.accounts) && (
-          <>
-            <hr className="mx-5 my-2 border-stone-200" />
-            <nav aria-label="Compte i lligues" className="px-2">
-              <ul>
-                {FEATURES.archive && <Item to="/arxiu">Arxiu de puzles</Item>}
-                {FEATURES.social && <Item to="/lligues">Lligues</Item>}
-                {FEATURES.social && <Item to="/amics">Amics</Item>}
-                {FEATURES.accounts && user && (
-                  <Item to="/editor">{user.editor ? 'Editor' : 'Crea un puzle'}</Item>
-                )}
-                {FEATURES.accounts && (
-                  <Item to={user ? '/compte' : '/compte/entrar'}>
-                    {user ? `El meu compte (${user.username})` : 'Entra o crea un compte'}
-                  </Item>
-                )}
-              </ul>
-            </nav>
-          </>
-        )}
-
-        {SITE.donateUrl && (
-          <div className="mt-auto px-5 pt-4">
-            <DonateButton />
+      {/* El contingut només es munta quan està obert (no carrega icones que no es veuen). */}
+      {open && (
+        <div className="flex h-full flex-col overflow-y-auto pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="flex h-14 shrink-0 items-center justify-between pr-2 pl-5">
+            <p className="font-bold">Menú</p>
+            <button
+              type="button"
+              onClick={onClose}
+              className={iconButton}
+              aria-label="Tanca el menú"
+            >
+              <CloseIcon />
+            </button>
           </div>
-        )}
-      </div>
+
+          <nav aria-label="Jocs" className="px-2">
+            <ul>
+              {GAMES.map((g) => (
+                <li key={g.id}>
+                  <Link to={`/${g.slug}`} className={row}>
+                    <GameIcon id={g.id} size={36} className="rounded-[9px]" />
+                    {g.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <hr className="mx-5 my-2 border-stone-200" />
+
+          <nav aria-label="Més" className="px-2">
+            <ul>
+              <Item to="/estadistiques">Estadístiques</Item>
+              <Item to="/configuracio">Configuració</Item>
+              <Item to="/com-es-juga">Com es juga</Item>
+              <li>
+                <a href={`mailto:${SITE.email}`} className={row}>
+                  Contacte
+                </a>
+              </li>
+            </ul>
+          </nav>
+
+          {(FEATURES.archive || FEATURES.social || FEATURES.accounts) && (
+            <>
+              <hr className="mx-5 my-2 border-stone-200" />
+              <nav aria-label="Compte i lligues" className="px-2">
+                <ul>
+                  {FEATURES.archive && <Item to="/arxiu">Arxiu de puzles</Item>}
+                  {FEATURES.social && <Item to="/lligues">Lligues</Item>}
+                  {FEATURES.social && <Item to="/amics">Amics</Item>}
+                  {FEATURES.accounts && user && (
+                    <Item to="/editor">{user.editor ? 'Editor' : 'Crea un puzle'}</Item>
+                  )}
+                  {FEATURES.accounts && (
+                    <Item to={user ? '/compte' : '/compte/entrar'}>
+                      {user ? `El meu compte (${user.username})` : 'Entra o crea un compte'}
+                    </Item>
+                  )}
+                </ul>
+              </nav>
+            </>
+          )}
+
+          {SITE.donateUrl && (
+            <div className="mt-auto px-5 pt-4">
+              <DonateButton />
+            </div>
+          )}
+        </div>
+      )}
     </dialog>
   );
 }

@@ -3,13 +3,14 @@
 /*
  * Inter variable (amb eix de mida òptica: als títols grans es veu com Inter Display).
  * Només els subconjunts llatins; el principal es precarrega a index.html.
- * "Inter Fallback" és Arial amb les mètriques d'Inter: mentre arriba la font, el text
- * ocupa el mateix espai i no salta res.
+ * font-display: optional = si la font no ha arribat en pintar, aquella vegada es queda la de
+ * reserva i no canvia (no hi ha salt de lletra); la vegada següent ja és a la memòria cau.
+ * "Inter Fallback" és Arial amb les mètriques d'Inter: ocupa el mateix espai.
  */
 @font-face {
   font-family: 'Inter Variable';
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
   font-weight: 100 900;
   src: url('@fontsource-variable/inter/files/inter-latin-opsz-normal.woff2')
     format('woff2-variations');
@@ -20,7 +21,7 @@
 @font-face {
   font-family: 'Inter Variable';
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
   font-weight: 100 900;
   src: url('@fontsource-variable/inter/files/inter-latin-ext-opsz-normal.woff2')
     format('woff2-variations');
