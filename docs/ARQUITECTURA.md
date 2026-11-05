@@ -21,7 +21,7 @@ pages / games  →  features  →  services  →  lib
    const { state, update, status } = useGameProgress({ gameId, puzzleId, initialState, getStatus });
    update((s) => submitX(s, ...));
    ```
-3. `GameShell` — capçalera, ajuda, panell de resultat i botó de compartir. Tots els jocs l'usen perquè l'experiència sigui coherent.
+3. `GameShell` — capçalera (fletxa enrere, botó «?»), ajuda, línia d'avisos (`useGameMessage`: aria-live i vibració), panell de resultat i finestra de resultat (`ResultModal`). Tots els jocs l'usen perquè l'experiència sigui coherent.
 
 L'estat de cada joc ha de ser **serialitzable a JSON** (es desa tal qual al navegador i al servidor).
 
