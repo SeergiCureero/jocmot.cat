@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import GameShell from '@/components/game/GameShell';
 import Keyboard, { BACKSPACE, ENTER } from '@/components/game/Keyboard';
-import { useToast } from '@/components/ui/Toast';
+import { useGameMessage } from '@/components/game/GameMessage';
 import { SITE } from '@/config/site';
 import { useGameProgress } from '@/features/progress/useGameProgress';
+import { useSettings } from '@/features/settings/settings';
 import { loadFiveLetterWords } from '@/lib/dictionary';
 import { prefersReducedMotion } from '@/lib/dom';
+import { storage } from '@/lib/storage';
 import { normalizeWord } from '@/lib/text';
 import { pickByNumber } from '../puzzles';
 import type { GameProps } from '../types';
@@ -27,8 +29,8 @@ const SOLUTIONS = new Set(ANSWERS.map(normalizeWord));
 const PRAISE = ['Genial!', 'Magnífic!', 'Impressionant!', 'Molt bé!', 'Bé!', 'Pel pèl!'];
 
 const KEY_COLORS = {
-  correct: 'bg-correct text-white',
-  present: 'bg-present text-white',
+  correct: 'bg-correct text-on-correct',
+  present: 'bg-present text-on-present',
   absent: 'bg-absent text-white',
 };
 
@@ -40,13 +42,26 @@ export default function ParaulaGame({ puzzleNumber, date }: GameProps) {
     initialState,
     getStatus,
   });
-  const [current, setCurrent] = useState('');
+  // Les lletres a mig escriure també es desen: en tornar, hi són.
+  const draftKey = `draft:${meta.id}:${puzzleNumber}`;
+  const [current, setCurrentState] = useState(() => storage.get<string>(draftKey) ?? '');
+  const setCurrent = useCallback(
+    (fn: (c: string) => string) =>
+      setCurrentState((c) => {
+        const next = fn(c);
+        if (next) storage.set(draftKey, next);
+        else storage.remove(draftKey);
+        return next;
+      }),
+    [draftKey],
+  );
   const [shake, setShake] = useState(false);
   // Mentre es revela una fila no s'accepten tecles, i el teclat i el resultat esperen al final.
   const [revealing, setRevealing] = useState(false);
   // La partida s'ha acabat en aquesta visita? (per celebrar-ho només llavors)
   const [justFinished, setJustFinished] = useState(false);
-  const toast = useToast();
+  const { message, say } = useGameMessage();
+  const { highContrast } = useSettings();
   // Diccionari de 5 lletres. Mentre es descarrega (o si falla) s'accepta qualsevol paraula.
   const [dictionary, setDictionary] = useState<Set<string> | null>(null);
   useEffect(() => {
@@ -67,12 +82,13 @@ export default function ParaulaGame({ puzzleNumber, date }: GameProps) {
     const id = setTimeout(
       () => {
         setRevealing(false);
-        if (status === 'won') toast(PRAISE[state.guesses.length - 1]);
+        if (status === 'won') say(PRAISE[state.guesses.length - 1], 'ok');
+        else if (status === 'lost') say('Aquesta vegada no ha pogut ser', 'error');
       },
       prefersReducedMotion() ? 0 : REVEAL_MS,
     );
     return () => clearTimeout(id);
-  }, [revealing, status, state.guesses.length, toast]);
+  }, [revealing, status, state.guesses.length, say]);
 
   const onKey = useCallback(
     (key: string) => {
@@ -82,17 +98,22 @@ export default function ParaulaGame({ puzzleNumber, date }: GameProps) {
 
       const result = submitGuess(state, current, answer, isValidWord);
       if ('error' in result) {
-        toast(result.error === 'too-short' ? 'Falten lletres' : 'No és al diccionari');
+        say(
+          result.error === 'too-short'
+            ? `La paraula ha de tenir ${WORD_LENGTH} lletres`
+            : 'Aquesta paraula no és al diccionari',
+          'error',
+        );
         setShake(true);
         setTimeout(() => setShake(false), 400);
         return;
       }
       update(() => result.state);
-      setCurrent('');
+      setCurrent(() => '');
       setRevealing(true);
       setJustFinished(getStatus(result.state) !== 'playing');
     },
-    [status, revealing, state, current, answer, isValidWord, update, toast],
+    [status, revealing, state, current, answer, isValidWord, update, say, setCurrent],
   );
 
   const shareUrl = `${SITE.url}/${meta.slug}`;
@@ -109,12 +130,23 @@ export default function ParaulaGame({ puzzleNumber, date }: GameProps) {
               La paraula era <strong className="uppercase">{answer}</strong>.
             </>
           ),
-          shareText: buildShareText(puzzleNumber, state, answer, shareUrl),
+          // En alt contrast, els mateixos colors que es veuen: taronja (encert) i blau (present).
+          shareText: highContrast
+            ? buildShareText(puzzleNumber, state, answer, shareUrl)
+                .replaceAll('🟩', '🟧')
+                .replaceAll('🟨', '🟦')
+            : buildShareText(puzzleNumber, state, answer, shareUrl),
           won: status === 'won',
         };
 
   return (
-    <GameShell meta={meta} puzzleNumber={puzzleNumber} date={date} result={result} help={<Help />}>
+    <GameShell
+      meta={meta}
+      puzzleNumber={puzzleNumber}
+      date={date}
+      result={result}
+      message={message}
+    >
       <Board
         guesses={state.guesses}
         current={current}
@@ -131,32 +163,5 @@ export default function ParaulaGame({ puzzleNumber, date }: GameProps) {
         keyClassName={(k) => (keyStates[k] ? KEY_COLORS[keyStates[k]] : undefined)}
       />
     </GameShell>
-  );
-}
-
-function Help() {
-  return (
-    <>
-      <p>
-        Endevina la paraula de {WORD_LENGTH} lletres en {MAX_GUESSES} intents.
-      </p>
-      <ul className="list-disc space-y-1 pl-5">
-        <li>
-          <span className="text-correct font-bold">Verd</span>: la lletra hi és i al lloc correcte.
-        </li>
-        <li>
-          <span className="text-present font-bold">Groc</span>: la lletra hi és però en un altre
-          lloc.
-        </li>
-        <li>
-          <span className="text-absent font-bold">Gris</span>: la lletra no hi és.
-        </li>
-      </ul>
-      <p>
-        Cada intent ha de ser una paraula del diccionari: també valen plurals, femenins i formes
-        verbals.
-      </p>
-      <p>Els accents no compten. La Ç és una lletra pròpia.</p>
-    </>
   );
 }

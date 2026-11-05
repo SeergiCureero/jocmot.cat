@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
         </p>
         <Link
           to="/compte/entrar"
-          className="text-brand-700 mt-6 inline-block text-sm font-semibold hover:underline"
+          className="text-brand-700 mt-4 inline-flex min-h-11 items-center text-sm font-semibold hover:underline"
         >
           ← Torna a entrar
         </Link>
@@ -36,7 +36,10 @@ export default function ForgotPasswordPage() {
         setSentTo(email);
       }}
       footer={
-        <Link to="/compte/entrar" className="text-brand-700 font-semibold hover:underline">
+        <Link
+          to="/compte/entrar"
+          className="text-brand-700 inline-flex min-h-11 items-center font-semibold hover:underline"
+        >
           ← Torna a entrar
         </Link>
       }

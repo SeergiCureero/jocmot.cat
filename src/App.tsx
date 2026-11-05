@@ -5,17 +5,20 @@ import Spinner from './components/ui/Spinner';
 import { FEATURES } from './config/site';
 import { GAMES } from './games/registry';
 import GameRoute from './games/GameRoute';
-import AboutPage from './pages/AboutPage';
-import ArchivePage from './pages/ArchivePage';
 import HomePage from './pages/HomePage';
-import LegalPage from './pages/LegalPage';
 import NotFoundPage from './pages/NotFoundPage';
-import LoginPage from './features/auth/LoginPage';
-import RegisterPage from './features/auth/RegisterPage';
-import ProfilePage from './features/auth/ProfilePage';
-import ForgotPasswordPage from './features/auth/ForgotPasswordPage';
-import NewPasswordPage from './features/auth/NewPasswordPage';
 
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const ArchivePage = lazy(() => import('./pages/ArchivePage'));
+const LegalPage = lazy(() => import('./pages/LegalPage'));
+const LoginPage = lazy(() => import('./features/auth/LoginPage'));
+const RegisterPage = lazy(() => import('./features/auth/RegisterPage'));
+const ProfilePage = lazy(() => import('./features/auth/ProfilePage'));
+const ForgotPasswordPage = lazy(() => import('./features/auth/ForgotPasswordPage'));
+const NewPasswordPage = lazy(() => import('./features/auth/NewPasswordPage'));
+const StatsPage = lazy(() => import('./pages/StatsPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const HowToPlayPage = lazy(() => import('./pages/HowToPlayPage'));
 const EditorRoutes = lazy(() => import('./features/editor/EditorRoutes'));
 const LeaguesPage = lazy(() => import('./features/social/LeaguesPage'));
 const LeaguePage = lazy(() => import('./features/social/LeaguePage'));
@@ -38,6 +41,9 @@ export default function App() {
           ))}
 
           {FEATURES.archive && <Route path="arxiu" element={<ArchivePage />} />}
+          <Route path="estadistiques" element={<StatsPage />} />
+          <Route path="configuracio" element={<SettingsPage />} />
+          <Route path="com-es-juga" element={<HowToPlayPage />} />
           <Route path="sobre" element={<AboutPage />} />
           <Route path="legal" element={<LegalPage />} />
 

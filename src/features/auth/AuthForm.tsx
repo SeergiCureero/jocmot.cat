@@ -50,7 +50,7 @@ export default function AuthForm({ title, fields, submitLabel, onSubmit, footer 
               autoComplete={f.autoComplete}
               minLength={f.minLength}
               required
-              className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+              className="focus:border-brand-600 focus:ring-brand-100 min-h-11 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 outline-none focus:ring-2"
             />
           </label>
         ))}

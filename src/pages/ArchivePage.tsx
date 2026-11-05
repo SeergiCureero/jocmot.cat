@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import GameIcon from '@/components/game/GameIcon';
 import { Link, useSearchParams } from 'react-router';
 import { useAuth } from '@/features/auth/AuthContext';
 import { getPuzzleDate, getTodayPuzzleNumber } from '@/games/puzzles';
@@ -41,11 +42,12 @@ export default function ArchivePage() {
             aria-selected={g.id === game.id}
             onClick={() => setParams({ joc: g.slug }, { replace: true })}
             className={cn(
-              'rounded-full px-4 py-1.5 text-sm font-semibold transition-colors',
+              'inline-flex min-h-11 items-center gap-2 rounded-full py-1.5 pr-4 pl-2 text-sm font-semibold transition-colors',
               g.id === game.id ? 'bg-stone-900 text-white' : 'bg-stone-200 hover:bg-stone-300',
             )}
           >
-            {g.icon} {g.name}
+            <GameIcon id={g.id} size={24} />
+            {g.name}
           </button>
         ))}
       </div>

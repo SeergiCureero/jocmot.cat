@@ -1,5 +1,6 @@
 import { cn } from '@/lib/cn';
 import type { ConnexionsGroup, Level } from '../types';
+import LevelSymbol from './LevelSymbol';
 
 const LEVEL_BG: Record<Level, string> = {
   0: 'bg-level-0',
@@ -23,7 +24,10 @@ export default function GroupBar({
         LEVEL_BG[group.level],
       )}
     >
-      <p className="text-sm font-bold uppercase">{group.title}</p>
+      <p className="text-sm font-bold uppercase">
+        <LevelSymbol level={group.level} className="mr-1.5" />
+        {group.title}
+      </p>
       <p className="text-xs uppercase sm:text-sm">{group.words.join(', ')}</p>
     </div>
   );

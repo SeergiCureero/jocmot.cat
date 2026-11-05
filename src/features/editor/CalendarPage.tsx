@@ -113,7 +113,7 @@ export default function CalendarPage() {
                       {!isToday && <MoveDay puzzle={p} onMoved={load} />}
                     </>
                   ) : (
-                    <span className="flex-1 text-sm text-stone-400">Puzle de reserva</span>
+                    <span className="flex-1 text-sm text-stone-600">Puzle de reserva</span>
                   )}
                 </li>
               );

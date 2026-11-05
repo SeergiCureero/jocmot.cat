@@ -26,7 +26,7 @@ export default function CrosswordGrid({
   const size = letters.length;
   return (
     <div
-      className="grid w-full max-w-sm border-2 border-stone-900"
+      className="grid w-[min(100%,24rem,calc(100dvh-24.5rem))] border-2 border-stone-900"
       style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
       role="grid"
       aria-label="Mot encreuat"

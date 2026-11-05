@@ -7,5 +7,11 @@ export const meta: GameMeta = {
   inspiredBy: 'Strands (NYT)',
   tagline: 'Descobreix les paraules amagades i el fil conductor',
   icon: '🧵',
-  theme: { bg: 'bg-sky-100', text: 'text-sky-800', soft: 'bg-sky-50' },
+  theme: {
+    bg: 'bg-sky-100',
+    text: 'text-sky-800',
+    soft: 'bg-sky-50',
+    dark: 'bg-joc-fils',
+    darkHex: '#075985',
+  },
 };

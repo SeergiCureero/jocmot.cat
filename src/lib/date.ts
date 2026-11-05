@@ -65,9 +65,30 @@ export function startOfDayInTimeZone(isoDate: string, timeZone: string): Date {
         .formatToParts(new Date(instant))
         .map((p) => [p.type, Number(p.value)]),
     );
-    return Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second) - instant;
+    return (
+      Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second) -
+      instant
+    );
   };
   let instant = target - offsetAt(target);
   instant = target - offsetAt(instant);
   return new Date(instant);
+}
+
+/** "2026-11-04" + 1 -> "2026-11-05" */
+export function addDaysIso(isoDate: string, days: number): string {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
+/** Data llarga amb el dia de la setmana: "Dimecres, 4 de novembre". */
+export function formatWeekdayCa(isoDate: string): string {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const text = new Intl.DateTimeFormat('ca', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(y, m - 1, d, 12)));
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }

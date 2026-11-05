@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import GameShell from '@/components/game/GameShell';
 import Button from '@/components/ui/Button';
-import { useToast } from '@/components/ui/Toast';
+import { useGameMessage } from '@/components/game/GameMessage';
 import { SITE } from '@/config/site';
 import { useGameProgress } from '@/features/progress/useGameProgress';
 import { cn } from '@/lib/cn';
@@ -46,7 +46,7 @@ export default function ConnexionsGame({
   const [jumping, setJumping] = useState(false);
   // Canvia en barrejar, perquè les fitxes tornin a entrar animades.
   const [shuffles, setShuffles] = useState(0);
-  const toast = useToast();
+  const { message, say } = useGameMessage();
 
   const remaining = order.filter((w) => !state.solved.includes(groupOf(puzzle, w)));
   // Si s'ha perdut, es revelen els grups que faltaven.
@@ -71,9 +71,10 @@ export default function ConnexionsGame({
 
   const submit = () => {
     const { state: next, feedback } = submitSelection(state, puzzle, selected);
-    if (feedback === 'already-guessed') return toast('Ja ho has provat');
+    if (feedback === 'already-guessed') return say('Aquesta combinació ja l’has provada', 'info');
     if (feedback === 'incomplete') return;
     if (feedback === 'correct') {
+      say(next.status === 'won' ? 'Perfecte! Tots els grups!' : 'Molt bé!', 'ok');
       setJumping(true);
       setTimeout(
         () => {
@@ -85,9 +86,33 @@ export default function ConnexionsGame({
       );
     } else {
       update(() => next);
-      if (feedback === 'one-away') toast('Només en falla una!');
+      if (next.status === 'lost') say('No queden més intents', 'error');
+      else if (feedback === 'one-away') say('Gairebé! Només en falla una', 'error');
+      else say('No és un grup', 'error');
       setShake(true);
       setTimeout(() => setShake(false), 400);
+    }
+  };
+
+  /** Teclat: fletxes per moure's entre paraules, Espai per triar i Enter per enviar quan n'hi ha 4. */
+  const onTileKey = (e: KeyboardEvent<HTMLButtonElement>, n: number) => {
+    const cols = 4;
+    const moves: Record<string, number> = {
+      ArrowLeft: -1,
+      ArrowRight: 1,
+      ArrowUp: -cols,
+      ArrowDown: cols,
+    };
+    if (e.key in moves) {
+      e.preventDefault();
+      const target = n + moves[e.key];
+      if (target >= 0 && target < remaining.length)
+        e.currentTarget.parentElement?.parentElement
+          ?.querySelector<HTMLButtonElement>(`[data-tile="${target}"]`)
+          ?.focus();
+    } else if (e.key === 'Enter' && selected.length === GROUP_SIZE) {
+      e.preventDefault();
+      submit();
     }
   };
 
@@ -108,10 +133,8 @@ export default function ConnexionsGame({
       puzzleNumber={puzzleNumber}
       date={date}
       result={result}
-      help={<Help />}
+      message={message}
     >
-      <p className="mb-3 text-sm text-stone-600">Fes quatre grups de quatre!</p>
-
       <div className="grid w-full gap-2">
         {shownGroups.map((i, n) => (
           <GroupBar
@@ -134,7 +157,10 @@ export default function ConnexionsGame({
                   style={{ animationDelay: `${n * 20}ms` }}
                 >
                   <button
+                    type="button"
+                    data-tile={n}
                     onClick={() => toggle(word)}
+                    onKeyDown={(e) => onTileKey(e, n)}
                     aria-pressed={isSelected}
                     style={
                       jumping && isSelected
@@ -191,22 +217,5 @@ export default function ConnexionsGame({
         </>
       )}
     </GameShell>
-  );
-}
-
-function Help() {
-  return (
-    <>
-      <p>Troba grups de quatre paraules que tinguin alguna cosa en comú.</p>
-      <p>
-        Selecciona quatre paraules i prem <strong>Envia</strong>. Pots fallar {MAX_MISTAKES}{' '}
-        vegades.
-      </p>
-      <p>
-        Cada puzle té una sola solució. Compte amb les paraules que semblen encaixar en més d’un
-        grup!
-      </p>
-      <p>Dificultat: 🟨 fàcil · 🟩 · 🟦 · 🟪 difícil.</p>
-    </>
   );
 }

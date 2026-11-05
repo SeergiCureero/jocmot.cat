@@ -18,5 +18,9 @@ Mentre hi hagi menys puzles que dies, la llista es recicla.
 1. Crear `src/games/<joc>/` amb la mateixa estructura que els altres (`meta.ts`, `logic.ts`, `<Joc>Game.tsx`, `data/`, `components/`).
 2. Afegir l'id a `GameId` a `src/games/types.ts`.
 3. Registrar-lo a `src/games/registry.ts`.
+4. Instruccions: `src/games/<joc>/help.tsx` (3 passos com a màxim, amb exemple visual) i afegir-les a `src/games/help.ts`.
+5. Resum per a la portada i la finestra de resultat (`summarize` i `headline` a `src/games/summary.ts`).
+6. Icona i imatge per compartir a `identitat/jocs/<joc>.svg` i `identitat/compartir/<joc>.png`; després `bash scripts/genera-icones.sh` i afegir el joc a `SHARE_PAGES` de `vite.config.ts`.
+7. Colors a `meta.ts` (`theme`) i a `src/index.css` (`--color-joc-<joc>`), seguint [DISSENY.md](DISSENY.md).
 
 La ruta, l'enllaç de la portada, el menú i les estadístiques del perfil es generen automàticament.

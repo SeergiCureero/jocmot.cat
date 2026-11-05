@@ -6,6 +6,8 @@ export const isTypingInField = (e: KeyboardEvent) =>
   e.target instanceof HTMLElement &&
   (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName));
 
-/** L'usuari ha demanat menys animacions al sistema? (per escurçar esperes fetes amb JS) */
-export const prefersReducedMotion = () =>
-  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+/**
+ * Menys animacions? (per escurçar esperes fetes amb JS). Té en compte la preferència
+ * del sistema i la de Configuració.
+ */
+export { prefersReducedMotion } from '@/features/settings/settings';
