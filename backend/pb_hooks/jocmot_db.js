@@ -144,6 +144,36 @@ function statsFor(app, userIds, month) {
   return out;
 }
 
+/**
+ * Estadístiques per a la classificació d'una lliga: com statsFor, però `monthPoints` són
+ * els punts de lliga (amb impuls a l'últim i fre al primer) i `boost` diu qui en té ara.
+ */
+function leagueStatsFor(app, userIds, month) {
+  const stats = statsFor(app, userIds, month);
+  const daily = {};
+  if (userIds.length) {
+    const ids = inList('u', userIds);
+    const rows = arrayOf(new DynamicModel({ user: '', day: '', points: 0 }));
+    app
+      .db()
+      .newQuery(
+        `SELECT user, day, SUM(points) AS points FROM scores
+         WHERE month = {:m} AND user IN (${ids.sql}) GROUP BY user, day`,
+      )
+      .bind(Object.assign({ m: month }, ids.params))
+      .all(rows);
+    for (const r of rows) (daily[r.user] = daily[r.user] || {})[r.day] = r.points;
+  }
+  const league = lib.leaguePoints(daily, userIds);
+  const current = month === today().slice(0, 7);
+  for (const id of userIds) {
+    stats[id].gamePoints = stats[id].monthPoints;
+    stats[id].monthPoints = league[id].points;
+    stats[id].boost = current ? league[id].boost : null;
+  }
+  return stats;
+}
+
 /** Ordena per punts del mes i hi posa la posició (empats = mateixa posició). */
 function ranking(people, stats) {
   const rows = people.map((p) => Object.assign({ user: p }, stats[p.id]));
@@ -381,6 +411,7 @@ module.exports = {
   findFirst,
   recordScore,
   statsFor,
+  leagueStatsFor,
   ranking,
   friendshipsOf,
   findUserByName,

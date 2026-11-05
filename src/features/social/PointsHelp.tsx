@@ -44,6 +44,10 @@ export default function PointsHelp() {
           🏆 <strong>Lligues:</strong> cada mes comença de zero. Qui en sumi més a final de mes
           guanya la lliga.
         </p>
+        <p>
+          🚀 <strong>Impuls a la lliga:</strong> qui va últim guanya un 20% més de punts, i qui va
+          primer, un 10% menys. Es mira cada dia i torna a començar cada mes.
+        </p>
         <div>
           <p className="mb-1">
             <strong>Rangs</strong> (segons els punts de sempre):

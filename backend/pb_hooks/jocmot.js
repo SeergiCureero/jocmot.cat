@@ -139,6 +139,65 @@ function rankFor(total) {
   };
 }
 
+/**
+ * Equilibri de lliga: cada dia, qui va últim de la lliga guanya un 20% més de punts
+ * (impuls) i qui va primer en guanya un 10% menys (fre). La posició es mira amb els punts
+ * de lliga fins al dia anterior i només entre qui ja ha jugat aquest mes. Si tothom va
+ * empatat, no s'aplica res. Es calcula per mes, de manera que cada lliga comença de zero.
+ */
+const UNDERDOG_BOOST = 0.2;
+const LEADER_BRAKE = 0.1;
+
+/** Qui rep impuls i qui fre segons els punts acumulats dels actius. */
+function leagueRoles(totals, active) {
+  const roles = {};
+  const ids = Object.keys(totals).filter((id) => active.has(id));
+  if (ids.length < 2) return roles;
+  const values = ids.map((id) => totals[id]);
+  const min = Math.min.apply(null, values);
+  const max = Math.max.apply(null, values);
+  if (min === max) return roles;
+  for (const id of ids) {
+    if (totals[id] === min) roles[id] = 'underdog';
+    else if (totals[id] === max) roles[id] = 'leader';
+  }
+  return roles;
+}
+
+/**
+ * Punts de lliga d'un mes.
+ * `daily`: { [userId]: { [dia AAAA-MM-DD]: punts del dia } } (només dies amb partides).
+ * Retorna { [userId]: { points, boost } }, on `boost` és l'estat que s'aplica ara
+ * ('underdog', 'leader' o null).
+ */
+function leaguePoints(daily, userIds) {
+  const totals = {};
+  const active = new Set();
+  for (const id of userIds) totals[id] = 0;
+  const days = [];
+  for (const id of userIds) for (const d of Object.keys(daily[id] || {})) days.push(d);
+  const sortedDays = Array.from(new Set(days)).sort();
+  for (const day of sortedDays) {
+    const roles = leagueRoles(totals, active);
+    for (const id of userIds) {
+      const points = daily[id] && daily[id][day];
+      if (points === undefined) continue;
+      const factor =
+        roles[id] === 'underdog'
+          ? 1 + UNDERDOG_BOOST
+          : roles[id] === 'leader'
+            ? 1 - LEADER_BRAKE
+            : 1;
+      totals[id] += Math.round(points * factor);
+    }
+    for (const id of userIds) if (daily[id] && daily[id][day] !== undefined) active.add(id);
+  }
+  const roles = leagueRoles(totals, active);
+  const out = {};
+  for (const id of userIds) out[id] = { points: totals[id], boost: roles[id] || null };
+  return out;
+}
+
 /** Normalitza un nom d'usuari per cercar-lo (sense majúscules ni espais als extrems). */
 const normalizeName = (name) =>
   String(name || '')
@@ -158,6 +217,9 @@ module.exports = {
   basePoints,
   currentStreak,
   scoreFor,
+  UNDERDOG_BOOST,
+  LEADER_BRAKE,
+  leaguePoints,
   rankFor,
   normalizeName,
 };

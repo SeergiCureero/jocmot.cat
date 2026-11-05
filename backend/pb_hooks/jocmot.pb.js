@@ -217,7 +217,7 @@ routerAdd(
         .map((x) => db.person(e.app.findRecordById('users', x.getString('user'))));
       const rows = db.ranking(
         people,
-        db.statsFor(
+        db.leagueStatsFor(
           e.app,
           people.map((p) => p.id),
           month,
@@ -319,7 +319,7 @@ routerAdd(
       .map((m) => db.person(e.app.findRecordById('users', m.getString('user'))));
     const rows = db.ranking(
       people,
-      db.statsFor(
+      db.leagueStatsFor(
         e.app,
         people.map((p) => p.id),
         month,

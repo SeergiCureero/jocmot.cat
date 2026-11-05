@@ -36,6 +36,26 @@ export function StreakBadge({ days }: { days: number }) {
 const MEDALS = ['🥇', '🥈', '🥉'];
 
 /** Classificació del mes: posició, nom, rang, ratxa i punts. */
+/** Equilibri de lliga: impuls a l'últim (ben visible) i fre al primer (discret). */
+function BoostBadge({ boost }: { boost?: 'underdog' | 'leader' | null }) {
+  if (boost === 'underdog')
+    return (
+      <span
+        className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800"
+        title="Va últim: guanya un 20% més de punts fins que avanci algú"
+      >
+        🚀 +20%
+      </span>
+    );
+  if (boost === 'leader')
+    return (
+      <span className="text-xs text-stone-500" title="Va primer: guanya un 10% menys de punts">
+        −10%
+      </span>
+    );
+  return null;
+}
+
 export function RankingTable({
   rows,
   meId,
@@ -69,6 +89,7 @@ export function RankingTable({
               <span className="flex flex-wrap items-center gap-2">
                 <RankBadge rank={row.rank} />
                 <StreakBadge days={row.streak} />
+                <BoostBadge boost={row.boost} />
               </span>
             </span>
             <span className="text-right">

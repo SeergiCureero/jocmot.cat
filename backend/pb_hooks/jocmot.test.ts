@@ -151,3 +151,59 @@ describe('madridHour', () => {
     expect(lib.madridHour(Date.UTC(2026, 11, 31, 23, 30))).toBe(0);
   });
 });
+
+describe('leaguePoints', () => {
+  const ids = ['a', 'b', 'c'];
+
+  it('el primer dia tothom puntua igual (encara no hi ha posicions)', () => {
+    const r = lib.leaguePoints({ a: { '2026-11-01': 10 }, b: { '2026-11-01': 5 } }, ids);
+    expect(r.a.points).toBe(10);
+    expect(r.b.points).toBe(5);
+    expect(r.c.points).toBe(0);
+  });
+
+  it('l’últim guanya un 20% més i el primer un 10% menys, segons la posició del dia anterior', () => {
+    const r = lib.leaguePoints(
+      {
+        a: { '2026-11-01': 10, '2026-11-02': 10 },
+        b: { '2026-11-01': 6, '2026-11-02': 10 },
+        c: { '2026-11-01': 8, '2026-11-02': 10 },
+      },
+      ids,
+    );
+    expect(r.a.points).toBe(10 + 9); // primer: fre
+    expect(r.b.points).toBe(6 + 12); // últim: impuls
+    expect(r.c.points).toBe(8 + 10); // al mig: igual
+  });
+
+  it('diu qui té impuls i fre ara mateix', () => {
+    const r = lib.leaguePoints({ a: { '2026-11-01': 10 }, b: { '2026-11-01': 4 } }, ids);
+    expect(r.a.boost).toBe('leader');
+    expect(r.b.boost).toBe('underdog');
+    expect(r.c.boost).toBe(null); // no ha jugat aquest mes
+  });
+
+  it('qui no ha jugat no compta per decidir l’últim', () => {
+    const r = lib.leaguePoints(
+      { a: { '2026-11-01': 10, '2026-11-02': 10 }, b: { '2026-11-01': 4, '2026-11-02': 10 } },
+      ids,
+    );
+    expect(r.b.points).toBe(4 + 12);
+    expect(r.c.boost).toBe(null);
+  });
+
+  it('si van empatats, no hi ha impuls ni fre', () => {
+    const r = lib.leaguePoints(
+      { a: { '2026-11-01': 5, '2026-11-02': 7 }, b: { '2026-11-01': 5, '2026-11-02': 7 } },
+      ids,
+    );
+    expect(r.a.points).toBe(12);
+    expect(r.b.points).toBe(12);
+    expect(r.a.boost).toBe(null);
+  });
+
+  it('cada mes comença de zero (només es passen els dies del mes)', () => {
+    const r = lib.leaguePoints({}, ids);
+    expect(r.a).toEqual({ points: 0, boost: null });
+  });
+});

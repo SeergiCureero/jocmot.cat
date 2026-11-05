@@ -21,6 +21,8 @@ export interface Stats {
   streak: number;
   playedToday: boolean;
   rank: Rank;
+  /** Només a les lligues: qui va últim té impuls (+20%) i qui va primer, fre (−10%). */
+  boost?: 'underdog' | 'leader' | null;
 }
 
 export interface Profile extends Stats {

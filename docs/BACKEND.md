@@ -37,6 +37,8 @@ Els calcula **el servidor**, amb JavaScript de PocketBase a `backend/pb_hooks/`:
 
 El navegador no pot escriure a `scores`, `friendships`, `leagues` ni `league_members`: només ho fan aquestes rutes. Les puntuacions es calculen una sola vegada per puzle, amb l'hora del servidor (així l'arxiu no es pot fer passar per puzle del dia). La data de llançament és a `jocmot.js` i ha de coincidir amb `.env.production` (un test ho comprova).
 
+**Equilibri de lliga:** a la classificació de cada lliga, qui va últim guanya un 20% més de punts (impuls) i qui va primer, un 10% menys (fre). La posició es mira cada dia amb els punts de lliga fins al dia anterior i només entre qui ja ha jugat aquest mes; si van empatats no s'aplica. Es calcula al vol per mes (`leaguePoints` a `jocmot.js`, constants `UNDERDOG_BOOST` i `LEADER_BRAKE`), així que es reinicia sol a cada inici de lliga i no canvia els punts personals (perfil, rangs, amics).
+
 Si cal recalcular puntuacions que faltin (p. ex. partides d'abans d'activar els punts): `POST /api/jocmot/admin/recalcula` amb un token de superusuari.
 
 ## 2. Esquema
