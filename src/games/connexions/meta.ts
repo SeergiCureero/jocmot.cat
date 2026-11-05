@@ -7,5 +7,11 @@ export const meta: GameMeta = {
   inspiredBy: 'Connections (NYT)',
   tagline: 'Troba els quatre grups de quatre paraules',
   icon: '🟪',
-  theme: { bg: 'bg-purple-100', text: 'text-purple-800', soft: 'bg-purple-50' },
+  theme: {
+    bg: 'bg-purple-100',
+    text: 'text-purple-800',
+    soft: 'bg-purple-50',
+    dark: 'bg-joc-connexions',
+    darkHex: '#6b21a8',
+  },
 };

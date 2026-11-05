@@ -24,7 +24,11 @@ export interface GameMeta {
   inspiredBy: string;
   tagline: string;
   icon: string;
-  theme: { bg: string; text: string; soft: string };
+  /**
+   * Colors del joc. `bg`, `text` i `soft` són els suaus (xips i fons);
+   * `dark` és la classe del fons fosc de la icona i `darkHex` el mateix color en hex.
+   */
+  theme: { bg: string; text: string; soft: string; dark: string; darkHex: string };
 }
 
 export interface GameDefinition extends GameMeta {

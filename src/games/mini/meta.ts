@@ -7,5 +7,11 @@ export const meta: GameMeta = {
   inspiredBy: 'The Mini Crossword (NYT)',
   tagline: 'Un mot encreuat de 5×5 per resoldre en un minut',
   icon: '✏️',
-  theme: { bg: 'bg-amber-100', text: 'text-amber-800', soft: 'bg-amber-50' },
+  theme: {
+    bg: 'bg-amber-100',
+    text: 'text-amber-800',
+    soft: 'bg-amber-50',
+    dark: 'bg-joc-mini',
+    darkHex: '#92400e',
+  },
 };

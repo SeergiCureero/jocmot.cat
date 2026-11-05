@@ -7,5 +7,11 @@ export const meta: GameMeta = {
   inspiredBy: 'Wordle (NYT)',
   tagline: 'Endevina la paraula de 5 lletres en 6 intents',
   icon: '🟩',
-  theme: { bg: 'bg-green-100', text: 'text-green-800', soft: 'bg-green-50' },
+  theme: {
+    bg: 'bg-green-100',
+    text: 'text-green-800',
+    soft: 'bg-green-50',
+    dark: 'bg-joc-paraula',
+    darkHex: '#166534',
+  },
 };

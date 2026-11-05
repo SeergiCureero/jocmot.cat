@@ -21,6 +21,19 @@
   --color-level-2: #60a5fa;
   --color-level-3: #c084fc;
 
+  /* Fons fosc de la icona de cada joc (docs/DISSENY.md) */
+  --color-joc-paraula: #166534;
+  --color-joc-connexions: #6b21a8;
+  --color-joc-fils: #075985;
+  --color-joc-mini: #92400e;
+
+  /* Fitxes del logo (docs/DISSENY.md) */
+  --color-fitxa-1: #0f766e;
+  --color-fitxa-2: #15803d;
+  --color-fitxa-3: #9333ea;
+  --color-fitxa-4: #0284c7;
+  --color-fitxa-5: #b45309;
+
   --animate-pop: pop 120ms ease-out;
   --animate-shake: shake 400ms ease-in-out;
   --animate-rise: rise 400ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
