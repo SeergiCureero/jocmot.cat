@@ -16,6 +16,9 @@ import ProfilePage from './features/auth/ProfilePage';
 import ForgotPasswordPage from './features/auth/ForgotPasswordPage';
 import NewPasswordPage from './features/auth/NewPasswordPage';
 
+const StatsPage = lazy(() => import('./pages/StatsPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const HowToPlayPage = lazy(() => import('./pages/HowToPlayPage'));
 const EditorRoutes = lazy(() => import('./features/editor/EditorRoutes'));
 const LeaguesPage = lazy(() => import('./features/social/LeaguesPage'));
 const LeaguePage = lazy(() => import('./features/social/LeaguePage'));
@@ -38,6 +41,9 @@ export default function App() {
           ))}
 
           {FEATURES.archive && <Route path="arxiu" element={<ArchivePage />} />}
+          <Route path="estadistiques" element={<StatsPage />} />
+          <Route path="configuracio" element={<SettingsPage />} />
+          <Route path="com-es-juga" element={<HowToPlayPage />} />
           <Route path="sobre" element={<AboutPage />} />
           <Route path="legal" element={<LegalPage />} />
 

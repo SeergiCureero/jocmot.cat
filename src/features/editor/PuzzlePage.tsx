@@ -229,7 +229,7 @@ function PuzzleView({
                         <span
                           className={cn(
                             'ml-1 font-normal',
-                            stale ? 'text-stone-400 line-through' : 'text-correct',
+                            stale ? 'text-stone-600 line-through' : 'text-correct',
                           )}
                         >
                           ✓ aprovat

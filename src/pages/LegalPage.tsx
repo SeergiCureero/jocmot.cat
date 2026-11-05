@@ -23,7 +23,7 @@ export default function LegalPage() {
           <a
             key={id}
             href={`#${id}`}
-            className="rounded-full border border-stone-300 bg-white px-3 py-1 text-sm font-medium transition hover:border-stone-400 hover:bg-stone-100"
+            className="inline-flex min-h-11 items-center rounded-full border border-stone-300 bg-white px-4 text-sm font-medium transition hover:border-stone-400 hover:bg-stone-100"
           >
             {label}
           </a>

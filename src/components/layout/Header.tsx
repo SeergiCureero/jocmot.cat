@@ -1,66 +1,50 @@
-import { Link, NavLink } from 'react-router';
-import { FEATURES } from '@/config/site';
-import { useAuth } from '@/features/auth/AuthContext';
-import { GAMES } from '@/games/registry';
-import { cn } from '@/lib/cn';
+import { useState } from 'react';
+import { Link } from 'react-router';
+import { ChartIcon, MenuIcon } from '@/components/icons';
+import { ICON_BUTTON as iconButton } from '@/components/ui/styles';
+import Menu from './Menu';
 
-const pill = ({ isActive }: { isActive: boolean }) =>
-  cn(
-    'rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap transition-colors',
-    isActive ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100',
-  );
-
+/**
+ * Capçalera fixa: logo (portada) a l'esquerra; estadístiques i menú a la dreta.
+ * 56 px d'alçada més la zona segura de l'iPhone (la "notch").
+ */
 export default function Header() {
-  const { user } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-stone-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-5xl items-center gap-4 px-4">
-        <Link to="/" className="group text-lg font-extrabold tracking-tight">
-          jocmot
-          <span className="text-brand-700 inline-block transition-transform group-hover:-translate-y-0.5">
-            .cat
-          </span>
+    <header className="sticky top-0 z-40 border-b border-stone-200 bg-white/95 pt-[env(safe-area-inset-top)] backdrop-blur">
+      <div className="mx-auto flex h-14 max-w-5xl items-center gap-2 pr-[max(0.5rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]">
+        <Link
+          to="/"
+          className="-ml-2 flex h-11 items-center rounded-lg px-2"
+          aria-label="jocmot.cat, inici"
+        >
+          <img
+            src="/logos/jocmot-text.svg"
+            alt=""
+            width={113}
+            height={29}
+            className="h-[29px] w-auto"
+          />
         </Link>
 
-        <nav className="hidden flex-1 items-center gap-1 sm:flex" aria-label="Jocs">
-          {GAMES.map((game) => (
-            <NavLink key={game.id} to={`/${game.slug}`} className={pill}>
-              {game.name}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="ml-auto flex items-center gap-2">
-          {FEATURES.archive && (
-            <NavLink to="/arxiu" className={pill} aria-label="Arxiu">
-              📅 <span className="hidden sm:inline">Arxiu</span>
-            </NavLink>
-          )}
-          {FEATURES.social && (
-            <NavLink to="/lligues" className={pill} aria-label="Lligues">
-              🏆 <span className="hidden sm:inline">Lligues</span>
-            </NavLink>
-          )}
-          {FEATURES.accounts && user && (
-            <NavLink
-              to="/editor"
-              className={pill}
-              aria-label={user.editor ? 'Editor' : 'Crea un puzle'}
-            >
-              ✏️ <span className="hidden sm:inline">{user.editor ? 'Editor' : 'Crea'}</span>
-            </NavLink>
-          )}
-          {FEATURES.accounts && (
-            <Link
-              to={user ? '/compte' : '/compte/entrar'}
-              className="rounded-full border border-stone-300 px-3 py-1 text-sm font-medium transition-colors hover:bg-stone-100"
-            >
-              {user ? user.username : 'Entra'}
-            </Link>
-          )}
+        <div className="ml-auto flex items-center gap-1">
+          <Link to="/estadistiques" className={iconButton} aria-label="Estadístiques">
+            <ChartIcon />
+          </Link>
+          <button
+            type="button"
+            className={iconButton}
+            aria-label="Menú"
+            aria-haspopup="dialog"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(true)}
+          >
+            <MenuIcon />
+          </button>
         </div>
       </div>
+      <Menu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </header>
   );
 }

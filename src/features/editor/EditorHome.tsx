@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import GameIcon from '@/components/game/GameIcon';
 import { Link, useNavigate } from 'react-router';
 import Spinner from '@/components/ui/Spinner';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -92,11 +93,7 @@ export default function EditorHome() {
                 onClick={() => startDraft(game)}
                 className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-lg"
               >
-                <span
-                  className={`grid size-11 shrink-0 place-items-center rounded-xl text-xl ${meta.theme.bg}`}
-                >
-                  {meta.icon}
-                </span>
+                <GameIcon id={meta.id} size={44} />
                 <span className="font-bold">{meta.name}</span>
               </button>
             );
@@ -208,11 +205,8 @@ function PuzzleHeading({ puzzle }: { puzzle: PuzzleRecord }) {
   const meta = gameMeta(puzzle.game);
   return (
     <span className="flex min-w-0 items-center gap-1.5">
-      <span
-        className={`grid size-6 shrink-0 place-items-center rounded-md text-xs ${meta.theme.bg}`}
-        title={meta.name}
-      >
-        {meta.icon}
+      <span title={meta.name}>
+        <GameIcon id={meta.id} size={24} />
       </span>
       <span className="truncate">
         <PuzzleName puzzle={puzzle} />

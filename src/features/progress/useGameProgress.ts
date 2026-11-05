@@ -133,3 +133,16 @@ export async function syncLocalProgress(): Promise<ProgressRecord[]> {
   }
   return [...remote.values()];
 }
+
+/** Tots els registres de progrés desats en aquest navegador (funciona sense compte). */
+export function localProgressRecords(): ProgressRecord[] {
+  return storage
+    .keys('progress:')
+    .map((k) => storage.get<ProgressRecord>(k))
+    .filter((r): r is ProgressRecord => r !== null);
+}
+
+/** Registre local d'un puzle concret. */
+export function localProgress(gameId: string, puzzleId: number): ProgressRecord | null {
+  return storage.get<ProgressRecord>(localKey(gameId, puzzleId));
+}

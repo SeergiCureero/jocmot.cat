@@ -105,7 +105,7 @@ export default function LetterGrid({
       onPointerMove={handleMove}
       onPointerUp={handleUp}
       onPointerCancel={handleUp}
-      className="relative aspect-[6/8] w-full max-w-sm touch-none select-none"
+      className="relative aspect-[6/8] w-[min(100%,24rem,calc((100dvh-17.5rem)*0.75))] touch-none select-none"
     >
       <svg
         viewBox={`0 0 ${COLS * 10} ${ROWS * 10}`}

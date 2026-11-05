@@ -1,12 +1,18 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import AdSlot from '@/components/ads/AdSlot';
+import { BackIcon, HelpIcon } from '@/components/icons';
 import Button from '@/components/ui/Button';
+import { ICON_BUTTON } from '@/components/ui/styles';
 import Confetti from '@/components/ui/Confetti';
 import Modal from '@/components/ui/Modal';
+import GameIcon from './GameIcon';
+import { GameMessageLine, type GameMessageState } from './GameMessage';
 import ResultModal from './ResultModal';
 import { FEATURES } from '@/config/site';
+import { HELP } from '@/games/help';
 import { getTodayPuzzleNumber } from '@/games/puzzles';
+import { saveProgressHint } from '@/games/summary';
 import type { GameMeta } from '@/games/types';
 import { formatDateCa } from '@/lib/date';
 import { storage } from '@/lib/storage';
@@ -15,8 +21,12 @@ interface Props {
   meta: GameMeta;
   puzzleNumber: number;
   date: string;
-  /** Contingut del modal "Com es juga". */
-  help: ReactNode;
+  /** Avís actual (useGameMessage): es mostra a sobre del tauler, en un espai reservat. */
+  message?: GameMessageState | null;
+  /** Què es mostra a la línia dels avisos quan no n'hi ha cap (p. ex. la paraula de Fils). */
+  messageFallback?: ReactNode;
+  /** Progrés de 0 a 1, per a la portada (només cal si no es pot treure de l'estat, com a Fils). */
+  progress?: number;
   /** Si hi ha resultat, es mostra el panell final amb el botó de compartir. */
   result?: { title: string; body?: ReactNode; shareText: string; won?: boolean } | null;
   /** Accions extra a la capçalera (p. ex. cronòmetre). */
@@ -31,7 +41,9 @@ export default function GameShell({
   meta,
   puzzleNumber,
   date,
-  help,
+  message = null,
+  messageFallback,
+  progress,
   result,
   headerExtra,
   preview,
@@ -51,30 +63,41 @@ export default function GameShell({
     return () => clearTimeout(id);
   }, [finished]);
 
+  useEffect(() => {
+    if (!preview && progress !== undefined) saveProgressHint(meta.id, puzzleNumber, progress);
+  }, [preview, progress, meta.id, puzzleNumber]);
+
+  const Help = HELP[meta.id];
   const closeHelp = () => {
     storage.set(helpKey, true);
     setHelpOpen(false);
   };
 
   return (
-    <div className="mx-auto flex max-w-xl flex-col items-center py-4">
-      <div className="mb-4 flex w-full items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold">
-            <span className="mr-1">{meta.icon}</span> {meta.name}{' '}
-            <span className="text-base font-medium text-stone-500">
+    <div className="mx-auto flex max-w-xl flex-col items-center pt-2 pb-4">
+      <div className="flex w-full items-center gap-1">
+        {!preview && (
+          <Link to="/" className={`${ICON_BUTTON} -ml-3`} aria-label="Torna a l’inici">
+            <BackIcon />
+          </Link>
+        )}
+        <div className="min-w-0 flex-1">
+          <h1 className="flex items-center gap-2 text-lg leading-tight font-bold">
+            <GameIcon id={meta.id} size={28} />
+            {meta.name}
+            <span className="text-sm font-medium text-stone-600">
               {preview ? '· prova' : `#${puzzleNumber}`}
             </span>
           </h1>
           {!preview && (
-            <p className="text-xs text-stone-500">
+            <p className="truncate text-xs text-stone-600">
               {formatDateCa(date)}
               {FEATURES.archive && (
                 <>
                   {' · '}
                   <Link
                     to={`/arxiu?joc=${meta.slug}`}
-                    className="hover:text-stone-900 hover:underline"
+                    className="underline-offset-2 hover:text-stone-900 hover:underline"
                   >
                     Arxiu
                   </Link>
@@ -83,13 +106,18 @@ export default function GameShell({
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          {headerExtra}
-          <Button variant="ghost" onClick={() => setHelpOpen(true)} aria-label="Com es juga">
-            ?
-          </Button>
-        </div>
+        {headerExtra}
+        <button
+          type="button"
+          className={`${ICON_BUTTON} -mr-2`}
+          onClick={() => setHelpOpen(true)}
+          aria-label="Com es juga"
+        >
+          <HelpIcon />
+        </button>
       </div>
+
+      <GameMessageLine message={message} fallback={messageFallback} />
 
       {!preview && puzzleNumber !== getTodayPuzzleNumber() && (
         <p className="animate-fade-in mb-4 w-full rounded-lg bg-stone-100 px-3 py-2 text-center text-sm text-stone-600">
@@ -128,7 +156,10 @@ export default function GameShell({
       )}
 
       <Modal open={helpOpen} onClose={closeHelp} title={`Com es juga a ${meta.name}`}>
-        {help}
+        <Help />
+        <Button className="mt-2 w-full" onClick={closeHelp}>
+          Som-hi!
+        </Button>
       </Modal>
     </div>
   );

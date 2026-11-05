@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import GameShell from '@/components/game/GameShell';
 import Button from '@/components/ui/Button';
-import { useToast } from '@/components/ui/Toast';
+import { useGameMessage } from '@/components/game/GameMessage';
 import { cn } from '@/lib/cn';
+import { isModalOpen, isTypingInField } from '@/lib/dom';
 import { isWord } from '@/lib/dictionary';
 import { SITE } from '@/config/site';
 import { useGameProgress } from '@/features/progress/useGameProgress';
@@ -24,6 +25,7 @@ import {
 } from './logic';
 import { meta } from './meta';
 import type { Cell, FilsPuzzle } from './types';
+import { bestPath, pathsFor } from './typing';
 
 export default function FilsGame({ puzzleNumber, date, puzzle: groupPuzzle, preview }: GameProps) {
   const puzzle = (groupPuzzle as FilsPuzzle | undefined) ?? pickByNumber(PUZZLES, puzzleNumber);
@@ -38,7 +40,9 @@ export default function FilsGame({ puzzleNumber, date, puzzle: groupPuzzle, prev
   // Última paraula extra que ha sumat cap a la pista (per animar-la).
   const [bonus, setBonus] = useState<{ id: number; word: string } | null>(null);
   const checking = useRef(false);
-  const toast = useToast();
+  const { message, say } = useGameMessage();
+  // Lletres escrites amb el teclat físic (la selecció és el camí que les forma).
+  const [typed, setTyped] = useState('');
   const total = allWords(puzzle).length;
 
   const submit = async (cells: Cell[]) => {
@@ -49,17 +53,57 @@ export default function FilsGame({ puzzleNumber, date, puzzle: groupPuzzle, prev
     checking.current = false;
     const { state: next, feedback } = submitPath(state, puzzle, cells, inDictionary);
     setSelection([]);
-    if (feedback === 'too-short') return toast('Massa curta');
-    if (feedback === 'already-found') return toast('Ja l’has trobada');
-    if (feedback === 'not-a-word') return toast('No és al diccionari');
-    if (feedback === 'bonus-repeated') return toast('Aquesta ja l’has comptada');
-    if (feedback === 'spangram') toast('Fil conductor! 🟡');
+    setTyped('');
+    if (feedback === 'too-short')
+      return say(`Ha de tenir ${MIN_WORD} lletres com a mínim`, 'error');
+    if (feedback === 'already-found') return say('Aquesta ja l’has trobada', 'info');
+    if (feedback === 'not-a-word') return say('Aquesta paraula no és al diccionari', 'error');
+    if (feedback === 'bonus-repeated') return say('Aquesta ja l’has comptada', 'info');
+    if (feedback === 'spangram') say('Has trobat el fil conductor!', 'ok');
+    else if (feedback === 'theme')
+      say(next.status === 'won' ? 'Ho has trobat tot!' : 'Molt bé!', 'ok');
     if (feedback === 'bonus') {
-      toast('Aquesta paraula suma cap a la pista');
+      say('No és del tema, però suma cap a la pista', 'info');
       setBonus((b) => ({ id: (b?.id ?? 0) + 1, word }));
     }
     update(() => next);
   };
+
+  // Teclat físic: escriure la paraula, Enter per enviar, Retrocés per esborrar i Esc per deixar-ho.
+  const usedCells = allWords(puzzle)
+    .filter((w) => state.found.includes(w.word))
+    .flatMap((w) => w.path);
+  const keyState = useRef({ typed, selection, submit, usedCells, say });
+  keyState.current = { typed, selection, submit, usedCells, say };
+  useEffect(() => {
+    if (status !== 'playing') return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || isModalOpen() || isTypingInField(e)) return;
+      const k = keyState.current;
+      if (e.key === 'Enter') {
+        if (!k.selection.length) return;
+        e.preventDefault();
+        k.submit(k.selection);
+      } else if (e.key === 'Escape') {
+        setTyped('');
+        setSelection([]);
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        const next = k.typed.slice(0, -1);
+        setTyped(next);
+        setSelection(bestPath(pathsFor(puzzle, next, k.usedCells), allWords(puzzle)) ?? []);
+      } else if (/^[a-zç]$/i.test(e.key)) {
+        e.preventDefault();
+        const next = k.typed + e.key.toUpperCase();
+        const path = bestPath(pathsFor(puzzle, next, k.usedCells), allWords(puzzle));
+        if (!path) return k.say(`No hi ha cap «${next}» amb lletres veïnes`, 'info', 1800);
+        setTyped(next);
+        setSelection(path);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [status, puzzle]);
 
   const result =
     status === 'won'
@@ -78,23 +122,31 @@ export default function FilsGame({ puzzleNumber, date, puzzle: groupPuzzle, prev
       puzzleNumber={puzzleNumber}
       date={date}
       result={result}
-      help={<Help />}
+      message={message}
+      // Mentre se selecciona, la paraula ocupa la línia dels avisos (així la graella hi cap).
+      messageFallback={
+        selection.length > 0 && (
+          <span className="text-xl font-bold tracking-widest">
+            {wordFromPath(puzzle, selection)}
+          </span>
+        )
+      }
+      progress={state.found.length / total}
     >
-      <div className="mb-3 w-full max-w-sm rounded-xl bg-sky-100 p-3 text-center">
+      <div className="mb-1 w-full max-w-sm rounded-xl bg-sky-100 px-3 py-1.5 text-center">
         <p className="text-xs font-semibold text-sky-800 uppercase">Tema d’avui</p>
-        <p className="text-lg font-bold">{puzzle.theme}</p>
+        <p className="leading-snug font-bold">{puzzle.theme}</p>
       </div>
-
-      <p className="mb-2 h-7 text-xl font-bold tracking-widest">
-        {wordFromPath(puzzle, selection)}
-      </p>
 
       <LetterGrid
         puzzle={puzzle}
         found={state.found}
         hintWord={state.hintWord}
         selection={selection}
-        onSelectionChange={setSelection}
+        onSelectionChange={(cells) => {
+          setTyped('');
+          setSelection(cells);
+        }}
         onSubmit={submit}
         disabled={status !== 'playing'}
       />
@@ -129,29 +181,5 @@ export default function FilsGame({ puzzleNumber, date, puzzle: groupPuzzle, prev
         </Button>
       </div>
     </GameShell>
-  );
-}
-
-function Help() {
-  return (
-    <>
-      <p>
-        Troba les paraules relacionades amb el tema. Llegeix-les unint lletres veïnes (també en
-        diagonal).
-      </p>
-      <p>
-        Arrossega el dit o el ratolí, o toca les lletres una a una i torna a tocar l’última per
-        enviar.
-      </p>
-      <p>
-        El <strong>fil conductor</strong> 🟡 descriu el tema i travessa la graella d’un costat a
-        l’altre.
-      </p>
-      <p>
-        Les paraules del diccionari que no són del tema també compten: cada {HINT_COST} en
-        desbloquegen una pista 💡.
-      </p>
-      <p>Les paraules omplen tota la graella sense encavalcar-se.</p>
-    </>
   );
 }

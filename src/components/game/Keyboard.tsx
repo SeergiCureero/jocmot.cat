@@ -36,7 +36,7 @@ export default function Keyboard({ onKey, keyClassName, disabled, showEnter = tr
   }, [onKey, disabled]);
 
   return (
-    <div className="mt-6 w-full max-w-lg select-none space-y-1.5" aria-label="Teclat">
+    <div className="mt-3 w-full max-w-lg space-y-1.5 select-none" aria-label="Teclat">
       {ROWS.map((row, i) => (
         <div key={i} className="flex justify-center gap-1.5">
           {row

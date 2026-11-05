@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import GameShell from '@/components/game/GameShell';
 import Keyboard, { BACKSPACE, ENTER } from '@/components/game/Keyboard';
 import Button from '@/components/ui/Button';
-import { useToast } from '@/components/ui/Toast';
+import { useGameMessage } from '@/components/game/GameMessage';
 import { SITE } from '@/config/site';
 import { useGameProgress } from '@/features/progress/useGameProgress';
 import { formatSeconds } from '@/lib/date';
@@ -43,7 +43,7 @@ export default function MiniGame({ puzzleNumber, date, puzzle: groupPuzzle, prev
   const [direction, setDirection] = useState<Direction>('across');
   const [seconds, setSeconds] = useState(state.elapsedSeconds);
   const [wrong, setWrong] = useState<Cell[]>([]);
-  const toast = useToast();
+  const { message, say } = useGameMessage();
 
   const active = entryAt(entries, cursor, direction) ?? entryAt(entries, cursor, other(direction));
 
@@ -91,14 +91,14 @@ export default function MiniGame({ puzzleNumber, date, puzzle: groupPuzzle, prev
       setWrong([]);
       const next = setLetter({ ...state, elapsedSeconds: seconds }, puzzle, cursor, key);
       update(() => next);
-      if (next.status === 'playing' && isFilled(next))
-        toast('Gairebé! Hi ha alguna lletra malament');
+      if (next.status === 'won') say('Resolt!', 'ok');
+      else if (isFilled(next)) say('Gairebé! Hi ha alguna lletra malament', 'error');
       // Avança a la següent casella buida de la paraula (o a la següent).
       const after = active.cells.slice(idx + 1);
       const nextCell = after.find(([r, c]) => state.letters[r][c] === EMPTY) ?? after[0];
       if (nextCell) setCursor(nextCell);
     },
-    [status, active, cursor, state, update, puzzle, seconds, moveEntry, toast],
+    [status, active, cursor, state, update, puzzle, seconds, moveEntry, say],
   );
 
   // Fletxes per moure's per la graella.
@@ -158,7 +158,7 @@ export default function MiniGame({ puzzleNumber, date, puzzle: groupPuzzle, prev
       puzzleNumber={puzzleNumber}
       date={date}
       result={result}
-      help={<Help />}
+      message={message}
       headerExtra={
         <span className="font-mono text-sm tabular-nums">
           {formatSeconds(finished ? state.elapsedSeconds : seconds)}
@@ -166,11 +166,11 @@ export default function MiniGame({ puzzleNumber, date, puzzle: groupPuzzle, prev
       }
     >
       {active && !finished && (
-        <div className="mb-3 flex w-full max-w-sm items-center gap-2 rounded-lg bg-sky-100 p-2">
+        <div className="mb-2 flex min-h-14 w-full max-w-sm items-center gap-1 rounded-lg bg-sky-100 px-1 py-1">
           <button
             onClick={() => moveEntry(-1)}
             aria-label="Definició anterior"
-            className="px-2 text-xl"
+            className="grid size-11 shrink-0 place-items-center rounded-full text-2xl hover:bg-sky-200"
           >
             ‹
           </button>
@@ -187,7 +187,7 @@ export default function MiniGame({ puzzleNumber, date, puzzle: groupPuzzle, prev
           <button
             onClick={() => moveEntry(1)}
             aria-label="Definició següent"
-            className="px-2 text-xl"
+            className="grid size-11 shrink-0 place-items-center rounded-full text-2xl hover:bg-sky-200"
           >
             ›
           </button>
@@ -206,8 +206,23 @@ export default function MiniGame({ puzzleNumber, date, puzzle: groupPuzzle, prev
 
       {!finished && (
         <>
+          <Keyboard onKey={onKey} />
           <div className="mt-4 flex gap-2">
-            <Button variant="secondary" onClick={() => setWrong(wrongCells(state, puzzle))}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                const bad = wrongCells(state, puzzle);
+                setWrong(bad);
+                if (bad.length)
+                  say(
+                    bad.length === 1
+                      ? 'Hi ha 1 lletra malament'
+                      : `Hi ha ${bad.length} lletres malament`,
+                    'error',
+                  );
+                else say('De moment, tot bé!', 'ok');
+              }}
+            >
               Comprova
             </Button>
             <Button
@@ -217,7 +232,6 @@ export default function MiniGame({ puzzleNumber, date, puzzle: groupPuzzle, prev
               Revela
             </Button>
           </div>
-          <Keyboard onKey={onKey} />
         </>
       )}
 
@@ -246,7 +260,7 @@ function ClueList({
       {groups.map(([dir, label]) => (
         <section key={dir}>
           <h2 className="mb-2 text-sm font-bold text-stone-500 uppercase">{label}</h2>
-          <ol className="space-y-1 text-sm">
+          <ol className="space-y-0.5 text-sm">
             {entries
               .filter((e) => e.direction === dir)
               .map((e) => (
@@ -254,7 +268,7 @@ function ClueList({
                   <button
                     onClick={() => onSelect(e)}
                     className={cn(
-                      'w-full rounded px-2 py-1 text-left transition-colors hover:bg-stone-100',
+                      'min-h-11 w-full rounded-lg px-2 py-2 text-left transition-colors hover:bg-stone-100',
                       e === active && 'bg-sky-100',
                     )}
                   >
@@ -267,21 +281,5 @@ function ClueList({
         </section>
       ))}
     </div>
-  );
-}
-
-function Help() {
-  return (
-    <>
-      <p>Omple el mot encreuat a partir de les definicions horitzontals (H) i verticals (V).</p>
-      <p>
-        Toca una casella per triar-la; torna-la a tocar per canviar de direcció. Amb teclat:
-        fletxes, Tab i Enter.
-      </p>
-      <p>
-        El cronòmetre s’atura quan ho tens tot bé. <strong>Comprova</strong> marca les lletres
-        errònies i <strong>Revela</strong> mostra la solució.
-      </p>
-    </>
   );
 }

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import GameIcon from '@/components/game/GameIcon';
 import { getPuzzleDate } from '@/games/puzzles';
 import { GAMES } from '@/games/registry';
 import { formatDateCa } from '@/lib/date';
@@ -11,9 +12,7 @@ export function GameLabel({ game }: { game: DesignableGameId }) {
   const meta = gameMeta(game);
   return (
     <span className="inline-flex items-center gap-1.5 font-semibold">
-      <span className={`grid size-7 place-items-center rounded-lg text-sm ${meta.theme.bg}`}>
-        {meta.icon}
-      </span>
+      <GameIcon id={meta.id} size={28} />
       {meta.name}
     </span>
   );

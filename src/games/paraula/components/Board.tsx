@@ -6,8 +6,8 @@ export const FLIP_STAGGER_MS = 300;
 export const REVEAL_MS = FLIP_STAGGER_MS * (WORD_LENGTH - 1) + 500;
 
 const TILE: Record<LetterState, string> = {
-  correct: 'bg-correct border-correct text-white',
-  present: 'bg-present border-present text-white',
+  correct: 'bg-correct border-correct text-on-correct',
+  present: 'bg-present border-present text-on-present',
   absent: 'bg-absent border-absent text-white',
 };
 
@@ -31,7 +31,12 @@ export default function Board({ guesses, current, answer, shake, revealRow, boun
   });
 
   return (
-    <div className="grid gap-1.5" role="grid" aria-label="Tauler">
+    <div
+      // Les fitxes s'adapten a l'alçada: tauler i teclat caben sencers en un mòbil petit.
+      className="grid gap-1.5 [--tile:clamp(2.5rem,calc((100dvh-372px)/6),3.5rem)] sm:[--tile:clamp(2.5rem,calc((100dvh-372px)/6),4rem)]"
+      role="grid"
+      aria-label="Tauler"
+    >
       {rows.map((row, r) => (
         <div
           key={r}
@@ -53,7 +58,7 @@ export default function Board({ guesses, current, answer, shake, revealRow, boun
                 role="gridcell"
                 style={animation ? { animationDelay: `${animation.delay}ms` } : undefined}
                 className={cn(
-                  'grid size-14 place-items-center border-2 text-2xl font-bold uppercase sm:size-16',
+                  'grid size-(--tile) place-items-center border-2 text-2xl font-bold uppercase',
                   state
                     ? TILE[state]
                     : letter

@@ -16,7 +16,7 @@ export function PuzzleName({ puzzle }: { puzzle: Pick<PuzzleRecord, 'title'> }) 
   return puzzle.title ? (
     <span className="font-semibold">{puzzle.title}</span>
   ) : (
-    <span className="text-stone-400 italic">Sense nom</span>
+    <span className="text-stone-600 italic">Sense nom</span>
   );
 }
 

@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import GameIcon from '@/components/game/GameIcon';
 import Prose from '@/components/ui/Prose';
 import { FEATURES, SITE } from '@/config/site';
 import { GAMES } from '@/games/registry';
@@ -28,11 +29,7 @@ export default function AboutPage() {
                 to={`/${g.slug}`}
                 className="flex h-full items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 font-normal! text-stone-700! no-underline! transition hover:-translate-y-0.5 hover:shadow-md"
               >
-                <span
-                  className={`grid size-11 shrink-0 place-items-center rounded-xl text-xl ${g.theme.bg}`}
-                >
-                  {g.icon}
-                </span>
+                <GameIcon id={g.id} size={44} />
                 <span>
                   <strong className="block">{g.name}</strong>
                   <span className="block text-sm">{g.tagline}</span>

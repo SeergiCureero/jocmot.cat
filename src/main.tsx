@@ -5,8 +5,10 @@ import App from './App';
 import { AuthProvider } from './features/auth/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
 import { startAnalytics } from './lib/analytics';
+import { applySettings } from './features/settings/settings';
 import './index.css';
 
+applySettings();
 startAnalytics();
 
 createRoot(document.getElementById('root')!).render(

@@ -93,7 +93,7 @@ function Friends() {
                     act(social.removeFriend(row.user.id), 'Amic eliminat')
                   }
                   aria-label={`Elimina ${row.user.name}`}
-                  className="text-stone-400 hover:text-red-700"
+                  className="grid size-11 place-items-center rounded-full text-xl text-stone-600 hover:bg-red-50 hover:text-red-700"
                 >
                   ×
                 </button>
