@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router';
 import GameIcon from '@/components/game/GameIcon';
+import DonateButton from '@/components/ui/DonateButton';
 import { CloseIcon } from '@/components/icons';
 import { FEATURES, SITE } from '@/config/site';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -104,7 +105,7 @@ export default function Menu({ open, onClose }: { open: boolean; onClose: () => 
 
           {SITE.donateUrl && (
             <div className="mt-auto px-5 pt-4">
-              <DonateButton />
+              <DonateButton className="w-full" />
             </div>
           )}
         </div>
@@ -120,20 +121,5 @@ function Item({ to, children }: { to: string; children: ReactNode }) {
         {children}
       </Link>
     </li>
-  );
-}
-
-/** Botó de donatius (discret: vora, sense color de fons). */
-export function DonateButton({ className }: { className?: string }) {
-  if (!SITE.donateUrl) return null;
-  return (
-    <a
-      href={SITE.donateUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`flex min-h-11 items-center justify-center gap-2 rounded-full border border-stone-300 px-5 text-sm font-semibold text-stone-800 transition-colors hover:bg-stone-100 ${className ?? ''}`}
-    >
-      ☕ Fes un donatiu
-    </a>
   );
 }

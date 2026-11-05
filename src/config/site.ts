@@ -11,10 +11,10 @@ export const SITE = {
   /** Responsable del lloc i de les dades personals (pàgina /legal). */
   owner: 'Sergi Curero',
   /**
-   * Pàgina de donatius (p. ex. https://ko-fi.com/<usuari>). Buit = no es mostra l'enllaç.
-   * La plataforma gestiona el pagament: aquí no passa cap dada de pagament.
+   * Enllaç de donatius de Stripe ("Convida'ns a un cafè"). Buit = no es mostra l'enllaç.
+   * Stripe gestiona el pagament: aquí no passa cap dada de pagament.
    */
-  donateUrl: 'https://ko-fi.com/jocmot',
+  donateUrl: 'https://donate.stripe.com/00w9AU5mOeqgeR88W5fYY00',
   /** Data de l'última revisió dels textos legals. */
   legalUpdated: '1 de novembre de 2026',
 } as const;

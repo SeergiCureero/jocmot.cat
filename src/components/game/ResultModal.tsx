@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { DonateButton } from '@/components/layout/Menu';
 import Button from '@/components/ui/Button';
+import DonateButton from '@/components/ui/DonateButton';
 import Modal from '@/components/ui/Modal';
 import { FEATURES } from '@/config/site';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -149,7 +149,7 @@ export default function ResultModal({ open, onClose, meta, puzzleNumber, result,
           )}
 
           <div className="flex justify-center pt-1">
-            <DonateButton className="border-stone-200 text-stone-600" />
+            <DonateButton />
           </div>
         </>
       )}

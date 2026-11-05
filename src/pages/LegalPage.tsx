@@ -100,9 +100,9 @@ export default function LegalPage() {
           </li>
           {SITE.donateUrl && (
             <li>
-              <strong>Donatius:</strong> si en fas un, el pagament el gestiona la plataforma de
-              donatius (amb el seu proveïdor de pagament) i nosaltres no veiem les dades de la
-              targeta. Només en rebem el nom i el missatge que hi vulguis deixar, i la quantitat.
+              <strong>Donatius:</strong> si en fas un, el pagament el gestiona Stripe i nosaltres no
+              veiem les dades de la targeta. Només en rebem la quantitat i el nom i el correu que hi
+              posis.
             </li>
           )}
           <li>
