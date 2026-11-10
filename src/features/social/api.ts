@@ -1,3 +1,4 @@
+import { storage } from '@/lib/storage';
 import { backend } from '@/services/backend';
 
 /** Tipus i crides de punts, amics i lligues. Els calcula el servidor (backend/pb_hooks/jocmot.pb.js). */
@@ -57,6 +58,20 @@ export interface LeagueSummary {
   members: number;
   position: number | null;
   leader: Person | null;
+  lastMessage: ChatMessage | null;
+}
+
+export interface ChatMessage {
+  id: string;
+  user: Person;
+  text: string;
+  /** ISO 8601 */
+  created: string;
+}
+
+export interface Likes {
+  count: number;
+  liked: boolean;
 }
 
 export interface League {
@@ -105,7 +120,39 @@ export const social = {
   joinLeague: (code: string) =>
     backend.call<{ id: string }>('/lligues/unir', { method: 'POST', body: { code } }),
   leaveLeague: (id: string) => backend.call(`/lligues/${id}/membre`, { method: 'DELETE' }),
+
+  /** Missatges del xat; amb `after`, només els posteriors. */
+  chat: (leagueId: string, after?: string) =>
+    backend.call<{ messages: ChatMessage[] }>(
+      `/lligues/${leagueId}/xat${after ? `?despres=${encodeURIComponent(after)}` : ''}`,
+    ),
+  sendMessage: (leagueId: string, text: string) =>
+    backend.call<ChatMessage>(`/lligues/${leagueId}/xat`, { method: 'POST', body: { text } }),
+  deleteMessage: (leagueId: string, messageId: string) =>
+    backend.call(`/lligues/${leagueId}/xat/${messageId}`, { method: 'DELETE' }),
+
+  likes: (game: string, puzzle: number) => backend.call<Likes>(`/likes/${game}/${puzzle}`),
+  setLike: (game: string, puzzle: number, liked: boolean) =>
+    backend.call<Likes>(`/likes/${game}/${puzzle}`, { method: 'POST', body: { liked } }),
 };
+
+/** Últim missatge del xat de cada lliga que ja s'ha vist en aquest dispositiu. */
+const SEEN_KEY = 'xat-vist';
+const seenAll = () => storage.get<Record<string, string>>(SEEN_KEY) ?? {};
+
+export const chatSeen = (leagueId: string): string => seenAll()[leagueId] ?? '';
+
+export function markChatSeen(leagueId: string, created: string) {
+  const all = seenAll();
+  if ((all[leagueId] ?? '') >= created) return;
+  storage.set(SEEN_KEY, { ...all, [leagueId]: created });
+}
+
+/** Hi ha missatges d'altres que encara no has vist? */
+export const hasUnread = (l: LeagueSummary, meId?: string) =>
+  Boolean(
+    l.lastMessage && l.lastMessage.user.id !== meId && l.lastMessage.created > chatSeen(l.id),
+  );
 
 /** "2026-10" → "octubre del 2026" */
 export function formatMonth(month: string): string {

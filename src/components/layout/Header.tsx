@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { ChartIcon, MenuIcon } from '@/components/icons';
+import { ChartIcon, MenuIcon, TrophyIcon } from '@/components/icons';
+import { FEATURES } from '@/config/site';
 import { ICON_BUTTON as iconButton } from '@/components/ui/styles';
 import Menu from './Menu';
 import logoText from '../../../public/logos/jocmot-text.svg?raw';
 
 /**
- * Capçalera fixa: logo (portada) a l'esquerra; estadístiques i menú a la dreta.
+ * Capçalera fixa: logo (portada) a l'esquerra; lligues, estadístiques i menú a la dreta.
  * 56 px d'alçada més la zona segura de l'iPhone (la "notch").
  */
 export default function Header() {
@@ -29,6 +30,11 @@ export default function Header() {
         </Link>
 
         <div className="ml-auto flex items-center gap-1">
+          {FEATURES.social && (
+            <Link to="/lligues" className={iconButton} aria-label="Lligues">
+              <TrophyIcon />
+            </Link>
+          )}
           <Link to="/estadistiques" className={iconButton} aria-label="Estadístiques">
             <ChartIcon />
           </Link>

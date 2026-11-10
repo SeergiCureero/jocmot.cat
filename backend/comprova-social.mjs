@@ -477,5 +477,103 @@ expect('… el publicat es queda, sense autor', after.id === own[1] && after.aut
 r = await get(`/collections/puzzles/records/${own[0]}`, gina.token);
 expect('… les propostes s’esborren', r.status === 404, r);
 
+// ── Desaprovar i corregir (editors) ──
+r = await post(`/jocmot/puzles/${pb}/desaprova`, {}, eva.token);
+expect('només els editors poden desaprovar', r.status === 403, r);
+r = await post(`/jocmot/puzles/${pToday}/desaprova`, {}, gina.token);
+expect('el puzle que ja ha sortit no es pot desaprovar', r.status === 400, r);
+const pbBefore = await getPuzzle(pb);
+r = await post(`/jocmot/puzles/${pb}/desaprova`, {}, cesc.token);
+let un = await getPuzzle(pb);
+expect(
+  'desaprovar el torna a revisió, sense dia i amb el dia d’abans com a preferit',
+  r.status === 204 &&
+    un.status === 'proposed' &&
+    !un.number &&
+    !un.releaseAt &&
+    un.wantedNumber === pbBefore.number &&
+    un.contentUpdated > pbBefore.contentUpdated,
+  { r, un },
+);
+r = await post(`/jocmot/puzles/${pa}/corregeix`, { data: { n: 'corregit' } }, eva.token);
+expect('només els editors poden corregir', r.status === 403, r);
+r = await post(`/jocmot/puzles/${pa}/corregeix`, { data: { n: 'corregit' } }, cesc.token);
+a = await getPuzzle(pa);
+expect(
+  'un editor corregeix un programat d’un altre: es queda al seu dia',
+  r.status === 204 && a.data.n === 'corregit' && a.status === 'published' && a.number === today + 6,
+  { r, a },
+);
+r = await post(`/jocmot/puzles/${pToday}/corregeix`, { data: { n: 'avui' } }, cesc.token);
+expect(
+  '… també un que ja ha sortit',
+  r.status === 204 && (await getPuzzle(pToday)).data.n === 'avui',
+  r,
+);
+r = await post(`/jocmot/puzles/${pb}/corregeix`, { data: null }, cesc.token);
+expect('… però no el pot deixar buit', r.status === 400, r);
+
+// ── Likes ──
+const hugo = await user('hugo');
+const iris = await user('iris');
+r = await get(`/jocmot/likes/mini/${today}`);
+expect(
+  'sense compte es veu el recompte',
+  r.status === 200 && r.body.count === 0 && !r.body.liked,
+  r,
+);
+r = await post(`/jocmot/likes/mini/${today}`, { liked: true });
+expect('sense compte no es pot fer like', r.status === 401, r);
+r = await post(`/jocmot/likes/mini/${today}`, { liked: true }, hugo.token);
+await post(`/jocmot/likes/mini/${today}`, { liked: true }, hugo.token);
+expect('fer like (dues vegades compta una)', r.body.count === 1 && r.body.liked, r);
+await post(`/jocmot/likes/mini/${today}`, { liked: true }, iris.token);
+r = await get(`/jocmot/likes/mini/${today}`, hugo.token);
+expect('recompte i like propi', r.body.count === 2 && r.body.liked, r);
+r = await post(`/jocmot/likes/mini/${today}`, { liked: false }, hugo.token);
+expect('treure el like', r.body.count === 1 && !r.body.liked, r);
+r = await post(`/jocmot/likes/mini/${today + 1}`, { liked: true }, hugo.token);
+expect('no es pot fer like a un puzle futur', r.status === 400, r);
+r = await get('/jocmot/likes/escacs/1');
+expect('joc inexistent', r.status === 404, r);
+
+// ── Xat de la lliga ──
+const chatLeague = (await post('/jocmot/lligues', { name: 'Xerrada' }, hugo.token)).body;
+await post('/jocmot/lligues/unir', { code: chatLeague.code }, iris.token);
+const chat = `/jocmot/lligues/${chatLeague.id}/xat`;
+r = await post(chat, { text: 'hola' }, eva.token);
+expect('qui no és de la lliga no hi pot escriure', r.status === 404, r);
+r = await get(chat, eva.token);
+expect('… ni llegir-lo', r.status === 404, r);
+r = await post(chat, { text: '   ' }, hugo.token);
+expect('no es pot enviar un missatge buit', r.status === 400, r);
+r = await post(chat, { text: 'x'.repeat(301) }, hugo.token);
+expect('ni massa llarg', r.status === 400, r);
+const m1 = (await post(chat, { text: '  Bon dia!  ' }, hugo.token)).body;
+expect('enviar un missatge', m1.text === 'Bon dia!' && m1.user.name === 'hugo', m1);
+r = await post(chat, { text: 'un altre' }, hugo.token);
+expect('no es poden enviar dos missatges seguits tan de pressa', r.status === 400, r);
+const m2 = (await post(chat, { text: 'Hola!' }, iris.token)).body;
+r = await get(chat, iris.token);
+expect(
+  'llegir el xat, del més antic al més nou',
+  r.body.messages.length === 2 &&
+    r.body.messages[0].id === m1.id &&
+    r.body.messages[1].id === m2.id,
+  r.body,
+);
+r = await get(`${chat}?despres=${encodeURIComponent(m1.created)}`, iris.token);
+expect('només els nous', r.body.messages.length === 1 && r.body.messages[0].id === m2.id, r.body);
+r = await get('/jocmot/lligues', iris.token);
+const summary = r.body.leagues.find((l) => l.id === chatLeague.id);
+expect('el resum de lligues porta l’últim missatge', summary?.lastMessage?.id === m2.id, summary);
+r = await del(`${chat}/${m1.id}`, iris.token);
+expect('no pots esborrar el missatge d’un altre', r.status === 403, r);
+r = await del(`${chat}/${m2.id}`, hugo.token);
+expect('el creador de la lliga sí que pot', r.status === 204, r);
+r = await del(`${chat}/${m1.id}`, hugo.token);
+r = await get(chat, hugo.token);
+expect('… i cadascú els seus', r.body.messages.length === 0, r.body);
+
 console.log(fails ? `\n${fails} comprovacions han fallat` : '\nTot correcte');
 process.exit(fails ? 1 : 0);

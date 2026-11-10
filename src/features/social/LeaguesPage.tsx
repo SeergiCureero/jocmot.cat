@@ -4,7 +4,8 @@ import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import { INPUT } from '@/components/ui/styles';
 import { cn } from '@/lib/cn';
-import { formatMonth, social } from './api';
+import { useAuth } from '@/features/auth/AuthContext';
+import { formatMonth, hasUnread, social } from './api';
 import PointsHelp from './PointsHelp';
 import { ErrorBox, RequireLogin, SocialTabs, useLoad } from './ui';
 
@@ -26,6 +27,7 @@ export default function LeaguesPage() {
 }
 
 function Leagues() {
+  const { user } = useAuth();
   const { data, error } = useLoad(() => social.leagues(), []);
 
   if (error) return <ErrorBox>{error}</ErrorBox>;
@@ -50,7 +52,14 @@ function Leagues() {
                     🏆
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-bold">{l.name}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="truncate font-bold">{l.name}</span>
+                      {hasUnread(l, user?.id) && (
+                        <span className="bg-brand-700 shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold text-white">
+                          💬 Nou
+                        </span>
+                      )}
+                    </span>
                     <span className="block text-sm text-stone-600">
                       {l.members} {l.members === 1 ? 'membre' : 'membres'}
                       {l.leader && <> · Lidera {l.leader.name}</>}

@@ -21,7 +21,10 @@ Detalls:
 - No pots aprovar els teus puzles.
 - Qualsevol editor pot posar o canviar el nom d'un puzle (✏️), també dels programats. Canviar el nom o el dia preferit no obliga a tornar-lo a aprovar.
 - Si l'autor canvia el puzle, les aprovacions anteriors deixen de comptar i s'han de repetir.
-- Mentre està en revisió, l'autor el pot retirar. Un cop programat ja no se'n pot canviar el contingut, només el dia.
+- Mentre està en revisió, l'autor el pot retirar. Un cop programat, l'autor ja no en pot canviar el contingut.
+- **Corregir.** Els editors poden corregir qualsevol puzle (_Mostra la solució_, canvia-ho i _Desa la correcció_): propostes d'altres (les aprovacions s'han de repetir), programats (es queden al seu dia) i fins i tot els que ja han sortit (només per a errades petites, com una definició: si es canvien les respostes, qui l'estigui jugant pot trobar coses estranyes).
+- **Desaprovar.** Un editor pot _Desaprovar_ un puzle programat que encara no ha sortit: torna a _Pendents de revisió_, perd el dia (que queda com a dia preferit) i s'ha de tornar a aprovar. El motiu queda als comentaris perquè l'autor el vegi.
+- Als puzles que ja han sortit es veu quanta gent els ha fet ❤️.
 - Els dies sense cap puzle del grup, la web fa servir els puzles del repositori.
 
 ## Diccionari
