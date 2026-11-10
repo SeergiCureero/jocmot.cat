@@ -9,4 +9,6 @@ export interface ConnexionsGroup {
 
 export interface ConnexionsPuzzle {
   groups: [ConnexionsGroup, ConnexionsGroup, ConnexionsGroup, ConnexionsGroup];
+  /** Pista opcional escrita per l'autor (pàgina /pistes). */
+  hint?: string;
 }

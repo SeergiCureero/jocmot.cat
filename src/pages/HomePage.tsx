@@ -134,6 +134,15 @@ export default function HomePage() {
         </>
       )}
 
+      <p className="mt-4 text-center">
+        <Link
+          to="/pistes"
+          className="text-brand-700 inline-flex min-h-11 items-center px-2 text-sm font-semibold hover:underline"
+        >
+          <span aria-hidden>💡&nbsp;</span>T’has encallat? Mira les pistes del dia →
+        </Link>
+      </p>
+
       {FEATURES.social && <MyLeagues />}
 
       {FEATURES.archive && today > 1 && (

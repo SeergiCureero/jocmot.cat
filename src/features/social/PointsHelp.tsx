@@ -37,6 +37,10 @@ export default function PointsHelp() {
           cada joc, fins a +5.
         </p>
         <p>
+          💡 <strong>Pistes del dia:</strong> cada pista que mires abans d’acabar un puzle en resta
+          3 punts (mínim 3), i si en mires la solució, no en guanyes cap.
+        </p>
+        <p>
           📅 <strong>Arxiu:</strong> els puzles de dies anteriors donen la meitat de punts i no
           compten per a la ratxa.
         </p>

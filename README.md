@@ -74,6 +74,7 @@ src/
 - **Puzle del dia:** tots els jocs comparteixen numeració. El #1 és `VITE_LAUNCH_DATE` (hora de Madrid).
 - **Progrés:** `useGameProgress` el desa sempre al navegador; si hi ha sessió, també al servidor (guanya la còpia més recent).
 - **Diccionari:** Paraula només accepta paraules del diccionari, i a Fils les paraules del diccionari que no són del tema sumen cap a la pista. Les llistes són a `public/diccionari/` (derivades del diccionari de Softcatalà, GPL/LGPL) i es regeneren amb `scripts/build-dictionary.py`. Es descarreguen per inicial quan calen (`src/lib/dictionary.ts`).
+- **Pistes del dia:** a `/pistes`, pistes progressives per als puzles d'avui. Les genera cada joc (`src/games/<joc>/hints.ts`) a partir del puzle, i els puzles del grup poden portar una pista de l'autor. Amb compte, resten punts si es miren abans d'acabar.
 - **Compartir:** cada joc genera el seu text amb emojis (`buildShareText`). En mòbil s'obre el menú de compartir; en escriptori es copia.
 - **Arxiu (futur):** les rutes `/joc/:puzzleId` ja existeixen. S'activen amb `FEATURES.archive = true` a `src/config/site.ts`.
 - **Anuncis (futur):** espais `<AdSlot>` ja col·locats. Veure [docs/ANUNCIS.md](docs/ANUNCIS.md).

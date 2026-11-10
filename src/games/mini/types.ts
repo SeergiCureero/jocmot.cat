@@ -6,6 +6,8 @@ export interface MiniPuzzle {
   grid: string[];
   /** Definicions indexades pel número de la casella inicial. */
   clues: Record<Direction, Record<number, string>>;
+  /** Pista opcional escrita per l'autor (pàgina /pistes). */
+  hint?: string;
 }
 
 export interface Entry {

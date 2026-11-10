@@ -35,7 +35,7 @@ Els calcula **el servidor**, amb JavaScript de PocketBase a `backend/pb_hooks/`:
 - `jocmot_avisos.js` i `jocmot_push.js`: avís diari (vegeu _Producció_).
 - `jocmot.pb.js`: en acabar una partida (`progress` amb estat `won`/`lost`) desa la puntuació a `scores`, i exposa les rutes `/api/jocmot/*` (perfil, amics, lligues i el seu xat, likes dels puzles, i desaprovar o corregir puzles de l'editor).
 
-El navegador no pot escriure a `scores`, `friendships`, `leagues`, `league_members`, `league_messages` ni `likes`: només ho fan aquestes rutes. Les puntuacions es calculen una sola vegada per puzle, amb l'hora del servidor (així l'arxiu no es pot fer passar per puzle del dia). La data de llançament és a `jocmot.js` i ha de coincidir amb `.env.production` (un test ho comprova).
+El navegador no pot escriure a `scores`, `friendships`, `leagues`, `league_members`, `league_messages`, `likes` ni `hint_uses`: només ho fan aquestes rutes. Les puntuacions es calculen una sola vegada per puzle, amb l'hora del servidor (així l'arxiu no es pot fer passar per puzle del dia). La data de llançament és a `jocmot.js` i ha de coincidir amb `.env.production` (un test ho comprova).
 
 Si cal recalcular puntuacions que faltin (p. ex. partides d'abans d'activar els punts): `POST /api/jocmot/admin/recalcula` amb un token de superusuari.
 
@@ -52,6 +52,7 @@ Si cal recalcular puntuacions que faltin (p. ex. partides d'abans d'activar els 
 | `leagues`, `league_members` | Lligues (amb codi de 6 caràcters) i qui hi és.                                                                                                                                                                                                                    |
 | `league_messages`           | Xat de cada lliga (300 caràcters per missatge, se'n guarden els últims 300).                                                                                                                                                                                      |
 | `likes`                     | A qui li ha agradat cada puzle (joc + número).                                                                                                                                                                                                                    |
+| `hint_uses`                 | Pistes de `/pistes` mirades abans d'acabar un puzle. En acabar-lo, cada pista resta 3 punts (mínim 3) i la solució el deixa a 0.                                                                                                                                  |
 | `push_subscriptions`        | Avís diari: subscripció Web Push de cada navegador, amb l'hora triada (Madrid). Només hi accedeix el servidor.                                                                                                                                                    |
 
 Regles principals (detall a la migració):

@@ -19,6 +19,7 @@ const NewPasswordPage = lazy(() => import('./features/auth/NewPasswordPage'));
 const StatsPage = lazy(() => import('./pages/StatsPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const HowToPlayPage = lazy(() => import('./pages/HowToPlayPage'));
+const HintsPage = lazy(() => import('./pages/HintsPage'));
 const EditorRoutes = lazy(() => import('./features/editor/EditorRoutes'));
 const LeaguesPage = lazy(() => import('./features/social/LeaguesPage'));
 const LeaguePage = lazy(() => import('./features/social/LeaguePage'));
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="estadistiques" element={<StatsPage />} />
           <Route path="configuracio" element={<SettingsPage />} />
           <Route path="com-es-juga" element={<HowToPlayPage />} />
+          <Route path="pistes" element={<HintsPage />} />
           <Route path="sobre" element={<AboutPage />} />
           <Route path="legal" element={<LegalPage />} />
 
