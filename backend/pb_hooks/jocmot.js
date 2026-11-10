@@ -90,6 +90,22 @@ function basePoints(game, status, state) {
   }
 }
 
+/** Punts que resta cada pista de la pàgina de pistes (veure la solució deixa la partida sense punts). */
+const HINT_PENALTY = 3;
+const HINT_FLOOR = 3;
+
+/**
+ * Punts després de les pistes de la pàgina /pistes mirades abans d'acabar.
+ * `hints`: {count, solution} o null. Cada pista resta 3 (mínim 3); la solució, tots.
+ */
+function withHints(points, hints) {
+  if (!hints || points <= 0) return points;
+  if (hints.solution) return 0;
+  const count = hints.count || 0;
+  if (count <= 0) return points;
+  return Math.max(Math.min(points, HINT_FLOOR), points - HINT_PENALTY * count);
+}
+
 /**
  * Ratxa: dies seguits amb algun puzle del dia acabat, comptant fins a `today`.
  * Si avui encara no s'ha jugat, compta fins ahir (la ratxa no es perd fins que acaba el dia).
@@ -111,15 +127,16 @@ function currentStreak(days, today) {
  * - Puzle de l'arxiu: la meitat dels punts base, sense bonus.
  * Retorna null si la partida no ha acabat o el puzle és del futur.
  * `dailyDays`: dies en què l'usuari ja havia acabat algun puzle del dia.
+ * `hints`: pistes de /pistes mirades abans d'acabar ({count, solution}), o null.
  */
-function scoreFor({ game, puzzle, status, state, finishedAt, dailyDays }) {
+function scoreFor({ game, puzzle, status, state, finishedAt, dailyDays, hints }) {
   if (status !== 'won' && status !== 'lost') return null;
   const day = madridDate(finishedAt);
   const date = puzzleDate(puzzle);
   if (puzzle < 1 || date > day) return null;
 
   const daily = date === day;
-  const full = basePoints(game, status, state);
+  const full = withHints(basePoints(game, status, state), hints);
   const base = daily ? full : Math.floor(full / 2);
   const streak = currentStreak(daily ? dailyDays.concat([day]) : dailyDays, day);
   const bonus = daily && base > 0 ? Math.min(streak - 1, MAX_STREAK_BONUS) : 0;
@@ -156,6 +173,8 @@ module.exports = {
   puzzleDate,
   puzzleNumberForDate,
   basePoints,
+  withHints,
+  HINT_PENALTY,
   currentStreak,
   scoreFor,
   rankFor,

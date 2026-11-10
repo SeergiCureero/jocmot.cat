@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import AdSlot from '@/components/ads/AdSlot';
-import { BackIcon, HelpIcon } from '@/components/icons';
+import { BackIcon, BulbIcon, HelpIcon } from '@/components/icons';
 import Button from '@/components/ui/Button';
 import { ICON_BUTTON } from '@/components/ui/styles';
 import Confetti from '@/components/ui/Confetti';
@@ -107,6 +107,11 @@ export default function GameShell({
           )}
         </div>
         {headerExtra}
+        {!preview && puzzleNumber === getTodayPuzzleNumber() && (
+          <Link to={`/pistes?joc=${meta.slug}`} className={ICON_BUTTON} aria-label="Pistes">
+            <BulbIcon />
+          </Link>
+        )}
         <button
           type="button"
           className={`${ICON_BUTTON} -mr-2`}

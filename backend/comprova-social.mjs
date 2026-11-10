@@ -575,5 +575,29 @@ r = await del(`${chat}/${m1.id}`, hugo.token);
 r = await get(chat, hugo.token);
 expect('… i cadascú els seus', r.body.messages.length === 0, r.body);
 
+// ── Pistes del dia ──
+const jan = await user('jan');
+r = await post(`/jocmot/pistes/paraula/${today}`, { count: 1 });
+expect('sense compte no s’apunten pistes', r.status === 401, r);
+r = await post(`/jocmot/pistes/paraula/${today + 1}`, { count: 1 }, jan.token);
+expect('no hi ha pistes de puzles futurs', r.status === 400, r);
+r = await post(`/jocmot/pistes/paraula/${today}`, { count: 2 }, jan.token);
+await post(`/jocmot/pistes/paraula/${today}`, { count: 1 }, jan.token);
+r = await get(`/jocmot/pistes/${today}`, jan.token);
+expect(
+  'les pistes es queden amb el màxim',
+  r.body.games?.paraula?.count === 2 && r.body.games.paraula.solution === false,
+  r.body,
+);
+await finish(jan, 'paraula', today, 'won', { guesses: ['a'], status: 'won' });
+r = await get(`/jocmot/puntuacio/paraula/${today}`, jan.token);
+expect('2 pistes resten 6 punts (15 → 9)', r.body.base === 9 && r.body.points === 9, r.body);
+await post(`/jocmot/pistes/connexions/${today}`, { count: 0, solution: true }, jan.token);
+await finish(jan, 'connexions', today, 'won', { mistakes: 0, status: 'won' });
+r = await get(`/jocmot/puntuacio/connexions/${today}`, jan.token);
+expect('veure la solució deixa el puzle sense punts', r.body.points === 0, r.body);
+r = await post(`/jocmot/pistes/paraula/${today}`, { count: 3 }, jan.token);
+expect('un cop acabat, les pistes ja no compten', r.status === 200 && r.body.counted === false, r);
+
 console.log(fails ? `\n${fails} comprovacions han fallat` : '\nTot correcte');
 process.exit(fails ? 1 : 0);

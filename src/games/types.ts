@@ -33,4 +33,31 @@ export interface GameMeta {
 
 export interface GameDefinition extends GameMeta {
   Component: LazyExoticComponent<ComponentType<GameProps>>;
+  /** Pistes del puzle (pàgina /pistes). Es carreguen a demanda, com el joc. */
+  hints: () => Promise<HintsModule>;
+}
+
+/** Una pista: un títol curt i el que diu (una o més línies). */
+export interface Hint {
+  title: string;
+  lines: string[];
+}
+
+/** Pistes d'un puzle, de la més suau a la més clara, i la solució a part. */
+export interface PuzzleHints {
+  hints: Hint[];
+  solution: Hint;
+}
+
+export interface HintsModule {
+  /** `groupPuzzle`: puzle del grup per a aquest número; si no n'hi ha, el del repositori. */
+  buildHints(puzzleNumber: number, groupPuzzle?: unknown): PuzzleHints;
+}
+
+/** Pista escrita per l'autor d'un puzle del grup (camp opcional `hint` del puzle). */
+export function authorHint(puzzle: unknown): Hint[] {
+  const text = (puzzle as { hint?: unknown } | null | undefined)?.hint;
+  return typeof text === 'string' && text.trim()
+    ? [{ title: 'Pista de l’autor', lines: [text.trim()] }]
+    : [];
 }

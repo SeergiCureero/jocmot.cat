@@ -438,6 +438,39 @@ routerAdd(
   $apis.requireAuth('users'),
 );
 
+// ── Pistes ──
+
+/** Pistes ja mirades (abans d'acabar) dels puzles d'un número. */
+routerAdd(
+  'GET',
+  '/api/jocmot/pistes/{puzzle}',
+  (e) => {
+    const db = require(`${__hooks}/jocmot_db.js`);
+    return e.json(200, { games: db.hintUsesFor(e.app, e.auth.id, e.request.pathValue('puzzle')) });
+  },
+  $apis.requireAuth('users'),
+);
+
+/** Apunta les pistes destapades ({count, solution}). Resten punts quan s'acaba el puzle. */
+routerAdd(
+  'POST',
+  '/api/jocmot/pistes/{game}/{puzzle}',
+  (e) => {
+    const db = require(`${__hooks}/jocmot_db.js`);
+    return e.json(
+      200,
+      db.recordHintUse(
+        e.app,
+        e.auth.id,
+        e.request.pathValue('game'),
+        e.request.pathValue('puzzle'),
+        e.requestInfo().body,
+      ),
+    );
+  },
+  $apis.requireAuth('users'),
+);
+
 // ── Compte ──
 
 /** Esborra el compte de qui fa la petició, amb totes les seves dades. Cal la contrasenya. */

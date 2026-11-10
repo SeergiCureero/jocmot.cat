@@ -3,10 +3,11 @@ import { connexionsKit } from './connexions';
 import { filsKit } from './fils';
 import { miniKit } from './mini';
 import type { EditorKit } from './types';
+import { withHint } from './withHint';
 
 /** Kit d'edició de cada joc. L'esborrany és opac per a les pàgines: només el kit en coneix la forma. */
 export const KITS = {
-  connexions: connexionsKit,
-  fils: filsKit,
-  mini: miniKit,
+  connexions: withHint(connexionsKit),
+  fils: withHint(filsKit),
+  mini: withHint(miniKit),
 } as unknown as Record<DesignableGameId, EditorKit<unknown>>;

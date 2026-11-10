@@ -15,4 +15,6 @@ export interface FilsPuzzle {
   /** Paraula que travessa la graella d'un costat a l'altre. */
   spangram: FilsWord;
   words: FilsWord[];
+  /** Pista opcional escrita per l'autor (pàgina /pistes). */
+  hint?: string;
 }

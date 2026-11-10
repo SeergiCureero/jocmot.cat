@@ -72,6 +72,7 @@ function recordScore(app, progress, finishedAt) {
     /* estat il·legible: compta com a partida sense punts */
   }
   const dailyDays = dailyDaysFor(app, [user], lib.addDays(today(), -400))[user] || [];
+  const hintUse = findFirst(app, 'hint_uses', 'user = {:u} && game = {:g} && puzzle = {:p}', key);
   const score = lib.scoreFor({
     game,
     puzzle,
@@ -79,6 +80,9 @@ function recordScore(app, progress, finishedAt) {
     state,
     finishedAt: finishedAt || Date.now(),
     dailyDays,
+    hints: hintUse
+      ? { count: hintUse.getInt('count'), solution: hintUse.getBool('solution') }
+      : null,
   });
   if (!score) return null;
 
@@ -445,6 +449,60 @@ function setLike(app, userId, game, puzzle, liked) {
   return { count: likeCount(app, t.g, t.p), liked: Boolean(liked) };
 }
 
+// ── Pistes ──
+
+/** Pistes mirades a /pistes per a un número de puzle: {joc: {count, solution, counted}}. */
+function hintUsesFor(app, userId, puzzle) {
+  const out = {};
+  const n = Number(puzzle);
+  if (!Number.isInteger(n)) return out;
+  for (const h of app.findRecordsByFilter('hint_uses', 'user = {:u} && puzzle = {:p}', '', 0, 0, {
+    u: userId,
+    p: n,
+  }))
+    out[h.getString('game')] = { count: h.getInt('count'), solution: h.getBool('solution') };
+  return out;
+}
+
+/**
+ * Apunta les pistes destapades d'un puzle (es queda amb el màxim). Si el puzle ja està acabat
+ * (ja té puntuació), no compta: retorna {counted: false}.
+ */
+function recordHintUse(app, userId, game, puzzle, body) {
+  const t = likeTarget(game, puzzle);
+  const count = Math.max(0, Math.min(10, Math.floor(Number(body.count) || 0)));
+  const solution = Boolean(body.solution);
+  const key = { u: userId, g: t.g, p: t.p };
+  if (findFirst(app, 'scores', 'user = {:u} && game = {:g} && puzzle = {:p}', key))
+    return { counted: false };
+  let record = findFirst(app, 'hint_uses', 'user = {:u} && game = {:g} && puzzle = {:p}', key);
+  if (!record) {
+    record = new Record(app.findCollectionByNameOrId('hint_uses'));
+    record.set('user', userId);
+    record.set('game', t.g);
+    record.set('puzzle', t.p);
+  }
+  record.set('count', Math.max(count, record.getInt('count')));
+  record.set('solution', solution || record.getBool('solution'));
+  try {
+    app.save(record);
+  } catch {
+    // Dues peticions alhora: l'altra ja l'ha creat. Ho tornem a provar sobre el que hi ha.
+    const existing = findFirst(
+      app,
+      'hint_uses',
+      'user = {:u} && game = {:g} && puzzle = {:p}',
+      key,
+    );
+    if (!existing) throw new BadRequestError('No s’ha pogut desar la pista.');
+    existing.set('count', Math.max(count, existing.getInt('count')));
+    existing.set('solution', solution || existing.getBool('solution'));
+    app.save(existing);
+    record = existing;
+  }
+  return { counted: true, count: record.getInt('count'), solution: record.getBool('solution') };
+}
+
 // ── Xat de les lligues ──
 
 const CHAT_PAGE = 50;
@@ -594,6 +652,8 @@ module.exports = {
   correctPuzzle,
   likesOf,
   setLike,
+  hintUsesFor,
+  recordHintUse,
   requireMember,
   chatMessages,
   lastChatMessage,

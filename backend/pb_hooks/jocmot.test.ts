@@ -83,6 +83,23 @@ describe('scoreFor', () => {
       streak: 2,
     });
   });
+  it('les pistes de /pistes resten 3 punts cadascuna i la solució ho deixa sense punts ni bonus', () => {
+    const base = { ...won, puzzle: 2, finishedAt: NOON_27_OCT, dailyDays: ['2026-10-26'] };
+    expect(lib.scoreFor({ ...base, hints: { count: 1, solution: false } })).toMatchObject({
+      base: 9,
+      points: 10,
+    });
+    const solved = lib.scoreFor({ ...base, hints: { count: 2, solution: true } });
+    expect(solved).toMatchObject({ base: 0, bonus: 0, points: 0, daily: true });
+  });
+  it('withHints: mínim de 3 punts, però no en dona si no n’hi havia', () => {
+    expect(lib.withHints(15, null)).toBe(15);
+    expect(lib.withHints(15, { count: 2, solution: false })).toBe(9);
+    expect(lib.withHints(8, { count: 5, solution: false })).toBe(3);
+    expect(lib.withHints(2, { count: 1, solution: false })).toBe(2);
+    expect(lib.withHints(0, { count: 1, solution: false })).toBe(0);
+    expect(lib.withHints(15, { count: 0, solution: true })).toBe(0);
+  });
   it('el bonus de ratxa té un màxim', () => {
     const days = Array.from({ length: 20 }, (_, i) => lib.addDays('2026-10-26', -i));
     const s = lib.scoreFor({ ...won, puzzle: 2, finishedAt: NOON_27_OCT, dailyDays: days });

@@ -71,6 +71,7 @@ export default function Menu({ open, onClose }: { open: boolean; onClose: () => 
 
           <nav aria-label="Més" className="px-2">
             <ul>
+              <Item to="/pistes">Pistes del dia</Item>
               <Item to="/estadistiques">Estadístiques</Item>
               <Item to="/configuracio">Configuració</Item>
               <Item to="/com-es-juga">Com es juga</Item>
