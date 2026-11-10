@@ -353,6 +353,203 @@ function checkProposalLimit(app, user) {
     );
 }
 
+/**
+ * Desaprova un puzle programat que encara no ha sortit: torna a ser una proposta, perd el dia
+ * i les aprovacions que tenia deixen de comptar (s'ha de tornar a aprovar).
+ */
+function unpublishPuzzle(app, id) {
+  const puzzle = app.findRecordById('puzzles', id);
+  if (puzzle.getString('status') !== 'published')
+    throw new BadRequestError('Aquest puzle no està programat.');
+  if (puzzle.getInt('number') <= lib.puzzleNumberForDate(today()))
+    throw new BadRequestError('Aquest puzle ja ha sortit: ja no es pot desaprovar.');
+  puzzle.set('status', 'proposed');
+  // Es queda amb el dia que tenia com a dia preferit, per si es torna a aprovar.
+  puzzle.set('wantedNumber', puzzle.getInt('number'));
+  puzzle.set('number', 0);
+  puzzle.set('releaseAt', '');
+  puzzle.set('contentUpdated', new DateTime());
+  app.save(puzzle);
+}
+
+/**
+ * Un editor corregeix el contingut de qualsevol puzle (proposta, programat o ja sortit).
+ * En una proposta, les aprovacions s'han de repetir; un programat es queda al seu dia.
+ */
+function correctPuzzle(app, id, data) {
+  if (!data || typeof data !== 'object') throw new BadRequestError('Falta el puzle.');
+  if (JSON.stringify(data).length > 20000) throw new BadRequestError('El puzle és massa gran.');
+  const puzzle = app.findRecordById('puzzles', id);
+  puzzle.set('data', data);
+  if (puzzle.getString('status') === 'proposed') puzzle.set('contentUpdated', new DateTime());
+  app.save(puzzle);
+}
+
+// ── Likes ──
+
+const LIKE_GAMES = ['paraula', 'connexions', 'fils', 'mini'];
+
+/** Joc i número d'un puzle que ja ha sortit (no es pot fer like a un de futur). */
+function likeTarget(game, puzzle) {
+  const n = Number(puzzle);
+  if (LIKE_GAMES.indexOf(game) < 0 || !Number.isInteger(n) || n < 1)
+    throw new NotFoundError('Puzle no trobat');
+  if (n > lib.puzzleNumberForDate(today()))
+    throw new BadRequestError('Aquest puzle encara no ha sortit.');
+  return { g: game, p: n };
+}
+
+function likeCount(app, game, puzzle) {
+  const rows = arrayOf(new DynamicModel({ n: 0 }));
+  app
+    .db()
+    .newQuery('SELECT COUNT(*) AS n FROM likes WHERE game = {:g} AND puzzle = {:p}')
+    .bind({ g: game, p: puzzle })
+    .all(rows);
+  return rows.length ? rows[0].n : 0;
+}
+
+/** Nombre de likes d'un puzle i si a qui ho demana (`userId`, pot ser buit) li agrada. */
+function likesOf(app, userId, game, puzzle) {
+  const t = likeTarget(game, puzzle);
+  const liked = Boolean(
+    userId &&
+    findFirst(app, 'likes', 'user = {:u} && game = {:g} && puzzle = {:p}', {
+      u: userId,
+      g: t.g,
+      p: t.p,
+    }),
+  );
+  return { count: likeCount(app, t.g, t.p), liked };
+}
+
+/** Posa o treu el like. Retorna el recompte nou. */
+function setLike(app, userId, game, puzzle, liked) {
+  const t = likeTarget(game, puzzle);
+  const existing = findFirst(app, 'likes', 'user = {:u} && game = {:g} && puzzle = {:p}', {
+    u: userId,
+    g: t.g,
+    p: t.p,
+  });
+  if (liked && !existing) {
+    const record = new Record(app.findCollectionByNameOrId('likes'));
+    record.set('user', userId);
+    record.set('game', t.g);
+    record.set('puzzle', t.p);
+    try {
+      app.save(record);
+    } catch {
+      // Dos tocs alhora: l'índex únic ja l'ha desat l'altre.
+    }
+  } else if (!liked && existing) app.delete(existing);
+  return { count: likeCount(app, t.g, t.p), liked: Boolean(liked) };
+}
+
+// ── Xat de les lligues ──
+
+const CHAT_PAGE = 50;
+const CHAT_KEEP = 300;
+const CHAT_MAX_LENGTH = 300;
+
+function membershipOf(app, leagueId, userId) {
+  return findFirst(app, 'league_members', 'league = {:l} && user = {:u}', {
+    l: leagueId,
+    u: userId,
+  });
+}
+
+function requireMember(app, leagueId, userId) {
+  if (!membershipOf(app, leagueId, userId)) throw new NotFoundError('Lliga no trobada');
+}
+
+function chatMessage(app, m, names) {
+  const userId = m.getString('user');
+  if (!(userId in names)) {
+    const u = findFirst(app, 'users', 'id = {:id}', { id: userId });
+    names[userId] = u ? person(u) : { id: userId, name: 'Anònim' };
+  }
+  return {
+    id: m.id,
+    user: names[userId],
+    text: m.getString('text'),
+    created: String(m.getString('created')).replace(' ', 'T'),
+  };
+}
+
+/** Últims missatges (del més antic al més nou). Amb `after` (ISO), només els posteriors. */
+function chatMessages(app, leagueId, after) {
+  const filter = after ? 'league = {:l} && created > {:after}' : 'league = {:l}';
+  const params = { l: leagueId };
+  if (after) params.after = String(after).replace('T', ' ');
+  const rows = app.findRecordsByFilter('league_messages', filter, '-created', CHAT_PAGE, 0, params);
+  const names = {};
+  return rows.reverse().map((m) => chatMessage(app, m, names));
+}
+
+/** Últim missatge d'una lliga (per al resum de les lligues), o null. */
+function lastChatMessage(app, leagueId) {
+  const rows = app.findRecordsByFilter('league_messages', 'league = {:l}', '-created', 1, 0, {
+    l: leagueId,
+  });
+  return rows.length ? chatMessage(app, rows[0], {}) : null;
+}
+
+function postChatMessage(app, leagueId, user, text) {
+  requireMember(app, leagueId, user.id);
+  const clean = String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!clean) throw new BadRequestError('Escriu alguna cosa.');
+  if (clean.length > CHAT_MAX_LENGTH)
+    throw new BadRequestError(`Com a màxim ${CHAT_MAX_LENGTH} caràcters.`);
+  // Sense inundar el xat: un missatge cada 2 segons com a molt.
+  const last = app.findRecordsByFilter(
+    'league_messages',
+    'league = {:l} && user = {:u}',
+    '-created',
+    1,
+    0,
+    { l: leagueId, u: user.id },
+  )[0];
+  if (last && Date.now() - toMs(last.getString('created')) < 2000)
+    throw new BadRequestError('Vas massa de pressa. Espera un moment.');
+
+  const record = new Record(app.findCollectionByNameOrId('league_messages'));
+  record.set('league', leagueId);
+  record.set('user', user.id);
+  record.set('text', clean);
+  app.save(record);
+
+  // Només es guarden els últims missatges de cada lliga.
+  const old = app.findRecordsByFilter(
+    'league_messages',
+    'league = {:l}',
+    '-created',
+    100,
+    CHAT_KEEP,
+    {
+      l: leagueId,
+    },
+  );
+  for (const m of old) app.delete(m);
+
+  return chatMessage(app, record, { [user.id]: person(user) });
+}
+
+/** Esborra un missatge: el seu autor o el creador de la lliga. */
+function deleteChatMessage(app, leagueId, messageId, userId) {
+  requireMember(app, leagueId, userId);
+  const m = findFirst(app, 'league_messages', 'id = {:id} && league = {:l}', {
+    id: messageId,
+    l: leagueId,
+  });
+  if (!m) throw new NotFoundError('Missatge no trobat');
+  const league = app.findRecordById('leagues', leagueId);
+  if (m.getString('user') !== userId && league.getString('owner') !== userId)
+    throw new ForbiddenError('Només pots esborrar els teus missatges.');
+  app.delete(m);
+}
+
 /** Mesos (AAAA-MM) des que existeix la lliga fins ara, del més recent al més antic. */
 function leagueMonths(league) {
   const first = lib.madridDate(toMs(league.getString('created')));
@@ -393,5 +590,14 @@ module.exports = {
   movePuzzle,
   checkProposalLimit,
   updatePuzzleInfo,
+  unpublishPuzzle,
+  correctPuzzle,
+  likesOf,
+  setLike,
+  requireMember,
+  chatMessages,
+  lastChatMessage,
+  postChatMessage,
+  deleteChatMessage,
   leagueMonths,
 };

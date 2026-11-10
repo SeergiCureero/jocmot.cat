@@ -9,6 +9,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { dailyStreak } from '@/features/progress/daily';
 import { localProgressRecords, syncLocalProgress } from '@/features/progress/useGameProgress';
 import { social } from '@/features/social/api';
+import MyLeagues from '@/features/social/MyLeagues';
 import { getPuzzleDate, getTodayPuzzleNumber } from '@/games/puzzles';
 import { GAMES } from '@/games/registry';
 import { summarize, type GameSummary } from '@/games/summary';
@@ -132,6 +133,8 @@ export default function HomePage() {
           </ul>
         </>
       )}
+
+      {FEATURES.social && <MyLeagues />}
 
       {FEATURES.archive && today > 1 && (
         <p className="mt-6 text-center">

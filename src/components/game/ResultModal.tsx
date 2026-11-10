@@ -12,6 +12,7 @@ import {
   localProgressRecords,
   syncLocalProgress,
 } from '@/features/progress/useGameProgress';
+import LikeButton from '@/features/social/LikeButton';
 import PointsEarned from '@/features/social/PointsEarned';
 import { getTodayPuzzleNumber } from '@/games/puzzles';
 import { GAMES } from '@/games/registry';
@@ -96,6 +97,21 @@ export default function ResultModal({ open, onClose, meta, puzzleNumber, result,
       {!preview && (
         <>
           {FEATURES.social && user && <PointsEarned game={meta.id} puzzle={puzzleNumber} />}
+
+          {FEATURES.social && (
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <LikeButton game={meta.id} puzzle={puzzleNumber} />
+              {user && (
+                <Link
+                  to="/lligues"
+                  onClick={onClose}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-800 transition-colors hover:bg-stone-100"
+                >
+                  <span aria-hidden>🏆</span> Com vas a la lliga
+                </Link>
+              )}
+            </div>
+          )}
 
           <pre
             aria-label="Resultat per compartir"

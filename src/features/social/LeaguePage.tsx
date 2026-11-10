@@ -6,6 +6,7 @@ import { useToast } from '@/components/ui/Toast';
 import { SITE } from '@/config/site';
 import { useAuth } from '@/features/auth/AuthContext';
 import { formatMonth, social, type League } from './api';
+import LeagueChat from './LeagueChat';
 import PointsHelp from './PointsHelp';
 import { ErrorBox, RankingTable, RequireLogin, useLoad } from './ui';
 
@@ -75,6 +76,8 @@ function LeagueView() {
       )}
 
       <RankingTable rows={league.ranking} meId={user?.id} />
+
+      {user && <LeagueChat leagueId={league.id} meId={user.id} isOwner={league.isOwner} />}
 
       <Invite league={league} />
       <Leave league={league} />

@@ -231,6 +231,7 @@ routerAdd(
         members: rows.length,
         position: me ? me.position : null,
         leader: rows[0] && rows[0].monthPoints > 0 ? rows[0].user : null,
+        lastMessage: db.lastChatMessage(e.app, league.id),
       };
     });
     return e.json(200, { month, leagues });
@@ -359,6 +360,84 @@ routerAdd(
   $apis.requireAuth('users'),
 );
 
+/** Xat de la lliga: últims missatges (?despres=ISO per demanar només els nous). */
+routerAdd(
+  'GET',
+  '/api/jocmot/lligues/{id}/xat',
+  (e) => {
+    const db = require(`${__hooks}/jocmot_db.js`);
+    const id = e.request.pathValue('id');
+    db.requireMember(e.app, id, e.auth.id);
+    const after = e.request.url.query().get('despres');
+    return e.json(200, { messages: db.chatMessages(e.app, id, after) });
+  },
+  $apis.requireAuth('users'),
+);
+
+routerAdd(
+  'POST',
+  '/api/jocmot/lligues/{id}/xat',
+  (e) => {
+    const db = require(`${__hooks}/jocmot_db.js`);
+    const message = db.postChatMessage(
+      e.app,
+      e.request.pathValue('id'),
+      e.auth,
+      e.requestInfo().body.text,
+    );
+    return e.json(200, message);
+  },
+  $apis.requireAuth('users'),
+);
+
+/** Esborra un missatge del xat (el seu autor o el creador de la lliga). */
+routerAdd(
+  'DELETE',
+  '/api/jocmot/lligues/{id}/xat/{msg}',
+  (e) => {
+    const db = require(`${__hooks}/jocmot_db.js`);
+    db.deleteChatMessage(e.app, e.request.pathValue('id'), e.request.pathValue('msg'), e.auth.id);
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
+// ── Likes dels puzles ──
+
+/** Quanta gent li agrada un puzle i si t'agrada a tu (sense compte, només el recompte). */
+routerAdd('GET', '/api/jocmot/likes/{game}/{puzzle}', (e) => {
+  const db = require(`${__hooks}/jocmot_db.js`);
+  return e.json(
+    200,
+    db.likesOf(
+      e.app,
+      e.auth ? e.auth.id : '',
+      e.request.pathValue('game'),
+      e.request.pathValue('puzzle'),
+    ),
+  );
+});
+
+/** Posa ({liked: true}) o treu ({liked: false}) el like. */
+routerAdd(
+  'POST',
+  '/api/jocmot/likes/{game}/{puzzle}',
+  (e) => {
+    const db = require(`${__hooks}/jocmot_db.js`);
+    return e.json(
+      200,
+      db.setLike(
+        e.app,
+        e.auth.id,
+        e.request.pathValue('game'),
+        e.request.pathValue('puzzle'),
+        Boolean(e.requestInfo().body.liked),
+      ),
+    );
+  },
+  $apis.requireAuth('users'),
+);
+
 // ── Compte ──
 
 /** Esborra el compte de qui fa la petició, amb totes les seves dades. Cal la contrasenya. */
@@ -410,6 +489,34 @@ routerAdd(
     if (!e.auth.getBool('editor')) throw new ForbiddenError('Només per a editors.');
     const db = require(`${__hooks}/jocmot_db.js`);
     db.movePuzzle(e.app, e.request.pathValue('id'), e.requestInfo().body.number);
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
+/** Desaprova un puzle programat que encara no ha sortit: torna a revisió. Només editors. */
+routerAdd(
+  'POST',
+  '/api/jocmot/puzles/{id}/desaprova',
+  (e) => {
+    if (!e.auth.getBool('editor')) throw new ForbiddenError('Només per a editors.');
+    require(`${__hooks}/jocmot_db.js`).unpublishPuzzle(e.app, e.request.pathValue('id'));
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
+/** Corregeix el contingut de qualsevol puzle (també programat o ja sortit). Només editors. */
+routerAdd(
+  'POST',
+  '/api/jocmot/puzles/{id}/corregeix',
+  (e) => {
+    if (!e.auth.getBool('editor')) throw new ForbiddenError('Només per a editors.');
+    require(`${__hooks}/jocmot_db.js`).correctPuzzle(
+      e.app,
+      e.request.pathValue('id'),
+      e.requestInfo().body.data,
+    );
     return e.noContent(204);
   },
   $apis.requireAuth('users'),

@@ -24,7 +24,7 @@ VITE_POCKETBASE_URL=http://127.0.0.1:8090
 Per comprovar-ho (només contra un servidor local i buit; cada script amb la base de dades neta):
 
 - `node backend/comprova-regles.mjs`: regles de seguretat de comptes, progrés i editor.
-- `node backend/comprova-social.mjs`: punts, amistats i lligues.
+- `node backend/comprova-social.mjs`: punts, amistats, lligues i el seu xat, likes, i desaprovar/corregir puzles.
 
 ## Punts, amics i lligues
 
@@ -32,25 +32,27 @@ Els calcula **el servidor**, amb JavaScript de PocketBase a `backend/pb_hooks/`:
 
 - `jocmot.js`: lògica pura (punts, ratxes, rangs, dates de Madrid). Té tests amb Vitest (`npm test`).
 - `jocmot_db.js`: consultes a la base de dades.
-- `jocmot_avisos.js` i `jocmot_push.js`: avís diari (vegeu *Producció*).
-- `jocmot.pb.js`: en acabar una partida (`progress` amb estat `won`/`lost`) desa la puntuació a `scores`, i exposa les rutes `/api/jocmot/*` (perfil, amics, lligues).
+- `jocmot_avisos.js` i `jocmot_push.js`: avís diari (vegeu _Producció_).
+- `jocmot.pb.js`: en acabar una partida (`progress` amb estat `won`/`lost`) desa la puntuació a `scores`, i exposa les rutes `/api/jocmot/*` (perfil, amics, lligues i el seu xat, likes dels puzles, i desaprovar o corregir puzles de l'editor).
 
-El navegador no pot escriure a `scores`, `friendships`, `leagues` ni `league_members`: només ho fan aquestes rutes. Les puntuacions es calculen una sola vegada per puzle, amb l'hora del servidor (així l'arxiu no es pot fer passar per puzle del dia). La data de llançament és a `jocmot.js` i ha de coincidir amb `.env.production` (un test ho comprova).
+El navegador no pot escriure a `scores`, `friendships`, `leagues`, `league_members`, `league_messages` ni `likes`: només ho fan aquestes rutes. Les puntuacions es calculen una sola vegada per puzle, amb l'hora del servidor (així l'arxiu no es pot fer passar per puzle del dia). La data de llançament és a `jocmot.js` i ha de coincidir amb `.env.production` (un test ho comprova).
 
 Si cal recalcular puntuacions que faltin (p. ex. partides d'abans d'activar els punts): `POST /api/jocmot/admin/recalcula` amb un token de superusuari.
 
 ## 2. Esquema
 
-| Col·lecció | Per a què |
-| --- | --- |
-| `users` | Comptes. Camp `name` = nom d'usuari (únic, 2-24 caràcters). Camp `editor` (bool): revisa, aprova i programa puzles (proposar-ne, en pot proposar tothom). |
-| `progress` | Progrés de cada usuari en cada puzle. Únic per (usuari, joc, puzle). |
-| `puzzles` | Puzles del grup: `game`, `data` (JSON, mateixa forma que `src/games/<joc>/data`), `author`, `status` (`proposed`/`published`), `number`, `releaseAt`, `title`, `wantedNumber` (dia preferit) i `contentUpdated` (últim canvi del contingut; el posa el servidor). |
-| `reviews` | Aprovacions i comentaris dels editors. Única per (puzle, editor). |
-| `scores` | Punts de cada usuari per puzle (els calcula el servidor). |
-| `friendships` | Sol·licituds d'amistat (`pending`/`accepted`). |
-| `leagues`, `league_members` | Lligues (amb codi de 6 caràcters) i qui hi és. |
-| `push_subscriptions` | Avís diari: subscripció Web Push de cada navegador, amb l'hora triada (Madrid). Només hi accedeix el servidor. |
+| Col·lecció                  | Per a què                                                                                                                                                                                                                                                         |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`                     | Comptes. Camp `name` = nom d'usuari (únic, 2-24 caràcters). Camp `editor` (bool): revisa, aprova i programa puzles (proposar-ne, en pot proposar tothom).                                                                                                         |
+| `progress`                  | Progrés de cada usuari en cada puzle. Únic per (usuari, joc, puzle).                                                                                                                                                                                              |
+| `puzzles`                   | Puzles del grup: `game`, `data` (JSON, mateixa forma que `src/games/<joc>/data`), `author`, `status` (`proposed`/`published`), `number`, `releaseAt`, `title`, `wantedNumber` (dia preferit) i `contentUpdated` (últim canvi del contingut; el posa el servidor). |
+| `reviews`                   | Aprovacions i comentaris dels editors. Única per (puzle, editor).                                                                                                                                                                                                 |
+| `scores`                    | Punts de cada usuari per puzle (els calcula el servidor).                                                                                                                                                                                                         |
+| `friendships`               | Sol·licituds d'amistat (`pending`/`accepted`).                                                                                                                                                                                                                    |
+| `leagues`, `league_members` | Lligues (amb codi de 6 caràcters) i qui hi és.                                                                                                                                                                                                                    |
+| `league_messages`           | Xat de cada lliga (300 caràcters per missatge, se'n guarden els últims 300).                                                                                                                                                                                      |
+| `likes`                     | A qui li ha agradat cada puzle (joc + número).                                                                                                                                                                                                                    |
+| `push_subscriptions`        | Avís diari: subscripció Web Push de cada navegador, amb l'hora triada (Madrid). Només hi accedeix el servidor.                                                                                                                                                    |
 
 Regles principals (detall a la migració):
 
@@ -67,16 +69,16 @@ Regles principals (detall a la migració):
 
 ## 4. Producció
 
-Servidor propi a **Hetzner Cloud** (projecte `jocmot`, Ubuntu 26.04, IP `2.31.96.199`). La web continua a Cloudflare; el servidor només fa d'API a **https://api.jocmot.cat** (registre `A` a Cloudflare, en mode *DNS only*). El frontend hi apunta amb `VITE_POCKETBASE_URL` a `.env.production`.
+Servidor propi a **Hetzner Cloud** (projecte `jocmot`, Ubuntu 26.04, IP `2.31.96.199`). La web continua a Cloudflare; el servidor només fa d'API a **https://api.jocmot.cat** (registre `A` a Cloudflare, en mode _DNS only_). El frontend hi apunta amb `VITE_POCKETBASE_URL` a `.env.production`.
 
-| Peça | On |
-| --- | --- |
-| PocketBase | `/opt/pocketbase` (usuari `pocketbase`), servei `pocketbase.service`, escolta a `127.0.0.1:8090` |
-| Migracions i hooks | `/opt/pocketbase/pb_migrations` i `/opt/pocketbase/pb_hooks` (còpies de `backend/`) |
-| Dades | `/opt/pocketbase/pb_data` |
-| HTTPS | Caddy (repositori oficial), `/etc/caddy/Caddyfile`; certificat automàtic de Let's Encrypt |
-| Seguretat | `ufw` (només 22, 80, 443), SSH només amb clau, `fail2ban`, actualitzacions automàtiques (inclòs Caddy) |
-| Còpies | PocketBase en fa una cada dia a les 4:00 i en guarda 14 (panell → *Settings → Backups*); a més, les còpies diàries de Hetzner si estan activades |
+| Peça               | On                                                                                                                                               |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| PocketBase         | `/opt/pocketbase` (usuari `pocketbase`), servei `pocketbase.service`, escolta a `127.0.0.1:8090`                                                 |
+| Migracions i hooks | `/opt/pocketbase/pb_migrations` i `/opt/pocketbase/pb_hooks` (còpies de `backend/`)                                                              |
+| Dades              | `/opt/pocketbase/pb_data`                                                                                                                        |
+| HTTPS              | Caddy (repositori oficial), `/etc/caddy/Caddyfile`; certificat automàtic de Let's Encrypt                                                        |
+| Seguretat          | `ufw` (només 22, 80, 443), SSH només amb clau, `fail2ban`, actualitzacions automàtiques (inclòs Caddy)                                           |
+| Còpies             | PocketBase en fa una cada dia a les 4:00 i en guarda 14 (panell → _Settings → Backups_); a més, les còpies diàries de Hetzner si estan activades |
 
 Entrar al servidor: `ssh jocmot` (clau `~/.ssh/jocmot`).
 
@@ -92,7 +94,7 @@ Primer el servidor i després el frontend: la web antiga continua funcionant amb
 
 **Actualitzar PocketBase:** des del panell no es pot; cal baixar el binari nou de GitHub, comprovar-ne el `checksums.txt`, substituir `/opt/pocketbase/pocketbase` i `systemctl restart pocketbase`. Fer abans una còpia des del panell.
 
-**Correu.** Els correus (recuperar la contrasenya, avís d'inici de sessió nou…) surten de `hola@jocmot.cat` a través de [Brevo](https://www.brevo.com) (pla gratuït, 300 correus al dia). El domini està verificat a Brevo amb registres DNS a Cloudflare (SPF, DKIM, DMARC). Les credencials SMTP només són al panell: *Settings → Mail settings* (servidor `smtp-relay.brevo.com`, port 587). Les plantilles en català són a la migració `1761700000_correus.js`; l'enllaç per canviar la contrasenya porta a `jocmot.cat/compte/nova-contrasenya/:token`.
+**Correu.** Els correus (recuperar la contrasenya, avís d'inici de sessió nou…) surten de `hola@jocmot.cat` a través de [Brevo](https://www.brevo.com) (pla gratuït, 300 correus al dia). El domini està verificat a Brevo amb registres DNS a Cloudflare (SPF, DKIM, DMARC). Les credencials SMTP només són al panell: _Settings → Mail settings_ (servidor `smtp-relay.brevo.com`, port 587). Les plantilles en català són a la migració `1761700000_correus.js`; l'enllaç per canviar la contrasenya porta a `jocmot.cat/compte/nova-contrasenya/:token`.
 
 **Avís diari (notificacions).** Cada hora en punt, el servidor envia una notificació Web Push als qui han triat aquella hora al perfil. No l'envia si aquell dia ja han acabat els quatre jocs, i n'envia com a màxim una al dia. El codi és a `pb_hooks/jocmot_avisos.js` i `jocmot_push.js`. Les notificacions van sense contingut, i el text el posa `public/sw.js`.
 
@@ -103,7 +105,7 @@ Primer el servidor i després el frontend: la web antiga continua funcionant amb
   ssh jocmot 'mkdir -p /opt/pocketbase/vapid && openssl ecparam -name prime256v1 -genkey -noout -out /opt/pocketbase/vapid/private.pem && chown -R pocketbase: /opt/pocketbase/vapid && chmod 700 /opt/pocketbase/vapid && chmod 600 /opt/pocketbase/vapid/private.pem'
   ```
 
-- Provar-ho: al perfil, *Envia'm una prova*. També hi ha `POST /api/jocmot/admin/avisos` (superusuari), que fa ara mateix la tanda de l'hora actual.
+- Provar-ho: al perfil, _Envia'm una prova_. També hi ha `POST /api/jocmot/admin/avisos` (superusuari), que fa ara mateix la tanda de l'hora actual.
 - Per seguretat, el servidor només envia avisos als serveis de push dels navegadors (Google, Mozilla, Apple i Microsoft).
 - A l'iPhone i l'iPad només funciona si la web s'ha afegit a la pantalla d'inici (`public/manifest.webmanifest`).
 

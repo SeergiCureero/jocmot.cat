@@ -4,6 +4,9 @@ import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/features/auth/AuthContext';
+import { FEATURES } from '@/config/site';
+import { social } from '@/features/social/api';
+import { getTodayPuzzleNumber } from '@/games/puzzles';
 import { cn } from '@/lib/cn';
 import { backend, type PuzzleRecord } from '@/services/backend';
 import { KITS } from './kits';
@@ -49,7 +52,10 @@ function PuzzleView({
   const kit = KITS[record.game];
   const mine = record.author.id === user!.id;
   const isEditor = Boolean(user!.editor);
-  const editable = mine && record.status === 'proposed';
+  const scheduled = record.status === 'published' && record.number! > getTodayPuzzleNumber();
+  const released = record.status === 'published' && !scheduled;
+  // L'autor edita les seves propostes; els editors poden corregir qualsevol puzle.
+  const editable = (mine && record.status === 'proposed') || isEditor;
   const myReview = record.reviews.find((r) => r.author.id === user!.id);
   // Una aprovació anterior a l'últim canvi ja no compta: cal tornar a aprovar.
   const approvedByMe = Boolean(myReview && validApprovals(record).includes(myReview));
@@ -74,12 +80,45 @@ function PuzzleView({
     }
   }
 
-  const saveChanges = () =>
+  const saveChanges = () => {
+    if (
+      released &&
+      !confirm(
+        'Aquest puzle ja ha sortit. Corregeix només errades petites (p. ex. una definició): si canvies les respostes, qui l’estigui jugant pot trobar coses estranyes. Continuem?',
+      )
+    )
+      return;
     run(async () => {
-      await backend.updatePuzzle(record.id, built.puzzle);
+      // Els editors corregeixen pel servidor (també programats i publicats); l'autor, la seva proposta.
+      if (isEditor)
+        await backend.call(`/puzles/${record.id}/corregeix`, {
+          method: 'POST',
+          body: { data: built.puzzle },
+        });
+      else await backend.updatePuzzle(record.id, built.puzzle);
       onChange(await backend.getPuzzle(record.id));
-      toast('Desat');
+      toast(record.status === 'proposed' ? 'Desat' : 'Corregit');
     });
+  };
+
+  // Desaprovar un programat: torna a revisió, perd el dia i s'ha de tornar a aprovar.
+  const unpublish = () => {
+    const reason = prompt(
+      'Desaprovar-lo el treu del calendari i torna a revisió. Per què? (l’autor ho veurà als comentaris)',
+    );
+    if (reason === null) return;
+    run(async () => {
+      await backend.call(`/puzles/${record.id}/desaprova`, { method: 'POST' });
+      const note = `🚫 Desaprovat${reason.trim() ? `: ${reason.trim()}` : ''}`;
+      const previous = myReview?.comment?.trim();
+      await backend.saveReview(record.id, {
+        approved: false,
+        comment: (previous ? `${previous}\n\n${note}` : note).slice(0, 2000),
+      });
+      onChange(await backend.getPuzzle(record.id));
+      toast('Desaprovat: torna a estar en revisió', 4000);
+    });
+  };
 
   const review = (approved: boolean) =>
     run(async () => {
@@ -114,9 +153,14 @@ function PuzzleView({
           <RenameButton puzzle={record} onSaved={(title) => onChange({ ...record, title })} />
         </h1>
         <div className="flex shrink-0 items-center gap-2">
-          {editable && (
+          {mine && record.status === 'proposed' && (
             <Button variant="ghost" onClick={remove} disabled={busy}>
               Retira-la
+            </Button>
+          )}
+          {isEditor && scheduled && (
+            <Button variant="ghost" onClick={unpublish} disabled={busy}>
+              Desaprova’l
             </Button>
           )}
           {isEditor && (
@@ -130,6 +174,7 @@ function PuzzleView({
         {record.status === 'proposed' && record.wantedNumber && !mine && (
           <> · {wantedText(record.wantedNumber)}</>
         )}
+        {FEATURES.social && released && <PuzzleLikes game={record.game} number={record.number!} />}
       </p>
       {record.status === 'proposed' && mine && !isEditor && (
         <p className="bg-brand-50 text-brand-900 mb-4 rounded-xl px-3 py-2 text-sm">
@@ -158,7 +203,7 @@ function PuzzleView({
           <Button variant="secondary" onClick={() => setPlaying(false)}>
             ← Torna
           </Button>
-          <PreviewPlayer game={record.game} puzzle={editable ? built.puzzle : record.data} />
+          <PreviewPlayer game={record.game} puzzle={dirty ? built.puzzle : record.data} />
         </>
       ) : (
         <>
@@ -166,7 +211,7 @@ function PuzzleView({
             <Button
               variant="secondary"
               onClick={() => setPlaying(true)}
-              disabled={editable && !built.puzzle}
+              disabled={dirty && !built.puzzle}
             >
               Juga-hi
             </Button>
@@ -190,13 +235,23 @@ function PuzzleView({
               {editable && dirty && (
                 <div className="sticky bottom-0 mt-4 space-y-3 border-t border-stone-200 bg-stone-50/95 py-4 backdrop-blur">
                   <ErrorList errors={built.errors} />
-                  {record.reviews.some((r) => r.approved) && (
+                  {record.status === 'proposed' && record.reviews.some((r) => r.approved) && (
                     <p className="text-sm text-amber-800">
                       Si el canvies, les aprovacions que ja té s’hauran de repetir.
                     </p>
                   )}
+                  {scheduled && (
+                    <p className="text-sm text-stone-700">
+                      Es queda programat el mateix dia. Si cal que el tornin a revisar, desaprova’l.
+                    </p>
+                  )}
+                  {released && (
+                    <p className="text-sm text-amber-800">
+                      Ja ha sortit: corregeix només errades petites.
+                    </p>
+                  )}
                   <Button disabled={!built.puzzle || busy} onClick={saveChanges}>
-                    Desa els canvis
+                    {record.status === 'proposed' ? 'Desa els canvis' : 'Desa la correcció'}
                   </Button>
                 </div>
               )}
@@ -288,5 +343,23 @@ function PuzzleView({
         </>
       )}
     </div>
+  );
+}
+
+/** Quanta gent li ha agradat un puzle que ja ha sortit. */
+function PuzzleLikes({ game, number }: { game: string; number: number }) {
+  const [count, setCount] = useState<number | null>(null);
+  useEffect(() => {
+    social.likes(game, number).then(
+      (l) => setCount(l.count),
+      () => setCount(null),
+    );
+  }, [game, number]);
+  if (count === null) return null;
+  return (
+    <>
+      {' '}
+      · <span aria-label={`${count} m’agrada`}>❤️ {count}</span>
+    </>
   );
 }
