@@ -4,6 +4,7 @@ import { useGameMessage } from '@/components/game/GameMessage';
 import { SITE } from '@/config/site';
 import { useGameProgress } from '@/features/progress/useGameProgress';
 import { isWord } from '@/lib/dictionary';
+import Ocean from './Ocean';
 import { cn } from '@/lib/cn';
 import type { GameProps } from '../types';
 import {
@@ -19,7 +20,7 @@ import {
   secondsLeft,
   tierFor,
   totalDepth,
-  wordPoints,
+  pointsFor,
 } from './logic';
 import { meta } from './meta';
 
@@ -83,7 +84,14 @@ export default function FondariaGame({ puzzleNumber, date, preview }: GameProps)
       const prompt = prompts[round];
       const word = fitsPrompt(prompt, text);
       if (!word) {
-        say(text.trim() ? 'No compleix la pregunta' : 'Escriu una paraula', 'error');
+        say(
+          !text.trim()
+            ? 'Escriu una resposta'
+            : prompt.kind === 'category'
+              ? 'Aquesta no la tenim a la llista'
+              : 'No compleix la pregunta',
+          'error',
+        );
         return;
       }
       if (state.answers.some((a) => a.word === word)) {
@@ -92,7 +100,7 @@ export default function FondariaGame({ puzzleNumber, date, preview }: GameProps)
       }
       setChecking(true);
       // Si no es pot comprovar el diccionari (sense connexió), s'accepta.
-      const valid = await isWord(word);
+      const valid = prompt.kind === 'pattern' ? await isWord(word) : true;
       setChecking(false);
       if (valid === false) {
         say('Aquesta paraula no és al diccionari', 'error');
@@ -103,7 +111,7 @@ export default function FondariaGame({ puzzleNumber, date, preview }: GameProps)
       update((s) =>
         secondsLeft(s, t) <= 0
           ? expireRounds(s, t)
-          : addAnswer(s, { word, points: wordPoints(word) }, t),
+          : addAnswer(s, { word, points: pointsFor(prompt, word) }, t),
       );
       setText('');
     },
@@ -117,7 +125,7 @@ export default function FondariaGame({ puzzleNumber, date, preview }: GameProps)
     ? null
     : {
         title: `Has arribat als ${depth} m`,
-        body: <>De {ROUNDS * 100} possibles. Com més rares les paraules, més fons!</>,
+        body: <>De {ROUNDS * 100} m possibles. Com més rara la resposta, més fons!</>,
         shareText: buildShareText(puzzleNumber, state, shareUrl),
         won: depth >= 250,
       };
@@ -133,11 +141,14 @@ export default function FondariaGame({ puzzleNumber, date, preview }: GameProps)
       preview={preview}
     >
       <div className="w-full max-w-sm px-1">
+        <Ocean depth={depth} gain={state.answers.at(-1)?.points || null} />
         <div className="mb-3 flex items-baseline justify-between text-sm">
           <span className="font-semibold text-stone-700">
             {playing ? `Pregunta ${round + 1} de ${ROUNDS}` : 'Immersió acabada'}
           </span>
-          <span className="font-bold text-cyan-900 tabular-nums">{depth} m</span>
+          <span className="text-xs text-stone-500">
+            {state.answers.filter((a) => a.word).length} encerts
+          </span>
         </div>
 
         {playing && (
@@ -171,7 +182,7 @@ export default function FondariaGame({ puzzleNumber, date, preview }: GameProps)
                 spellCheck={false}
                 enterKeyHint="send"
                 aria-label="La teva resposta"
-                placeholder="Escriu una paraula…"
+                placeholder="Escriu la teva resposta…"
                 className="focus:border-brand-600 focus:ring-brand-100 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 text-center text-lg font-semibold outline-none focus:ring-2"
               />
               <button

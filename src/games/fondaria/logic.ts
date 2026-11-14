@@ -1,4 +1,5 @@
 import { normalizeWord } from '@/lib/text';
+import { CATEGORIES, type Category } from './data/categories';
 import type { GameStatus } from '@/services/backend';
 
 export const ROUNDS = 7;
@@ -30,8 +31,12 @@ export const getStatus = (s: FondariaState): GameStatus =>
 export interface Prompt {
   /** Text de la pregunta. */
   text: string;
-  /** Comprova la forma de la paraula (ja normalitzada i de 4 lletres o més). */
+  /** `category`: llista de respostes conegudes (de tot); `pattern`: paraula del diccionari amb una forma. */
+  kind: 'category' | 'pattern';
+  /** Només per a les de forma: comprova la paraula (ja normalitzada i de 4 lletres o més). */
   test: (word: string) => boolean;
+  /** Només per a les categories. */
+  category?: Category;
 }
 
 /** Generador pseudoaleatori determinista (mateixes preguntes per a tothom el mateix dia). */
@@ -46,70 +51,112 @@ function rng(seed: number) {
   };
 }
 
-const EASY_START = ['CA', 'PA', 'ES', 'CO', 'MA', 'SA', 'PE', 'BA', 'AL', 'RE'];
 const END = ['AR', 'ER', 'IR', 'OR', 'ES', 'AT', 'ENT', 'ITAT', 'ISME', 'ADA'];
 const INSIDE = ['LL', 'NY', 'RR', 'TX', 'IG', 'QU', 'GU', 'SS'];
-const RARE_INSIDE = ['X', 'Z', 'J', 'Q', 'K'];
-const HARD_START = ['PR', 'TR', 'CR', 'FL', 'GR', 'BL', 'ST', 'EX', 'IN', 'DE'];
+const HARD_START = ['PR', 'TR', 'CR', 'FL', 'GR', 'BL', 'EX', 'IN', 'DE'];
 
 const starts = (s: string): Prompt => ({
   text: `Una paraula que comenci per «${s}»`,
+  kind: 'pattern',
   test: (w) => w.startsWith(s),
 });
 const ends = (s: string): Prompt => ({
   text: `Una paraula que acabi en «-${s}»`,
+  kind: 'pattern',
   test: (w) => w.endsWith(s),
 });
 const has = (s: string): Prompt => ({
   text: `Una paraula que tingui «${s}»`,
+  kind: 'pattern',
   test: (w) => w.includes(s),
 });
 const longStart = (s: string, n: number): Prompt => ({
   text: `Una paraula de ${n} lletres que comenci per «${s}»`,
+  kind: 'pattern',
   test: (w) => w.length === n && w.startsWith(s),
-});
-const shortEnd = (s: string, n: number): Prompt => ({
-  text: `Una paraula de ${n} lletres que acabi en «-${s}»`,
-  test: (w) => w.length === n && w.endsWith(s),
 });
 const sameEnds: Prompt = {
   text: 'Una paraula que comenci i acabi amb la mateixa lletra',
+  kind: 'pattern',
   test: (w) => w[0] === w[w.length - 1],
 };
 
+const asPrompt = (c: Category): Prompt => ({
+  text: `Digues ${c.prompt.charAt(0).toLowerCase()}${c.prompt.slice(1)}`,
+  kind: 'category',
+  category: c,
+  test: () => false,
+});
+
 /**
  * Les set preguntes del dia, de més fàcils a més difícils: com més avances, més fons.
- * Mai es repeteix una mateixa pregunta en un dia.
+ * Sis són categories de tot (animals, països, menjar, música…) i una és de paraules (amb una forma).
+ * Mai es repeteix una categoria en un dia.
  */
 export function buildPrompts(puzzleNumber: number): Prompt[] {
   const r = rng(puzzleNumber * 7919 + 13);
   const pick = <T>(list: readonly T[]): T => list[Math.floor(r() * list.length)];
-  const used = new Set<string>();
-  const unique = (make: () => Prompt): Prompt => {
-    for (let i = 0; i < 20; i++) {
-      const p = make();
-      if (!used.has(p.text)) {
-        used.add(p.text);
-        return p;
-      }
-    }
-    return make();
+  const left = [...CATEGORIES];
+  const take = (pool: Category[]): Prompt => {
+    const c = pick(pool);
+    left.splice(left.indexOf(c), 1);
+    return asPrompt(c);
+  };
+  const easy = () => left.filter((c) => !c.hard);
+  const hard = () => left.filter((c) => c.hard);
+  const any = () => left;
+  const pattern = (): Prompt => {
+    const makers = [
+      () => starts(pick(HARD_START)),
+      () => ends(pick(END)),
+      () => has(pick(INSIDE)),
+      () => longStart(pick(HARD_START), 6 + Math.floor(r() * 3)),
+      () => sameEnds,
+    ];
+    return pick(makers)();
   };
   return [
-    unique(() => starts(pick(EASY_START))),
-    unique(() => starts(pick(EASY_START))),
-    unique(() => ends(pick(END))),
-    unique(() => has(pick(INSIDE))),
-    unique(() => longStart(pick(HARD_START), 6 + Math.floor(r() * 3))),
-    unique(() => (r() < 0.5 ? sameEnds : shortEnd(pick(['AR', 'ER', 'IR', 'OR']), 4))),
-    unique(() => has(pick(RARE_INSIDE))),
+    take(easy()),
+    take(easy()),
+    take(easy()),
+    take(easy()),
+    pattern(),
+    take(any()),
+    take(hard().length ? hard() : any()),
   ];
 }
 
-/** Una resposta és vàlida si compleix la forma de la pregunta (el diccionari es comprova a part). */
+/** Respostes d'una categoria, normalitzades, amb la seva posició (0 = la més habitual). */
+const rankCache = new WeakMap<Category, Map<string, number>>();
+function ranks(c: Category): Map<string, number> {
+  let m = rankCache.get(c);
+  if (!m) {
+    m = new Map();
+    c.answers.forEach((a, i) => {
+      const key = normalizeWord(a);
+      if (!m!.has(key)) m!.set(key, i);
+    });
+    rankCache.set(c, m);
+  }
+  return m;
+}
+
+/**
+ * La resposta (normalitzada) si compleix la pregunta, o null. Les categories només accepten el que
+ * és a la llista; les de paraules, qualsevol paraula amb la forma demanada (el diccionari es comprova a part).
+ */
 export function fitsPrompt(prompt: Prompt, raw: string): string | null {
   const word = normalizeWord(raw);
+  if (prompt.kind === 'category') return word && ranks(prompt.category!).has(word) ? word : null;
   return word.length >= MIN_LENGTH && prompt.test(word) ? word : null;
+}
+
+/** Punts d'una resposta vàlida: en una categoria, com més rara (més avall a la llista), més punts. */
+export function pointsFor(prompt: Prompt, word: string): number {
+  if (prompt.kind !== 'category') return wordPoints(word);
+  const rank = ranks(prompt.category!).get(word) ?? 0;
+  const last = Math.max(1, prompt.category!.answers.length - 1);
+  return Math.max(10, Math.min(100, Math.round(10 + 90 * Math.pow(rank / last, 0.85))));
 }
 
 // ── Punts: com més rara la paraula, més fons ──

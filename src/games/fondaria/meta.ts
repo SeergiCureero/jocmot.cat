@@ -5,7 +5,7 @@ export const meta: GameMeta = {
   slug: 'fondaria',
   name: 'Fondària',
   inspiredBy: 'Krillion',
-  tagline: 'Set preguntes, 25 segons cadascuna: com més rara la paraula, més fons',
+  tagline: 'Set preguntes de tot, 25 segons cadascuna: com més rara la resposta, més t’enfonses',
   icon: '🌊',
   editorsOnly: true,
   theme: {
