@@ -71,6 +71,9 @@ function recordScore(app, progress, finishedAt) {
   } catch {
     /* estat il·legible: compta com a partida sense punts */
   }
+  // Fondària: els punts són els que ha calculat el servidor en cada resposta, no els que diu el navegador.
+  if (game === 'fondaria')
+    state = { answers: require(`${__hooks}/jocmot_fondaria.js`).picksFor(app, user, puzzle) };
   const dailyDays = dailyDaysFor(app, [user], lib.addDays(today(), -400))[user] || [];
   const monthStats = monthStatsFor(app, user, today().slice(0, 7));
   const hintUse = findFirst(app, 'hint_uses', 'user = {:u} && game = {:g} && puzzle = {:p}', key);

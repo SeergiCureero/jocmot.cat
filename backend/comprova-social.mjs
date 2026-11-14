@@ -706,12 +706,54 @@ expect(
 expect('… amb els totals', r.body.totals.users >= 10 && r.body.totals.active7 >= 5, r.body.totals);
 
 // ── Fondària ──
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+globalThis.__hooks = fileURLToPath(new URL('./pb_hooks', import.meta.url));
+const fonLib = createRequire(import.meta.url)('./pb_hooks/jocmot_fondaria.js');
+const fonBank = JSON.parse(readFileSync(`${globalThis.__hooks}/fondaria_categories.json`, 'utf8'));
+const fonDay = fonLib.scheduleFor(today, fonBank);
 const fon = await user('fon');
-await finish(fon, 'fondaria', today, 'won', {
-  answers: [100, 100, 100, 100, 100, 100, 100].map((points) => ({ word: 'x', points })),
-});
+const fon2 = await user('fon2');
+const answerAt = (u, round, word) =>
+  post('/jocmot/fondaria/resposta', { puzzle: today, round, word }, u.token);
+
+r = await post('/jocmot/fondaria/resposta', { puzzle: today, round: 0, word: 'gat' });
+expect('Fondària demana compte', r.status === 401, r);
+r = await answerAt(fon, 1, fonDay[1].answers[0]);
+expect('no es pot saltar una pregunta', r.status === 400, r);
+r = await answerAt(fon, 0, 'resposta-que-no-existeix-zzz');
+expect('una resposta que no tenim no compta', r.status === 200 && r.body.known === false, r);
+r = await answerAt(fon2, 0, 'resposta-que-no-existeix-zzz');
+r = await get('/jocmot/admin/fondaria/suggeriments', ed.token);
+const sug = r.body.suggestions?.find((x) => x.text === 'resposta-que-no-existeix-zzz');
+expect('els editors la veuen amb quanta gent l’ha dita', sug?.count === 2, r.body);
+r = await get('/jocmot/admin/fondaria/suggeriments', fon.token);
+expect('… i els jugadors no', r.status === 403, r);
+// Un dia complet: la primera resposta de la llista de cada categoria.
+let total = 0;
+for (let round = 0; round < 7; round++) {
+  r = await answerAt(fon, round, fonDay[round].answers[0]);
+  total += r.body.points ?? 0;
+  if (round === 0)
+    expect(
+      'una resposta de la llista compta i dona punts de partida',
+      r.body.known === true && r.body.points === 10,
+      r.body,
+    );
+}
+r = await answerAt(fon, 3, fonDay[3].answers[1]);
+expect('no es pot tornar a respondre una pregunta feta', r.status === 400, r);
+await finish(fon, 'fondaria', today, 'won', { answers: Array(7).fill({ word: 'x', points: 100 }) });
 r = await get(`/jocmot/puntuacio/fondaria/${today}`, fon.token);
-expect('Fondària: 700 m donen 15 punts', r.body.base === 15 && r.body.daily === true, r.body);
+expect(
+  'els punts els calcula el servidor, no el navegador (7 × 10 = 70 m → 6 punts)',
+  r.body.base === 6 && total === 70,
+  { total, ...r.body },
+);
+r = await post('/jocmot/admin/fondaria/suggeriments/' + sug.id, { action: 'approve' }, ed.token);
+expect('un editor pot aprovar-la', r.status === 204, r);
+r = await post('/jocmot/fondaria/passa', { puzzle: today, round: 0 }, fon2.token);
+expect('passar una pregunta compta zero', r.status === 200 && r.body.skipped === true, r);
 
 // ── Joc preferit ──
 r = await get('/jocmot/vots');

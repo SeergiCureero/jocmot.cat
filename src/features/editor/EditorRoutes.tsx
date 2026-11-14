@@ -4,6 +4,7 @@ import CalendarPage from './CalendarPage';
 import DraftPage from './DraftPage';
 import EditorHome from './EditorHome';
 import PuzzlePage from './PuzzlePage';
+import FondariaReviewPage from './FondariaReviewPage';
 import TrafficPage from './TrafficPage';
 import RatingsPage from './RatingsPage';
 
@@ -20,6 +21,7 @@ export default function EditorRoutes() {
       <Route path="esborrany/:id" element={<DraftPage />} />
       <Route path="puzle/:id" element={<PuzzlePage />} />
       {user.editor && <Route path="calendari" element={<CalendarPage />} />}
+      {user.editor && <Route path="fondaria" element={<FondariaReviewPage />} />}
       {user.editor && <Route path="transit" element={<TrafficPage />} />}
       {user.editor && <Route path="valoracions" element={<RatingsPage />} />}
       <Route path="*" element={<Navigate to="/editor" replace />} />

@@ -524,6 +524,59 @@ routerAdd(
   $apis.requireAuth('users'),
 );
 
+// ── Fondària ──
+
+/** Respon una pregunta: {puzzle, round, word} → si és vàlida, els punts segons la comunitat. */
+routerAdd(
+  'POST',
+  '/api/jocmot/fondaria/resposta',
+  (e) => {
+    const f = require(`${__hooks}/jocmot_fondaria.js`);
+    return e.json(200, f.answer(e.app, e.auth.id, e.requestInfo().body));
+  },
+  $apis.requireAuth('users'),
+);
+
+/** Passa una pregunta (s'ha acabat el temps): {puzzle, round}. */
+routerAdd(
+  'POST',
+  '/api/jocmot/fondaria/passa',
+  (e) => {
+    const f = require(`${__hooks}/jocmot_fondaria.js`);
+    return e.json(200, f.skip(e.app, e.auth.id, e.requestInfo().body));
+  },
+  $apis.requireAuth('users'),
+);
+
+/** Respostes noves que han proposat els jugadors, per revisar. Només editors. */
+routerAdd(
+  'GET',
+  '/api/jocmot/admin/fondaria/suggeriments',
+  (e) => {
+    if (!e.auth.getBool('editor')) throw new ForbiddenError('Només per a editors.');
+    return e.json(200, {
+      suggestions: require(`${__hooks}/jocmot_fondaria.js`).pendingSuggestions(e.app),
+    });
+  },
+  $apis.requireAuth('users'),
+);
+
+/** Aprova o rebutja una resposta nova: {action: 'approve' | 'reject'}. Només editors. */
+routerAdd(
+  'POST',
+  '/api/jocmot/admin/fondaria/suggeriments/{id}',
+  (e) => {
+    if (!e.auth.getBool('editor')) throw new ForbiddenError('Només per a editors.');
+    require(`${__hooks}/jocmot_fondaria.js`).decideSuggestion(
+      e.app,
+      e.request.pathValue('id'),
+      e.requestInfo().body.action,
+    );
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
 // ── Pistes ──
 
 /** Pistes ja mirades (abans d'acabar) dels puzles d'un número. */
