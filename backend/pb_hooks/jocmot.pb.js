@@ -446,6 +446,18 @@ routerAdd(
 
 // ── Likes dels puzles ──
 
+/** Trànsit de l'aplicació: gent que juga, comptes nous i partides per dia (?dies=30). Només editors. */
+routerAdd(
+  'GET',
+  '/api/jocmot/admin/transit',
+  (e) => {
+    if (!e.auth.getBool('editor')) throw new ForbiddenError('Només per a editors.');
+    const db = require(`${__hooks}/jocmot_db.js`);
+    return e.json(200, db.trafficReport(e.app, e.request.url.query().get('dies')));
+  },
+  $apis.requireAuth('users'),
+);
+
 /** Valoració dels puzles d'un joc: likes i partides acabades de cada dia. Només editors. */
 routerAdd(
   'GET',

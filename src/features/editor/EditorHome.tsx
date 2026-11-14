@@ -70,6 +70,22 @@ export default function EditorHome() {
       )}
       {isEditor && (
         <Link
+          to="/editor/transit"
+          className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg"
+        >
+          <span>
+            <span className="block font-bold">
+              <ColorIcon name="chart" size={18} className="inline-block align-[-0.2em]" /> Trànsit
+            </span>
+            <span className="block text-sm text-stone-600">
+              Quanta gent juga cada dia, comptes nous i partides.
+            </span>
+          </span>
+          <span className="text-brand-700 font-semibold">→</span>
+        </Link>
+      )}
+      {isEditor && (
+        <Link
           to="/editor/valoracions"
           className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg"
         >

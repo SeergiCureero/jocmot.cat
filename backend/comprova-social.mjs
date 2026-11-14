@@ -689,6 +689,22 @@ expect(
 r = await get('/jocmot/admin/valoracions/zzz', ed.token);
 expect('un joc que no existeix dóna 404', r.status === 404, r);
 
+// ── Trànsit per a editors ──
+r = await get('/jocmot/admin/transit', noa.token);
+expect('el trànsit no és per a qui no és editor', r.status === 403, r);
+r = await get('/jocmot/admin/transit?dies=30', ed.token);
+const last = r.body.days?.at(-1);
+expect(
+  'el trànsit compta qui ha jugat avui i els comptes nous',
+  r.status === 200 &&
+    r.body.days.length === 30 &&
+    last.active >= 5 &&
+    last.newUsers >= 5 &&
+    last.games.paraula >= 3,
+  r.body.totals,
+);
+expect('… amb els totals', r.body.totals.users >= 10 && r.body.totals.active7 >= 5, r.body.totals);
+
 // ── Fondària ──
 const fon = await user('fon');
 await finish(fon, 'fondaria', today, 'won', {
