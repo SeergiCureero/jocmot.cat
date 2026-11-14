@@ -9,13 +9,13 @@ export const buildHints = (puzzleNumber: number): PuzzleHints => ({
     },
     {
       title: 'Una idea per puntuar més',
-      lines: ['Les paraules llargues i amb X, Z, J, Q o K valen més punts.'],
+      lines: [
+        'Les respostes rares valen molt més que les habituals: no et quedis amb la primera que et vingui al cap.',
+      ],
     },
   ],
   solution: {
     title: 'La solució',
-    lines: [
-      'Aquí no hi ha una sola resposta: qualsevol paraula del diccionari que compleixi la pregunta val.',
-    ],
+    lines: ['Hi ha moltes respostes possibles: qualsevol de la llista de la categoria val.'],
   },
 });
