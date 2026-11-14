@@ -1,12 +1,13 @@
 import { Link } from 'react-router';
 import GameIcon from '@/components/game/GameIcon';
-import { GAMES } from '@/games/registry';
+import { useGames } from '@/games/useGames';
 import { cn } from '@/lib/cn';
 import type { ProgressRecord } from '@/services/backend';
 import { computeDistribution, computeStats, type Distribution, type GameStats } from './stats';
 
 /** Estadístiques de cada joc. `records === null` = carregant (es reserva l'espai). */
 export default function StatsGrid({ records }: { records: ProgressRecord[] | null }) {
+  const GAMES = useGames();
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {GAMES.map((game) => {

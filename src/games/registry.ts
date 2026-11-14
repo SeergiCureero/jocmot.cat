@@ -12,7 +12,8 @@ import type { GameDefinition } from './types';
  * src/games/<joc>/ amb meta.ts + <Joc>Game.tsx i afegir-lo aquí.
  * Cada joc es carrega de manera diferida (code splitting).
  */
-export const GAMES: GameDefinition[] = [
+/** Tots els jocs, també els que encara només veuen els editors. */
+export const ALL_GAMES: GameDefinition[] = [
   {
     ...paraula,
     Component: lazy(() => import('./paraula/ParaulaGame')),
@@ -39,6 +40,9 @@ export const GAMES: GameDefinition[] = [
     hints: () => import('./fondaria/hints'),
   },
 ];
+
+/** Els jocs públics. Per a la interfície, fes servir `useGames()` (els editors també veuen els de proves). */
+export const GAMES: GameDefinition[] = ALL_GAMES.filter((g) => !g.editorsOnly);
 
 /** Jocs amb puzles que el grup pot dissenyar des de /editor. */
 export const DESIGNABLE_GAMES: readonly DesignableGameId[] = ['connexions', 'fils', 'mini'];

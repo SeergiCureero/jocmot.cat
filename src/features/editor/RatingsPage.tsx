@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import GameIcon from '@/components/game/GameIcon';
 import Spinner from '@/components/ui/Spinner';
-import { GAMES } from '@/games/registry';
+import { useGames } from '@/games/useGames';
 import type { GameId } from '@/games/types';
 import { formatDateCa } from '@/lib/date';
 import { cn } from '@/lib/cn';
@@ -28,6 +28,7 @@ const percent = (r: Row) => (r.finished ? `${Math.round(rate(r) * 100)} %` : '‚Ä
 
 /** Quins puzles agraden i quins no: likes, partides acabades i % de likes, per joc. Nom√©s editors. */
 export default function RatingsPage() {
+  const GAMES = useGames();
   const [game, setGame] = useState<GameId>(GAMES[0].id);
   const [sort, setSort] = useState<Sort>('rate');
   const [data, setData] = useState<{ game: GameId; rows: Row[] } | null>(null);

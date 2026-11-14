@@ -24,6 +24,8 @@ export interface GameMeta {
   inspiredBy: string;
   tagline: string;
   icon: string;
+  /** Només els editors el veuen (en proves, encara no és públic). */
+  editorsOnly?: boolean;
   /**
    * Colors del joc. `bg`, `text` i `soft` són els suaus (xips i fons);
    * `dark` és la classe del fons fosc de la icona i `darkHex` el mateix color en hex.

@@ -5,7 +5,7 @@ import DonateButton from '@/components/ui/DonateButton';
 import { CloseIcon } from '@/components/icons';
 import { FEATURES, SITE } from '@/config/site';
 import { useAuth } from '@/features/auth/AuthContext';
-import { GAMES } from '@/games/registry';
+import { useGames } from '@/games/useGames';
 import { ICON_BUTTON as iconButton } from '@/components/ui/styles';
 
 const row =
@@ -13,6 +13,7 @@ const row =
 
 /** Menú lateral (un <dialog>: el focus hi queda dins i es tanca amb Esc). */
 export default function Menu({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const GAMES = useGames();
   const ref = useRef<HTMLDialogElement>(null);
   const { user } = useAuth();
   const { pathname } = useLocation();
