@@ -724,6 +724,19 @@ const unsub = (e) => {
 routerAdd('GET', '/api/jocmot/baixa/{token}', unsub);
 routerAdd('POST', '/api/jocmot/baixa/{token}', unsub);
 
+/** Envia un correu d'exemple a l'adreça indicada ({email}). Només superusuaris. */
+routerAdd(
+  'POST',
+  '/api/jocmot/admin/recorda/prova',
+  (e) => {
+    const email = String(e.requestInfo().body.email || '').trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new BadRequestError('Adreça no vàlida.');
+    require(`${__hooks}/jocmot_recorda.js`).sendSample(e.app, email);
+    return e.json(200, { sent: email });
+  },
+  $apis.requireSuperuserAuth(),
+);
+
 /** Qui rebria el correu ara (?prova=1) o envia la tanda ara mateix. Només superusuaris. */
 routerAdd(
   'POST',
