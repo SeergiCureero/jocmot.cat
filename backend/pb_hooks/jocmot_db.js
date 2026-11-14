@@ -511,6 +511,88 @@ function setVote(app, userId, game) {
   app.save(vote);
 }
 
+/**
+ * Trànsit de l'aplicació (per als editors), dels últims `days` dies (Madrid): persones amb compte que
+ * han jugat, comptes nous i partides acabades per joc. Només es veu qui té compte: sense compte no
+ * es pot saber qui juga (no fem servir galetes ni analítica).
+ */
+function trafficReport(app, days) {
+  const n = Math.max(7, Math.min(90, Number(days) || 30));
+  const now = today();
+  const first = lib.addDays(now, -(n - 1));
+  const dates = [];
+  for (let i = 0; i < n; i++) dates.push(lib.addDays(first, i));
+  const slot = {};
+  for (const d of dates) slot[d] = { date: d, active: 0, started: 0, newUsers: 0, games: {} };
+  // Un dia de marge per la diferència horària (UTC → Madrid).
+  const since = new Date(lib.madridMidnight(first) - 3600000).toISOString().replace('T', ' ');
+
+  const play = arrayOf(new DynamicModel({ user: '', updated: '' }));
+  app
+    .db()
+    .newQuery('SELECT user, updated FROM progress WHERE updated >= {:s}')
+    .bind({ s: since })
+    .all(play);
+  const perDay = {};
+  const recent = { 7: {}, 30: {} };
+  for (const r of play) {
+    const d = lib.madridDate(toMs(r.updated));
+    if (!slot[d]) continue;
+    (perDay[d] = perDay[d] || {})[r.user] = true;
+    if (d > lib.addDays(now, -7)) recent[7][r.user] = true;
+    if (d > lib.addDays(now, -30)) recent[30][r.user] = true;
+  }
+  for (const d of dates) slot[d].active = Object.keys(perDay[d] || {}).length;
+
+  const finished = arrayOf(new DynamicModel({ day: '', game: '', n: 0 }));
+  app
+    .db()
+    .newQuery('SELECT day, game, COUNT(*) AS n FROM scores WHERE day >= {:f} GROUP BY day, game')
+    .bind({ f: first })
+    .all(finished);
+  for (const r of finished) if (slot[r.day]) slot[r.day].games[r.game] = r.n;
+
+  const created = arrayOf(new DynamicModel({ created: '' }));
+  app
+    .db()
+    .newQuery('SELECT created FROM users WHERE created >= {:s}')
+    .bind({ s: since })
+    .all(created);
+  let newWeek = 0;
+  for (const r of created) {
+    const d = lib.madridDate(toMs(r.created));
+    if (!slot[d]) continue;
+    slot[d].newUsers++;
+    if (d > lib.addDays(now, -7)) newWeek++;
+  }
+
+  const totals = arrayOf(new DynamicModel({ users: 0, world: 0, optedOut: 0 }));
+  app
+    .db()
+    .newQuery(
+      `SELECT COUNT(*) AS users,
+              COALESCE(SUM(CASE WHEN worldLeague = 'yes' THEN 1 ELSE 0 END), 0) AS world,
+              COALESCE(SUM(CASE WHEN noReturnEmail = TRUE THEN 1 ELSE 0 END), 0) AS optedOut
+       FROM users`,
+    )
+    .all(totals);
+  const yesterday = lib.addDays(now, -1);
+  return {
+    today: now,
+    totals: {
+      users: totals[0].users,
+      worldLeague: totals[0].world,
+      noReturnEmail: totals[0].optedOut,
+      active7: Object.keys(recent[7]).length,
+      active30: Object.keys(recent[30]).length,
+      newUsers7: newWeek,
+      activeToday: slot[now].active,
+      activeYesterday: slot[yesterday] ? slot[yesterday].active : 0,
+    },
+    days: dates.map((d) => slot[d]),
+  };
+}
+
 function likeCount(app, game, puzzle) {
   const rows = arrayOf(new DynamicModel({ n: 0 }));
   app
@@ -843,6 +925,7 @@ module.exports = {
   correctPuzzle,
   likesOf,
   likesReport,
+  trafficReport,
   votesOf,
   setVote,
   setLike,
