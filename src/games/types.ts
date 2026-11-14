@@ -24,7 +24,7 @@ export interface GameMeta {
   inspiredBy: string;
   tagline: string;
   icon: string;
-  /** Només els editors el veuen (en proves, encara no és públic). */
+  /** En proves: no surt a cap llista; només s'hi entra per l'adreça i amb un compte d'editor. */
   editorsOnly?: boolean;
   /**
    * Colors del joc. `bg`, `text` i `soft` són els suaus (xips i fons);
