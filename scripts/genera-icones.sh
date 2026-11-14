@@ -16,7 +16,7 @@ mkdir -p "$OUT/jocs" "$OUT/compartir" "$OUT/logos"
 
 # Logos i icones dels jocs: es copien tal qual.
 cp "$ID"/logos/jocmot-text.svg "$ID"/logos/jocmot-fitxes.svg "$OUT/logos/"
-for joc in paraula connexions fils mini; do cp "$ID/jocs/$joc.svg" "$OUT/jocs/"; done
+for joc in paraula connexions fils mini fondaria; do cp "$ID/jocs/$joc.svg" "$OUT/jocs/"; done
 
 # Favicon: la versió petita (una sola fitxa groga), en SVG i en .ico per a navegadors antics.
 cp "$ID/app/icona-app-petita.svg" "$OUT/favicon.svg"

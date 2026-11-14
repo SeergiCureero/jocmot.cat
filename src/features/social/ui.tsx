@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { ColorIcon } from '@/components/icons/color';
 import { Link, NavLink, useLocation } from 'react-router';
 import { useAuth } from '@/features/auth/AuthContext';
 import { cn } from '@/lib/cn';
@@ -28,7 +29,7 @@ export function StreakBadge({ days }: { days: number }) {
   if (!days) return null;
   return (
     <span className="text-sm font-semibold text-orange-600" title={`Ratxa de ${days} dies seguits`}>
-      🔥 {days}
+      <ColorIcon name="fire" size={16} className="inline-block align-[-0.2em]" /> {days}
     </span>
   );
 }
@@ -86,16 +87,19 @@ export function RankingTable({
 export function SocialTabs() {
   const tab = ({ isActive }: { isActive: boolean }) =>
     cn(
-      'rounded-full px-4 py-1.5 text-sm font-semibold transition-colors',
+      'inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors',
       isActive ? 'bg-stone-900 text-white' : 'bg-stone-200 hover:bg-stone-300',
     );
   return (
     <nav className="mb-6 flex gap-2" aria-label="Competició">
       <NavLink to="/lligues" end className={tab}>
-        🏆 Lligues
+        <ColorIcon name="trophy" size={18} className="inline-block align-[-0.2em]" /> Lligues
+      </NavLink>
+      <NavLink to="/lligues/mundial" className={tab}>
+        <ColorIcon name="globe" size={18} className="inline-block align-[-0.2em]" /> Mundial
       </NavLink>
       <NavLink to="/amics" className={tab}>
-        👥 Amics
+        <ColorIcon name="friends" size={18} className="inline-block align-[-0.2em]" /> Amics
       </NavLink>
     </nav>
   );
@@ -109,7 +113,7 @@ export function RequireLogin({ children }: { children: ReactNode }) {
   const next = `?seguent=${encodeURIComponent(pathname)}`;
   return (
     <div className="animate-rise rounded-2xl border border-stone-200 bg-white p-6 text-center">
-      <p className="text-4xl">🏆</p>
+      <ColorIcon name="trophy" size={48} className="mx-auto" />
       <h2 className="mt-2 text-lg font-bold">Competeix amb els teus amics</h2>
       <p className="mt-1 text-sm text-stone-600">
         Amb un compte sumes punts cada dia, mantens la ratxa i puges de rang.

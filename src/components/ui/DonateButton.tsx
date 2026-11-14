@@ -1,4 +1,5 @@
 import { SITE } from '@/config/site';
+import { ColorIcon } from '@/components/icons/color';
 import { cn } from '@/lib/cn';
 
 interface Props {
@@ -18,7 +19,8 @@ export default function DonateButton({ className }: Props) {
         className,
       )}
     >
-      ☕ Convida’ns a un cafè
+      <ColorIcon name="coffee" size={18} className="inline-block align-[-0.2em]" /> Convida’ns a un
+      cafè
     </a>
   );
 }

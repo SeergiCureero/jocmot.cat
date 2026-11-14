@@ -1,6 +1,6 @@
 import type { ComponentType, LazyExoticComponent } from 'react';
 
-export type GameId = 'paraula' | 'connexions' | 'fils' | 'mini';
+export type GameId = 'paraula' | 'connexions' | 'fils' | 'mini' | 'fondaria';
 
 /** Props que rep el component de qualsevol joc. */
 export interface GameProps {

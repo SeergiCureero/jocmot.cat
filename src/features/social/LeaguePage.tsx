@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ColorIcon } from '@/components/icons/color';
 import { Link, useNavigate, useParams } from 'react-router';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
@@ -38,7 +39,10 @@ function LeagueView() {
     <>
       <div className="mt-2 mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">🏆 {league.name}</h1>
+          <h1 className="text-2xl font-bold">
+            <ColorIcon name="trophy" size={26} className="inline-block align-[-0.2em]" />{' '}
+            {league.name}
+          </h1>
           <p className="text-sm text-stone-600">
             {league.ranking.length} {league.ranking.length === 1 ? 'membre' : 'membres'}
           </p>

@@ -1,3 +1,4 @@
+import { markLegacy } from '../../puzzles';
 import type { FilsPuzzle } from '../types';
 
 /**
@@ -1015,4 +1016,479 @@ const HARDER: readonly FilsPuzzle[] = [
  * repetien els primers puzles perquè la llista donava la volta. Es conserven igual:
  * canviar-los canviaria puzles que la gent ja ha jugat.
  */
-export const PUZZLES: readonly FilsPuzzle[] = [...FIRST, FIRST[0], FIRST[1], ...HARDER];
+
+/**
+ * Puzles de reserva afegits després: surten a partir del número 23 (veure `markLegacy`), un per dia,
+ * quan el grup no n'ha programat cap. Generats amb scripts/generate-fils.py. Pendents de revisió de l'equip.
+ */
+const MORE: readonly FilsPuzzle[] = [
+  {
+    theme: 'Per a una amanida',
+    grid: ['PEBSEV', 'ABAECI', 'SLROTL', 'LENCAO', 'AMAIMA', 'TTNIDT', 'OAENNO', 'MQUAIY'],
+    spangram: {
+      word: 'AMANIDA',
+      path: [
+        [4, 0],
+        [4, 1],
+        [4, 2],
+        [5, 2],
+        [5, 3],
+        [5, 4],
+        [4, 5],
+      ],
+    },
+    words: [
+      {
+        word: 'PEBROT',
+        path: [
+          [0, 0],
+          [0, 1],
+          [1, 1],
+          [2, 2],
+          [2, 3],
+          [2, 4],
+        ],
+      },
+      {
+        word: 'ALLS',
+        path: [
+          [1, 0],
+          [2, 1],
+          [3, 0],
+          [2, 0],
+        ],
+      },
+      {
+        word: 'ENCIAM',
+        path: [
+          [3, 1],
+          [3, 2],
+          [3, 3],
+          [4, 3],
+          [3, 4],
+          [4, 4],
+        ],
+      },
+      {
+        word: 'OLIVES',
+        path: [
+          [3, 5],
+          [2, 5],
+          [1, 5],
+          [0, 5],
+          [0, 4],
+          [0, 3],
+        ],
+      },
+      {
+        word: 'CEBA',
+        path: [
+          [1, 4],
+          [1, 3],
+          [0, 2],
+          [1, 2],
+        ],
+      },
+      {
+        word: 'TONYINA',
+        path: [
+          [5, 5],
+          [6, 5],
+          [6, 4],
+          [7, 5],
+          [7, 4],
+          [6, 3],
+          [7, 3],
+        ],
+      },
+      {
+        word: 'TOMAQUET',
+        path: [
+          [5, 0],
+          [6, 0],
+          [7, 0],
+          [6, 1],
+          [7, 1],
+          [7, 2],
+          [6, 2],
+          [5, 1],
+        ],
+      },
+    ],
+  },
+  {
+    theme: 'A la selva',
+    grid: ['TERAAN', 'NAAFEO', 'TAPALL', 'NEFRLA', 'LGIGES', 'EUNRER', 'JALPOG', 'CMAEIT'],
+    spangram: {
+      word: 'JUNGLA',
+      path: [
+        [6, 0],
+        [5, 1],
+        [5, 2],
+        [4, 3],
+        [3, 4],
+        [3, 5],
+      ],
+    },
+    words: [
+      {
+        word: 'CAMALEO',
+        path: [
+          [7, 0],
+          [6, 1],
+          [7, 1],
+          [7, 2],
+          [6, 2],
+          [7, 3],
+          [6, 4],
+        ],
+      },
+      {
+        word: 'ELEFANT',
+        path: [
+          [5, 0],
+          [4, 0],
+          [3, 1],
+          [3, 2],
+          [2, 1],
+          [3, 0],
+          [2, 0],
+        ],
+      },
+      {
+        word: 'GIRAFA',
+        path: [
+          [4, 1],
+          [4, 2],
+          [3, 3],
+          [2, 3],
+          [1, 3],
+          [0, 3],
+        ],
+      },
+      {
+        word: 'TIGRE',
+        path: [
+          [7, 5],
+          [7, 4],
+          [6, 5],
+          [5, 5],
+          [5, 4],
+        ],
+      },
+      {
+        word: 'SERP',
+        path: [
+          [4, 5],
+          [4, 4],
+          [5, 3],
+          [6, 3],
+        ],
+      },
+      {
+        word: 'PANTERA',
+        path: [
+          [2, 2],
+          [1, 1],
+          [1, 0],
+          [0, 0],
+          [0, 1],
+          [0, 2],
+          [1, 2],
+        ],
+      },
+      {
+        word: 'LLEONA',
+        path: [
+          [2, 5],
+          [2, 4],
+          [1, 4],
+          [1, 5],
+          [0, 5],
+          [0, 4],
+        ],
+      },
+    ],
+  },
+  {
+    theme: 'Hi havia una vegada',
+    grid: ['XDACRB', 'IARASA', 'RUCAAS', 'BLLRDN', 'ARPDOG', 'NIAAEG', 'CSPFTA', 'EAOLLN'],
+    spangram: {
+      word: 'RONDALLA',
+      path: [
+        [3, 3],
+        [4, 4],
+        [3, 5],
+        [3, 4],
+        [2, 3],
+        [3, 2],
+        [3, 1],
+        [4, 0],
+      ],
+    },
+    words: [
+      {
+        word: 'GEGANT',
+        path: [
+          [4, 5],
+          [5, 4],
+          [5, 5],
+          [6, 5],
+          [7, 5],
+          [6, 4],
+        ],
+      },
+      {
+        word: 'LLOP',
+        path: [
+          [7, 4],
+          [7, 3],
+          [7, 2],
+          [6, 2],
+        ],
+      },
+      {
+        word: 'FADA',
+        path: [
+          [6, 3],
+          [5, 3],
+          [4, 3],
+          [5, 2],
+        ],
+      },
+      {
+        word: 'PRINCESA',
+        path: [
+          [4, 2],
+          [4, 1],
+          [5, 1],
+          [5, 0],
+          [6, 0],
+          [7, 0],
+          [6, 1],
+          [7, 1],
+        ],
+      },
+      {
+        word: 'BRUIXA',
+        path: [
+          [3, 0],
+          [2, 0],
+          [2, 1],
+          [1, 0],
+          [0, 0],
+          [1, 1],
+        ],
+      },
+      {
+        word: 'DRAC',
+        path: [
+          [0, 1],
+          [1, 2],
+          [0, 2],
+          [0, 3],
+        ],
+      },
+      {
+        word: 'CARBASSA',
+        path: [
+          [2, 2],
+          [1, 3],
+          [0, 4],
+          [0, 5],
+          [1, 5],
+          [1, 4],
+          [2, 5],
+          [2, 4],
+        ],
+      },
+    ],
+  },
+  {
+    theme: 'Als Pirineus',
+    grid: ['ETIUQE', 'SARDVS', 'NFEAAE', 'YUGNPN', 'SIEAII', 'SURRSR', 'CDMTAI', 'SOBOAM'],
+    spangram: {
+      word: 'PIRINEUS',
+      path: [
+        [3, 4],
+        [4, 5],
+        [5, 5],
+        [4, 4],
+        [3, 3],
+        [4, 2],
+        [5, 1],
+        [5, 0],
+      ],
+    },
+    words: [
+      {
+        word: 'NEVADA',
+        path: [
+          [3, 5],
+          [2, 5],
+          [1, 4],
+          [2, 4],
+          [1, 3],
+          [2, 3],
+        ],
+      },
+      {
+        word: 'ESQUI',
+        path: [
+          [0, 5],
+          [1, 5],
+          [0, 4],
+          [0, 3],
+          [0, 2],
+        ],
+      },
+      {
+        word: 'MARMOTA',
+        path: [
+          [7, 5],
+          [6, 4],
+          [5, 3],
+          [6, 2],
+          [7, 3],
+          [6, 3],
+          [7, 4],
+        ],
+      },
+      {
+        word: 'ISARD',
+        path: [
+          [6, 5],
+          [5, 4],
+          [4, 3],
+          [5, 2],
+          [6, 1],
+        ],
+      },
+      {
+        word: 'BOSC',
+        path: [
+          [7, 2],
+          [7, 1],
+          [7, 0],
+          [6, 0],
+        ],
+      },
+      {
+        word: 'ESTANY',
+        path: [
+          [0, 0],
+          [1, 0],
+          [0, 1],
+          [1, 1],
+          [2, 0],
+          [3, 0],
+        ],
+      },
+      {
+        word: 'REFUGIS',
+        path: [
+          [1, 2],
+          [2, 2],
+          [2, 1],
+          [3, 1],
+          [3, 2],
+          [4, 1],
+          [4, 0],
+        ],
+      },
+    ],
+  },
+  {
+    theme: 'Dins l’ordinador',
+    grid: ['CRRXRA', 'OOUEIO', 'RRDUDR', 'TACASI', 'LOLANT', 'LAIPRE', 'ANAPCL', 'TATETA'],
+    spangram: {
+      word: 'ORDINADOR',
+      path: [
+        [1, 5],
+        [2, 5],
+        [2, 4],
+        [3, 5],
+        [4, 4],
+        [3, 3],
+        [2, 2],
+        [1, 1],
+        [2, 0],
+      ],
+    },
+    words: [
+      {
+        word: 'CORREU',
+        path: [
+          [0, 0],
+          [1, 0],
+          [0, 1],
+          [0, 2],
+          [1, 3],
+          [1, 2],
+        ],
+      },
+      {
+        word: 'ARXIUS',
+        path: [
+          [0, 5],
+          [0, 4],
+          [0, 3],
+          [1, 4],
+          [2, 3],
+          [3, 4],
+        ],
+      },
+      {
+        word: 'TECLAT',
+        path: [
+          [4, 5],
+          [5, 5],
+          [6, 4],
+          [6, 5],
+          [7, 5],
+          [7, 4],
+        ],
+      },
+      {
+        word: 'RATOLI',
+        path: [
+          [2, 1],
+          [3, 1],
+          [3, 0],
+          [4, 1],
+          [4, 2],
+          [5, 2],
+        ],
+      },
+      {
+        word: 'CARPETA',
+        path: [
+          [3, 2],
+          [4, 3],
+          [5, 4],
+          [6, 3],
+          [7, 3],
+          [7, 2],
+          [7, 1],
+        ],
+      },
+      {
+        word: 'PANTALLA',
+        path: [
+          [5, 3],
+          [6, 2],
+          [6, 1],
+          [7, 0],
+          [6, 0],
+          [5, 0],
+          [4, 0],
+          [5, 1],
+        ],
+      },
+    ],
+  },
+];
+
+const LEGACY = [...FIRST, FIRST[0], FIRST[1], ...HARDER];
+
+export const PUZZLES: readonly FilsPuzzle[] = markLegacy([...LEGACY, ...MORE], LEGACY.length);

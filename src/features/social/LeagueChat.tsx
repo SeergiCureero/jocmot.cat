@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
+import { ColorIcon } from '@/components/icons/color';
 import { CloseIcon, SendIcon } from '@/components/icons';
 import { INPUT } from '@/components/ui/styles';
 import { useToast } from '@/components/ui/Toast';
@@ -126,7 +127,7 @@ export default function LeagueChat({
       className="mt-6 overflow-hidden rounded-2xl border border-stone-200 bg-white"
     >
       <h2 id="xat-titol" className="border-b border-stone-100 px-4 py-3 font-semibold">
-        💬 Xat de la lliga
+        <ColorIcon name="chat" size={20} className="inline-block align-[-0.2em]" /> Xat de la lliga
       </h2>
 
       <ol

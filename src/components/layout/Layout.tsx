@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router';
+import WorldLeagueInvite from '@/features/social/WorldLeagueInvite';
 import Footer from './Footer';
 import Header from './Header';
 
@@ -23,6 +24,7 @@ export default function Layout() {
         </div>
       </main>
       <Footer />
+      <WorldLeagueInvite />
     </div>
   );
 }

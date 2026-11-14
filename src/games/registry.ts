@@ -1,5 +1,6 @@
 import { lazy } from 'react';
 import { meta as connexions } from './connexions/meta';
+import { meta as fondaria } from './fondaria/meta';
 import { meta as fils } from './fils/meta';
 import { meta as mini } from './mini/meta';
 import { meta as paraula } from './paraula/meta';
@@ -31,6 +32,11 @@ export const GAMES: GameDefinition[] = [
     ...mini,
     Component: lazy(() => import('./mini/MiniGame')),
     hints: () => import('./mini/hints'),
+  },
+  {
+    ...fondaria,
+    Component: lazy(() => import('./fondaria/FondariaGame')),
+    hints: () => import('./fondaria/hints'),
   },
 ];
 

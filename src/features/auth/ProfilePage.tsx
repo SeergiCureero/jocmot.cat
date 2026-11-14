@@ -8,6 +8,8 @@ import StatsGrid from '@/features/progress/StatsGrid';
 import { syncLocalProgress } from '@/features/progress/useGameProgress';
 import { useAuth } from './AuthContext';
 import DailyReminder from '@/features/notifications/DailyReminder';
+import WorldLeagueSetting from '@/features/social/WorldLeagueSetting';
+import ReturnEmailSetting from './ReturnEmailSetting';
 import DeleteAccount from './DeleteAccount';
 
 export default function ProfilePage() {
@@ -47,6 +49,10 @@ export default function ProfilePage() {
 
       <h2 className="mb-3 text-lg font-semibold">Les teves estadístiques</h2>
       <StatsGrid records={records} />
+
+      {FEATURES.social && <WorldLeagueSetting />}
+
+      {backendKind === 'pocketbase' && <ReturnEmailSetting />}
 
       {backendKind === 'pocketbase' && <DailyReminder />}
 

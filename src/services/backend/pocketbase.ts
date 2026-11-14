@@ -26,6 +26,8 @@ interface PbUserRecord {
   username?: string;
   name?: string;
   editor?: boolean;
+  worldLeague?: 'yes' | 'no' | '';
+  noReturnEmail?: boolean;
 }
 
 interface PbReviewRecord {
@@ -106,7 +108,19 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
     email: r.email,
     username: r.username ?? r.name ?? r.email.split('@')[0],
     editor: Boolean(r.editor),
+    worldLeague: r.worldLeague || null,
+    returnEmail: !r.noReturnEmail,
   });
+
+  /** Canvia camps del propi compte i refresca la sessió. */
+  async function patchSelf(fields: Record<string, unknown>) {
+    if (!auth) throw new BackendError('Cal iniciar sessió', 401);
+    const record = await request<PbUserRecord>(`/collections/users/records/${auth.user.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(fields),
+    });
+    setAuth({ token: auth.token, user: toUser(record) });
+  }
 
   const toPerson = (id: string, r?: PbUserRecord): PersonRef => ({
     id,
@@ -320,6 +334,9 @@ export function createPocketBaseBackend(baseUrl: string): Backend {
         body: JSON.stringify({ puzzle: puzzleId, author: user.id, approved, comment }),
       });
     },
+
+    setWorldLeague: (choice) => patchSelf({ worldLeague: choice }),
+    setReturnEmail: (on) => patchSelf({ noReturnEmail: !on }),
 
     call(path, { method = 'GET', body } = {}) {
       return request(`/jocmot${path}`, {

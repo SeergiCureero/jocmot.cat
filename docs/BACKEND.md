@@ -37,6 +37,12 @@ Els calcula **el servidor**, amb JavaScript de PocketBase a `backend/pb_hooks/`:
 
 El navegador no pot escriure a `scores`, `friendships`, `leagues`, `league_members`, `league_messages`, `likes` ni `hint_uses`: només ho fan aquestes rutes. Les puntuacions es calculen una sola vegada per puzle, amb l'hora del servidor (així l'arxiu no es pot fer passar per puzle del dia). La data de llançament és a `jocmot.js` i ha de coincidir amb `.env.production` (un test ho comprova).
 
+**Lliga mundial** (`GET /api/jocmot/lligues/mundial?mes=`): el top 50 del mes de qui hi participa. És opt-in: el camp `worldLeague` de `users` (`yes`/`no`; buit = encara no ha triat, i la web li ho pregunta amb un avís). Si qui mira hi participa i és fora del top, la resposta porta també la seva fila (`me`) amb la posició real.
+
+**Bonus de punts** (`jocmot.js`, amb tests): *Empenta de bentornats* (si portaves 5 dies o més sense puntuar, el dia que tornes i els dos següents, +3 per joc) i *Embranzida de remuntada* (a partir del dia 4 del mes, amb 10 jugadors actius com a mínim, si portes menys de la meitat de la mitjana de punts del mes, +2 per joc). Es desen a `scores` (`empenta`, `embranzida`) i només compten als puzles del dia.
+
+**Valoracions i votació.** `GET /api/jocmot/admin/valoracions/{joc}` (només editors) dona, per a cada puzle que ja ha sortit, els likes i les partides acabades: és la pàgina `/editor/valoracions`. `GET/POST /api/jocmot/vots` és la votació del joc preferit (`game_votes`, un vot per compte, es pot canviar): pàgina `/vota`.
+
 Si cal recalcular puntuacions que faltin (p. ex. partides d'abans d'activar els punts): `POST /api/jocmot/admin/recalcula` amb un token de superusuari.
 
 ## 2. Esquema
@@ -109,6 +115,8 @@ Primer el servidor i després el frontend: la web antiga continua funcionant amb
 - Provar-ho: al perfil, _Envia'm una prova_. També hi ha `POST /api/jocmot/admin/avisos` (superusuari), que fa ara mateix la tanda de l'hora actual.
 - Per seguretat, el servidor només envia avisos als serveis de push dels navegadors (Google, Mozilla, Apple i Microsoft).
 - A l'iPhone i l'iPad només funciona si la web s'ha afegit a la pantalla d'inici (`public/manifest.webmanifest`).
+
+**Correu per tornar a jugar.** Cada dia a les 18:00 (Madrid), `jocmot_recorda.js` envia **un sol correu** a qui fa entre 5 i 30 dies que no juga (últim jugat, o registre si no ha jugat mai), i mai més d'un cada 30 dies a la mateixa persona. Màxim 100 correus al dia (Brevo gratuït en permet 300, compartits amb contrasenyes i avisos d'inici de sessió). Cada correu porta un enllaç de baixa sense compte (`/api/jocmot/baixa/{token}`, també `List-Unsubscribe` d'un clic) i es pot desactivar al perfil (`users.noReturnEmail`). `unsubToken`, `nudgedFor` i `lastNudge` són camps ocults que només escriu el servidor. Si un enviament falla, la tanda s'atura i no es marca com a feta. Per provar-ho (superusuari): `POST /api/jocmot/admin/recorda?prova=1` diu a qui s'enviaria; sense `prova=1`, ho envia ara mateix.
 
 ## Canviar de proveïdor
 

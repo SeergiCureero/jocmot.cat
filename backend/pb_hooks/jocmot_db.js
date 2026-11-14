@@ -72,6 +72,7 @@ function recordScore(app, progress, finishedAt) {
     /* estat il·legible: compta com a partida sense punts */
   }
   const dailyDays = dailyDaysFor(app, [user], lib.addDays(today(), -400))[user] || [];
+  const monthStats = monthStatsFor(app, user, today().slice(0, 7));
   const hintUse = findFirst(app, 'hint_uses', 'user = {:u} && game = {:g} && puzzle = {:p}', key);
   const score = lib.scoreFor({
     game,
@@ -80,6 +81,7 @@ function recordScore(app, progress, finishedAt) {
     state,
     finishedAt: finishedAt || Date.now(),
     dailyDays,
+    monthStats,
     hints: hintUse
       ? { count: hintUse.getInt('count'), solution: hintUse.getBool('solution') }
       : null,
@@ -90,7 +92,17 @@ function recordScore(app, progress, finishedAt) {
   record.set('user', user);
   record.set('game', game);
   record.set('puzzle', puzzle);
-  for (const field of ['day', 'month', 'daily', 'base', 'bonus', 'points', 'streak'])
+  for (const field of [
+    'day',
+    'month',
+    'daily',
+    'base',
+    'bonus',
+    'empenta',
+    'embranzida',
+    'points',
+    'streak',
+  ])
     record.set(field, score[field]);
   try {
     app.save(record);
@@ -99,6 +111,27 @@ function recordScore(app, progress, finishedAt) {
     return null;
   }
   return record;
+}
+
+/** Punts del mes de qui hi ha puntuat (jugadors actius), mitjana i els de `userId`: per a l'Embranzida. */
+function monthStatsFor(app, userId, month) {
+  const rows = arrayOf(new DynamicModel({ players: 0, total: 0 }));
+  app
+    .db()
+    .newQuery(
+      `SELECT COUNT(*) AS players, COALESCE(SUM(t), 0) AS total
+       FROM (SELECT SUM(points) AS t FROM scores WHERE month = {:m} GROUP BY user HAVING SUM(points) > 0)`,
+    )
+    .bind({ m: month })
+    .all(rows);
+  const mine = arrayOf(new DynamicModel({ t: 0 }));
+  app
+    .db()
+    .newQuery('SELECT COALESCE(SUM(points), 0) AS t FROM scores WHERE month = {:m} AND user = {:u}')
+    .bind({ m: month, u: userId })
+    .all(mine);
+  const { players, total } = rows[0];
+  return { players, average: players ? total / players : 0, mine: mine[0].t };
 }
 
 /** Dies (Madrid) amb algun puzle del dia acabat, per usuari, des de `since`. */
@@ -391,7 +424,7 @@ function correctPuzzle(app, id, data) {
 
 // ── Likes ──
 
-const LIKE_GAMES = ['paraula', 'connexions', 'fils', 'mini'];
+const LIKE_GAMES = ['paraula', 'connexions', 'fils', 'mini', 'fondaria'];
 
 /** Joc i número d'un puzle que ja ha sortit (no es pot fer like a un de futur). */
 function likeTarget(game, puzzle) {
@@ -401,6 +434,81 @@ function likeTarget(game, puzzle) {
   if (n > lib.puzzleNumberForDate(today()))
     throw new BadRequestError('Aquest puzle encara no ha sortit.');
   return { g: game, p: n };
+}
+
+/**
+ * Valoració de tots els puzles que ja han sortit d'un joc (per als editors): likes, partides acabades i,
+ * si és un puzle del grup, el seu nom. Dues consultes agregades, sense recórrer els puzles un a un.
+ */
+function likesReport(app, game) {
+  if (LIKE_GAMES.indexOf(game) < 0) throw new NotFoundError('Joc no trobat');
+  const last = lib.puzzleNumberForDate(today());
+  const likes = arrayOf(new DynamicModel({ puzzle: 0, n: 0 }));
+  app
+    .db()
+    .newQuery('SELECT puzzle, COUNT(*) AS n FROM likes WHERE game = {:g} GROUP BY puzzle')
+    .bind({ g: game })
+    .all(likes);
+  const played = arrayOf(new DynamicModel({ puzzle: 0, finished: 0, won: 0 }));
+  app
+    .db()
+    .newQuery(
+      `SELECT puzzle, COUNT(*) AS finished, SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) AS won
+       FROM progress WHERE game = {:g} AND status != 'playing' GROUP BY puzzle`,
+    )
+    .bind({ g: game })
+    .all(played);
+  const titles = arrayOf(new DynamicModel({ number: 0, title: '' }));
+  app
+    .db()
+    .newQuery(
+      `SELECT number, title FROM puzzles WHERE game = {:g} AND status = 'published' AND number > 0`,
+    )
+    .bind({ g: game })
+    .all(titles);
+
+  const likeBy = {};
+  for (const r of likes) likeBy[r.puzzle] = r.n;
+  const playedBy = {};
+  for (const r of played) playedBy[r.puzzle] = r;
+  const titleBy = {};
+  for (const r of titles) titleBy[r.number] = r.title;
+  const rows = [];
+  for (let n = 1; n <= last; n++) {
+    const p = playedBy[n];
+    rows.push({
+      puzzle: n,
+      date: lib.puzzleDate(n),
+      title: titleBy[n] || '',
+      grouped: n in titleBy,
+      likes: likeBy[n] || 0,
+      finished: p ? p.finished : 0,
+      won: p ? p.won : 0,
+    });
+  }
+  return rows;
+}
+
+/** Vots de cada joc (`counts`) i el joc votat per `userId` (`mine`, null si no ha votat o no té compte). */
+function votesOf(app, userId) {
+  const rows = arrayOf(new DynamicModel({ game: '', n: 0 }));
+  app.db().newQuery('SELECT game, COUNT(*) AS n FROM game_votes GROUP BY game').all(rows);
+  const counts = {};
+  for (const g of LIKE_GAMES) counts[g] = 0;
+  for (const r of rows) counts[r.game] = r.n;
+  const mine = userId ? findFirst(app, 'game_votes', 'user = {:u}', { u: userId }) : null;
+  return { counts, mine: mine ? mine.getString('game') : null };
+}
+
+function setVote(app, userId, game) {
+  if (LIKE_GAMES.indexOf(game) < 0) throw new BadRequestError('Aquest joc no existeix.');
+  let vote = findFirst(app, 'game_votes', 'user = {:u}', { u: userId });
+  if (!vote) {
+    vote = new Record(app.findCollectionByNameOrId('game_votes'));
+    vote.set('user', userId);
+  }
+  vote.set('game', game);
+  app.save(vote);
 }
 
 function likeCount(app, game, puzzle) {
@@ -608,6 +716,89 @@ function deleteChatMessage(app, leagueId, messageId, userId) {
   app.delete(m);
 }
 
+// ── Lliga mundial (opt-in) ──
+
+const WORLD_LEAGUE_SIZE = 50;
+
+/**
+ * Classificació mundial d'un mes: només qui hi participa (`worldLeague = yes`).
+ * Una sola consulta agregada; les estadístiques completes (rang, ratxa) només es calculen per als que es mostren.
+ * Retorna també la fila de `me` (amb la seva posició real) si és fora del top i hi participa.
+ */
+function worldRanking(app, month, meId) {
+  const rows = arrayOf(new DynamicModel({ user: '', monthPoints: 0, monthGames: 0 }));
+  app
+    .db()
+    .newQuery(
+      `SELECT s.user AS user, SUM(s.points) AS monthPoints, COUNT(*) AS monthGames
+       FROM scores s JOIN users u ON u.id = s.user
+       WHERE s.month = {:m} AND u.worldLeague = 'yes'
+       GROUP BY s.user HAVING SUM(s.points) > 0
+       ORDER BY monthPoints DESC, monthGames DESC, LOWER(u.name) ASC
+       LIMIT {:n}`,
+    )
+    .bind({ m: month, n: WORLD_LEAGUE_SIZE })
+    .all(rows);
+
+  const ids = rows.map((r) => r.user);
+  let mine = null;
+  if (meId && ids.indexOf(meId) < 0) mine = worldRow(app, month, meId);
+  const people = ids.concat(mine ? [meId] : []);
+  const stats = statsFor(app, people, month);
+  const toRow = (id, monthPoints, monthGames, position) =>
+    Object.assign({}, stats[id], {
+      monthPoints,
+      monthGames,
+      position,
+      user: person(app.findRecordById('users', id)),
+    });
+
+  const out = [];
+  rows.forEach((r, i) => {
+    const prev = out[i - 1];
+    out.push(
+      toRow(
+        r.user,
+        r.monthPoints,
+        r.monthGames,
+        prev && prev.monthPoints === r.monthPoints ? prev.position : i + 1,
+      ),
+    );
+  });
+  return {
+    ranking: out,
+    me: mine && toRow(meId, mine.monthPoints, mine.monthGames, mine.position),
+  };
+}
+
+/** Punts i posició d'un participant al rànquing mundial d'un mes (null si no hi puntua). */
+function worldRow(app, month, userId) {
+  const mine = arrayOf(new DynamicModel({ monthPoints: 0, monthGames: 0 }));
+  app
+    .db()
+    .newQuery(
+      `SELECT COALESCE(SUM(points), 0) AS monthPoints, COUNT(*) AS monthGames FROM scores
+       WHERE month = {:m} AND user = {:u}`,
+    )
+    .bind({ m: month, u: userId })
+    .all(mine);
+  const me = mine[0];
+  if (!me || !me.monthPoints) return null;
+  const above = arrayOf(new DynamicModel({ n: 0 }));
+  app
+    .db()
+    .newQuery(
+      `SELECT COUNT(*) AS n FROM (
+         SELECT s.user FROM scores s JOIN users u ON u.id = s.user
+         WHERE s.month = {:m} AND u.worldLeague = 'yes'
+         GROUP BY s.user HAVING SUM(s.points) > {:p}
+       )`,
+    )
+    .bind({ m: month, p: me.monthPoints })
+    .all(above);
+  return { monthPoints: me.monthPoints, monthGames: me.monthGames, position: above[0].n + 1 };
+}
+
 /** Mesos (AAAA-MM) des que existeix la lliga fins ara, del més recent al més antic. */
 function leagueMonths(league) {
   const first = lib.madridDate(toMs(league.getString('created')));
@@ -651,6 +842,9 @@ module.exports = {
   unpublishPuzzle,
   correctPuzzle,
   likesOf,
+  likesReport,
+  votesOf,
+  setVote,
   setLike,
   hintUsesFor,
   recordHintUse,
@@ -660,4 +854,6 @@ module.exports = {
   postChatMessage,
   deleteChatMessage,
   leagueMonths,
+  worldRanking,
+  WORLD_LEAGUE_SIZE,
 };

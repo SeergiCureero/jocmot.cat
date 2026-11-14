@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ColorIcon } from '@/components/icons/color';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { INPUT } from '@/components/ui/styles';
@@ -68,7 +69,7 @@ export function RenameButton({
         title={puzzle.title ? 'Canvia el nom' : 'Posa-hi nom'}
         className="shrink-0 rounded-full px-2 py-1 text-sm text-stone-500 transition hover:bg-stone-100 hover:text-stone-900"
       >
-        ✏️
+        <ColorIcon name="pencil" size={18} />
       </button>
       <Modal open={open} onClose={() => setOpen(false)} title="Nom del puzle">
         <form

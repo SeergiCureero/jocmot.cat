@@ -86,10 +86,27 @@ export interface League {
   ranking: RankingRow[];
 }
 
+export interface WorldLeague {
+  month: string;
+  months: string[];
+  finished: boolean;
+  participation: 'yes' | 'no' | null;
+  /** Quanta gent surt al top. */
+  size: number;
+  winner: Person | null;
+  ranking: RankingRow[];
+  /** La teva fila, si participes i ets fora del top. */
+  me: RankingRow | null;
+}
+
 export interface Score {
   daily: boolean;
   base: number;
   bonus: number;
+  /** Empenta de bentornats */
+  empenta: number;
+  /** Embranzida de remuntada */
+  embranzida: number;
   points: number;
   streak: number;
 }
@@ -112,6 +129,8 @@ export const social = {
   removeRequest: (requestId: string) => backend.call(`/amics/${requestId}`, { method: 'DELETE' }),
   removeFriend: (userId: string) => backend.call(`/amics/usuari/${userId}`, { method: 'DELETE' }),
 
+  worldLeague: (month?: string) =>
+    backend.call<WorldLeague>(`/lligues/mundial${month ? `?mes=${month}` : ''}`),
   leagues: () => backend.call<{ month: string; leagues: LeagueSummary[] }>('/lligues'),
   league: (id: string, month?: string) =>
     backend.call<League>(`/lligues/${id}${month ? `?mes=${month}` : ''}`),

@@ -1,6 +1,6 @@
 # jocmot.cat
 
-Jocs de paraules diaris en català: **Paraula**, **Connexions**, **Fils** i **Mini**.
+Jocs de paraules diaris en català: **Paraula**, **Connexions**, **Fils**, **Mini** i **Fondària**.
 
 | Joc | Ruta | Inspirat en | Carpeta |
 | --- | --- | --- | --- |
@@ -8,6 +8,7 @@ Jocs de paraules diaris en català: **Paraula**, **Connexions**, **Fils** i **Mi
 | 🟪 Connexions | `/connexions` | Connections | `src/games/connexions` |
 | 🧵 Fils | `/fils` | Strands | `src/games/fils` |
 | ✏️ Mini | `/mini` | The Mini Crossword | `src/games/mini` |
+| 🌊 Fondària | `/fondaria` | Krillion | `src/games/fondaria` |
 
 ## Stack
 

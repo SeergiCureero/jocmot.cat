@@ -6,6 +6,10 @@ export interface User {
   username: string;
   /** Pot dissenyar i revisar puzles (ho activa un administrador). */
   editor: boolean;
+  /** Participa a la lliga mundial? null = encara no ho ha triat. */
+  worldLeague: 'yes' | 'no' | null;
+  /** Vol el correu per tornar a jugar (si fa dies que no hi és)? */
+  returnEmail: boolean;
 }
 
 /** Jocs amb puzles que es poden dissenyar des de l'editor. */
@@ -105,6 +109,11 @@ export interface Backend {
   /** Falla amb status 400 si el número ja és ocupat. */
   publishPuzzle(id: string, number: number, releaseAt: string): Promise<void>;
   saveReview(puzzleId: string, review: { approved: boolean; comment: string }): Promise<void>;
+
+  /** Tria si surt a la lliga mundial (es desa al compte). */
+  setWorldLeague(choice: 'yes' | 'no'): Promise<void>;
+  /** Activa o desactiva el correu per tornar a jugar. */
+  setReturnEmail(on: boolean): Promise<void>;
 
   /** Rutes pròpies del servidor (`/api/jocmot/...`: punts, amics i lligues). Sense servidor, falla. */
   call<T>(path: string, init?: { method?: 'GET' | 'POST' | 'DELETE'; body?: unknown }): Promise<T>;

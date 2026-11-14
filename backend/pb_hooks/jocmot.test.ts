@@ -51,6 +51,11 @@ describe('basePoints', () => {
     expect(lib.basePoints('mini', 'won', { elapsedSeconds: 45 })).toBe(15);
     expect(lib.basePoints('mini', 'won', { elapsedSeconds: 600 })).toBe(8);
     expect(lib.basePoints('mini', 'lost', { elapsedSeconds: 10 })).toBe(0);
+    const dive = (points: number[]) => ({ answers: points.map((p) => ({ word: 'x', points: p })) });
+    expect(lib.basePoints('fondaria', 'won', dive([0, 0, 0, 0, 0, 0, 0]))).toBe(5);
+    expect(lib.basePoints('fondaria', 'won', dive([50, 50, 50, 50, 50, 50, 50]))).toBe(10);
+    expect(lib.basePoints('fondaria', 'won', dive([100, 100, 100, 100, 100, 100, 100]))).toBe(15);
+    expect(lib.basePoints('fondaria', 'lost', dive([100]))).toBe(0);
   });
 });
 
@@ -166,5 +171,66 @@ describe('madridHour', () => {
     expect(lib.madridHour(Date.UTC(2026, 6, 1, 6, 59))).toBe(8);
     expect(lib.madridHour(Date.UTC(2026, 10, 2, 7, 0))).toBe(8);
     expect(lib.madridHour(Date.UTC(2026, 11, 31, 23, 30))).toBe(0);
+  });
+});
+
+describe('Empenta de bentornats', () => {
+  const won = { game: 'paraula', status: 'won', state: { guesses: ['a', 'b'] } };
+  const at = (day: string, dailyDays: string[]) =>
+    lib.scoreFor({
+      ...won,
+      puzzle: lib.puzzleNumberForDate(day),
+      finishedAt: lib.madridMidnight(day) + 12 * 3600000,
+      dailyDays,
+    });
+
+  it('si fa 5 dies o més que no puntues, el dia que tornes sumes +3 per joc', () => {
+    expect(at('2026-11-10', ['2026-11-05'])).toMatchObject({ empenta: 3, points: 12 + 3 });
+  });
+  it('i també els dos dies següents, però no el quart', () => {
+    const before = ['2026-11-05', '2026-11-10'];
+    expect(at('2026-11-11', before).empenta).toBe(3);
+    expect(at('2026-11-12', before.concat('2026-11-11')).empenta).toBe(3);
+    expect(at('2026-11-13', before.concat('2026-11-11', '2026-11-12')).empenta).toBe(0);
+  });
+  it('amb 4 dies de pausa no n’hi ha, ni el primer cop que jugues', () => {
+    expect(at('2026-11-10', ['2026-11-06']).empenta).toBe(0);
+    expect(at('2026-11-10', []).empenta).toBe(0);
+  });
+  it('l’arxiu i les partides sense punts no el donen', () => {
+    const archive = lib.scoreFor({
+      ...won,
+      puzzle: 2,
+      finishedAt: lib.madridMidnight('2026-11-10') + 12 * 3600000,
+      dailyDays: ['2026-11-01'],
+    });
+    expect(archive.empenta).toBe(0);
+  });
+});
+
+describe('Embranzida de remuntada', () => {
+  const won = { game: 'paraula', status: 'won', state: { guesses: ['a', 'b'] } };
+  const score = (day: string, monthStats: unknown) =>
+    lib.scoreFor({
+      ...won,
+      puzzle: lib.puzzleNumberForDate(day),
+      finishedAt: lib.madridMidnight(day) + 12 * 3600000,
+      dailyDays: [],
+      monthStats,
+    });
+
+  it('dona +2 si portes menys de la meitat de la mitjana', () => {
+    expect(score('2026-11-12', { players: 20, average: 100, mine: 40 })).toMatchObject({
+      embranzida: 2,
+      points: 14,
+    });
+  });
+  it('no en dona si estàs a la meitat o per sobre', () => {
+    expect(score('2026-11-12', { players: 20, average: 100, mine: 50 }).embranzida).toBe(0);
+  });
+  it('no en dona els primers dies del mes ni amb pocs jugadors', () => {
+    expect(score('2026-11-03', { players: 20, average: 100, mine: 0 }).embranzida).toBe(0);
+    expect(score('2026-11-12', { players: 9, average: 100, mine: 0 }).embranzida).toBe(0);
+    expect(score('2026-11-12', null).embranzida).toBe(0);
   });
 });

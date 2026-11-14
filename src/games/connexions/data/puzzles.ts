@@ -1,3 +1,4 @@
+import { markLegacy } from '../../puzzles';
 import type { ConnexionsPuzzle } from '../types';
 
 /** Ordre de publicació: posició 0 = puzle #1. Afegir-ne SEMPRE al final. */
@@ -164,4 +165,134 @@ const HARDER: readonly ConnexionsPuzzle[] = [
  * repetien els primers puzles perquè la llista donava la volta. Es conserven igual:
  * canviar-los canviaria puzles que la gent ja ha jugat.
  */
-export const PUZZLES: readonly ConnexionsPuzzle[] = [...FIRST, FIRST[0], ...HARDER];
+
+/**
+ * Puzles de reserva afegits després: surten a partir del número 23 (veure `markLegacy`), un per dia,
+ * quan el grup no n'ha programat cap. Pendents de revisió de l'equip.
+ */
+const MORE: readonly ConnexionsPuzzle[] = [
+  {
+    groups: [
+      { level: 0, title: 'Fruits secs', words: ['AMETLLA', 'AVELLANA', 'PINYÓ', 'NOU'] },
+      { level: 1, title: 'Ocells', words: ['PARDAL', 'GAVINA', 'MUSSOL', 'ÀNEC'] },
+      { level: 2, title: 'Festes', words: ['CARNAVAL', 'NADAL', 'PASQUA', 'REIS'] },
+      {
+        level: 3,
+        title: 'Comencen per PARA-',
+        words: ['PARASOL', 'PARAXOCS', 'PARALLAMPS', 'PARAIGÜES'],
+      },
+    ],
+  },
+  {
+    groups: [
+      { level: 0, title: 'Ciutats de Catalunya', words: ['GIRONA', 'LLEIDA', 'TARRAGONA', 'REUS'] },
+      { level: 1, title: 'Parts del cos', words: ['GENOLL', 'COLZE', 'TURMELL', 'ESPATLLA'] },
+      { level: 2, title: 'Eines', words: ['MARTELL', 'SERRA', 'TENALLES', 'DESTRAL'] },
+      {
+        level: 3,
+        title: 'Comencen per PORTA-',
+        words: ['PORTAVEU', 'PORTAAVIONS', 'PORTAMONEDES', 'PORTAEQUIPATGES'],
+      },
+    ],
+  },
+  {
+    groups: [
+      { level: 0, title: 'Mamífers marins', words: ['BALENA', 'DOFÍ', 'FOCA', 'MORSA'] },
+      { level: 1, title: 'Peixos', words: ['SARDINA', 'ANXOVA', 'TONYINA', 'LLUÇ'] },
+      { level: 2, title: 'Marisc', words: ['GAMBA', 'ESCOPINYA', 'CIGALA', 'LLAGOSTA'] },
+      {
+        level: 3,
+        title: 'Comencen per TRENCA-',
+        words: ['TRENCACLOSQUES', 'TRENCANOUS', 'TRENCAPINYES', 'TRENCAGLAÇ'],
+      },
+    ],
+  },
+  {
+    groups: [
+      { level: 0, title: 'Planetes', words: ['MERCURI', 'MART', 'SATURN', 'NEPTÚ'] },
+      { level: 1, title: 'Elements químics', words: ['OXIGEN', 'FERRO', 'COURE', 'HIDROGEN'] },
+      { level: 2, title: 'L’aigua en altres formes', words: ['GEL', 'VAPOR', 'NEU', 'BOIRA'] },
+      {
+        level: 3,
+        title: 'Comencen per GIRA-',
+        words: ['GIRASOL', 'GIRAVOLT', 'GIRADISC', 'GIRAFA'],
+      },
+    ],
+  },
+  {
+    groups: [
+      { level: 0, title: 'Verdures', words: ['CARBASSÓ', 'PASTANAGA', 'ALBERGÍNIA', 'CEBA'] },
+      { level: 1, title: 'Productes lactis', words: ['IOGURT', 'MATÓ', 'MANTEGA', 'NATA'] },
+      { level: 2, title: 'Dolços tradicionals', words: ['TURRÓ', 'XURRO', 'PANELLET', 'BUNYOL'] },
+      {
+        level: 3,
+        title: 'Comencen per RENTA-',
+        words: ['RENTAPLATS', 'RENTAMANS', 'RENTADORA', 'RENTAVAIXELLES'],
+      },
+    ],
+  },
+  {
+    groups: [
+      { level: 0, title: 'Illes Balears', words: ['MALLORCA', 'MENORCA', 'EIVISSA', 'FORMENTERA'] },
+      { level: 1, title: 'Oceans', words: ['ATLÀNTIC', 'PACÍFIC', 'ÍNDIC', 'ÀRTIC'] },
+      { level: 2, title: 'Rius d’Europa', words: ['SENA', 'DANUBI', 'RIN', 'TÀMESI'] },
+      {
+        level: 3,
+        title: 'Muntanyes del món',
+        words: ['EVEREST', 'ACONCAGUA', 'KILIMANJARO', 'FUJI'],
+      },
+    ],
+  },
+  {
+    groups: [
+      { level: 0, title: 'Termes de futbol', words: ['CÒRNER', 'PENALTI', 'FALTA', 'GOL'] },
+      { level: 1, title: 'Esports de raqueta', words: ['TENNIS', 'PÀDEL', 'BÀDMINTON', 'SQUASH'] },
+      { level: 2, title: 'Esports d’aigua', words: ['NATACIÓ', 'WATERPOLO', 'PIRAGÜISME', 'SURF'] },
+      {
+        level: 3,
+        title: 'Esports de muntanya',
+        words: ['ESQUÍ', 'ALPINISME', 'ESCALADA', 'SNOWBOARD'],
+      },
+    ],
+  },
+  {
+    groups: [
+      { level: 0, title: 'Gèneres literaris', words: ['POESIA', 'ASSAIG', 'TEATRE', 'CONTE'] },
+      { level: 1, title: 'Escriptors catalans', words: ['RODOREDA', 'VERDAGUER', 'FUSTER', 'PLA'] },
+      { level: 2, title: 'Instruments de vent', words: ['FLAUTA', 'TROMPETA', 'CLARINET', 'TUBA'] },
+      { level: 3, title: 'Signes de puntuació', words: ['COMA', 'PUNT', 'GUIÓ', 'PARÈNTESI'] },
+    ],
+  },
+  {
+    groups: [
+      { level: 0, title: 'Parts d’una casa', words: ['SALA', 'CUINA', 'BANY', 'BALCÓ'] },
+      { level: 1, title: 'Mobles', words: ['ARMARI', 'CADIRA', 'SOFÀ', 'CAIXONER'] },
+      { level: 2, title: 'Electrodomèstics', words: ['NEVERA', 'FORN', 'LLAVADORA', 'TOSTADORA'] },
+      {
+        level: 3,
+        title: 'Comencen per TIRA-',
+        words: ['TIRABUIXÓ', 'TIRALLONGUES', 'TIRADOR', 'TIRAMISÚ'],
+      },
+    ],
+  },
+  {
+    groups: [
+      { level: 0, title: 'Arbres', words: ['PI', 'ALZINA', 'OLIVERA', 'FIGUERA'] },
+      { level: 1, title: 'Flors', words: ['VIOLETA', 'MARGARIDA', 'ORQUÍDIA', 'TULIPA'] },
+      { level: 2, title: 'Herbes aromàtiques', words: ['ROMANÍ', 'MENTA', 'ORENGA', 'FARIGOLA'] },
+      { level: 3, title: 'Vents', words: ['TRAMUNTANA', 'GARBÍ', 'LLEVANT', 'MIGJORN'] },
+    ],
+  },
+  {
+    groups: [
+      { level: 0, title: 'Família', words: ['AVI', 'NETA', 'ONCLE', 'COSÍ'] },
+      { level: 1, title: 'Professions', words: ['METGE', 'FORNER', 'PAGÈS', 'BARBER'] },
+      { level: 2, title: 'Cognoms catalans', words: ['FUSTER', 'PUIG', 'SERRA', 'VIDAL'] },
+      { level: 3, title: 'Dits de la mà', words: ['POLZE', 'ÍNDEX', 'MIG', 'ANULAR'] },
+    ],
+  },
+];
+
+const LEGACY = [...FIRST, FIRST[0], ...HARDER];
+
+export const PUZZLES: readonly ConnexionsPuzzle[] = markLegacy([...LEGACY, ...MORE], LEGACY.length);

@@ -20,6 +20,7 @@ type AnyState = {
   log?: string[];
   letters?: string[];
   elapsedSeconds?: number;
+  answers?: { word: string; points: number }[];
 };
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
@@ -65,6 +66,11 @@ export function summarize(
         result: status === 'lost' ? 'Revelat' : formatSeconds(s.elapsedSeconds ?? 0),
       };
     }
+    case 'fondaria': {
+      const answers = s.answers ?? [];
+      const depth = answers.reduce((t, a) => t + a.points, 0);
+      return { progress: answers.length / 7, result: `${depth} m` };
+    }
   }
 }
 
@@ -97,5 +103,9 @@ export function headline(game: GameId, status: GameStatus, raw: unknown): string
     }
     case 'mini':
       return won ? 'Perfecte!' : 'Demà més!';
+    case 'fondaria': {
+      const depth = (s.answers ?? []).reduce((t, a) => t + a.points, 0);
+      return depth >= 400 ? 'Perfecte!' : depth >= 250 ? 'Molt bé!' : 'A la superfície…';
+    }
   }
 }

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { ColorIcon } from '@/components/icons/color';
 import { Link, useNavigate } from 'react-router';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
@@ -49,14 +50,19 @@ function Leagues() {
                   className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-amber-100 text-2xl">
-                    🏆
+                    <ColorIcon name="trophy" size={28} />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
                       <span className="truncate font-bold">{l.name}</span>
                       {hasUnread(l, user?.id) && (
                         <span className="bg-brand-700 shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold text-white">
-                          💬 Nou
+                          <ColorIcon
+                            name="chat"
+                            size={14}
+                            className="inline-block align-[-0.2em]"
+                          />{' '}
+                          Nou
                         </span>
                       )}
                     </span>

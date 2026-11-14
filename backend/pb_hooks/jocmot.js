@@ -13,6 +13,24 @@ const DAY_MS = 86400000;
 /** Bonus de ratxa: +1 punt per joc per cada dia seguit (a partir del segon), fins a +5. */
 const MAX_STREAK_BONUS = 5;
 
+/**
+ * Empenta de bentornats: si portaves 5 dies o més sense puntuar, el dia que tornes i els 2 següents
+ * cada joc del dia suma +3 punts extra.
+ */
+const COMEBACK_GAP = 5;
+const COMEBACK_DAYS = 3;
+const COMEBACK_BONUS = 3;
+
+/**
+ * Embranzida de remuntada: si els teus punts del mes són menys de la meitat de la mitjana dels jugadors
+ * actius, cada joc del dia suma +2 punts extra. Només a partir del dia 4 del mes i amb 10 jugadors actius
+ * com a mínim; així no es pot fer servir per fer trampes ni pesa als primers dies.
+ */
+const CATCHUP_BONUS = 2;
+const CATCHUP_MIN_DAY = 4;
+const CATCHUP_MIN_PLAYERS = 10;
+const CATCHUP_RATIO = 0.5;
+
 const RANKS = [
   { name: 'Aprenent', icon: '🌱', min: 0 },
   { name: 'Lletraferit', icon: '📖', min: 150 },
@@ -81,6 +99,11 @@ function basePoints(game, status, state) {
       const hints = (state.log || []).filter((l) => l === 'hint').length;
       return Math.max(5, 15 - 3 * hints);
     }
+    case 'fondaria': {
+      // Fondària: 5 punts per haver jugat i fins a 15 segons els metres (7 preguntes, màxim 700 m).
+      const depth = (state.answers || []).reduce((t, a) => t + (a.points || 0), 0);
+      return Math.min(15, 5 + Math.floor(depth / 70));
+    }
     case 'mini': {
       const s = state.elapsedSeconds || 0;
       return s <= 60 ? 15 : s <= 120 ? 12 : s <= 240 ? 10 : 8;
@@ -106,6 +129,32 @@ function withHints(points, hints) {
   return Math.max(Math.min(points, HINT_FLOOR), points - HINT_PENALTY * count);
 }
 
+const diffDays = (a, b) => Math.round((utcFromIso(b) - utcFromIso(a)) / DAY_MS);
+
+/**
+ * Empenta de bentornats: `days` són els dies amb algun puzle del dia puntuat (incloent `day`).
+ * Està activa el dia que tornes després de COMEBACK_GAP dies o més, i els COMEBACK_DAYS - 1 següents.
+ */
+function comebackActive(days, day) {
+  const sorted = Array.from(new Set(days.concat([day])))
+    .filter((d) => d <= day)
+    .sort();
+  for (let i = sorted.length - 1; i > 0; i--) {
+    if (diffDays(sorted[i - 1], sorted[i]) >= COMEBACK_GAP)
+      return diffDays(sorted[i], day) < COMEBACK_DAYS;
+  }
+  return false;
+}
+
+/**
+ * Embranzida de remuntada: `month` = {players, average, mine} (punts del mes dels jugadors actius,
+ * de la persona i quants n'hi ha). Els punts d'abans de la partida actual.
+ */
+function catchUpActive(day, month) {
+  if (!month || Number(day.slice(8)) < CATCHUP_MIN_DAY) return false;
+  return month.players >= CATCHUP_MIN_PLAYERS && month.mine < month.average * CATCHUP_RATIO;
+}
+
 /**
  * Ratxa: dies seguits amb algun puzle del dia acabat, comptant fins a `today`.
  * Si avui encara no s'ha jugat, compta fins ahir (la ratxa no es perd fins que acaba el dia).
@@ -128,8 +177,10 @@ function currentStreak(days, today) {
  * Retorna null si la partida no ha acabat o el puzle és del futur.
  * `dailyDays`: dies en què l'usuari ja havia acabat algun puzle del dia.
  * `hints`: pistes de /pistes mirades abans d'acabar ({count, solution}), o null.
+ * `monthStats`: per a l'Embranzida, {players, average, mine} (o null).
+ * Retorna `bonus` (ratxa), `empenta` (Empenta de bentornats) i `embranzida` (Embranzida de remuntada).
  */
-function scoreFor({ game, puzzle, status, state, finishedAt, dailyDays, hints }) {
+function scoreFor({ game, puzzle, status, state, finishedAt, dailyDays, hints, monthStats }) {
   if (status !== 'won' && status !== 'lost') return null;
   const day = madridDate(finishedAt);
   const date = puzzleDate(puzzle);
@@ -139,8 +190,21 @@ function scoreFor({ game, puzzle, status, state, finishedAt, dailyDays, hints })
   const full = withHints(basePoints(game, status, state), hints);
   const base = daily ? full : Math.floor(full / 2);
   const streak = currentStreak(daily ? dailyDays.concat([day]) : dailyDays, day);
-  const bonus = daily && base > 0 ? Math.min(streak - 1, MAX_STREAK_BONUS) : 0;
-  return { day, month: day.slice(0, 7), daily, base, bonus, points: base + bonus, streak };
+  const earns = daily && base > 0;
+  const bonus = earns ? Math.min(streak - 1, MAX_STREAK_BONUS) : 0;
+  const empenta = earns && comebackActive(dailyDays, day) ? COMEBACK_BONUS : 0;
+  const embranzida = earns && catchUpActive(day, monthStats) ? CATCHUP_BONUS : 0;
+  return {
+    day,
+    month: day.slice(0, 7),
+    daily,
+    base,
+    bonus,
+    empenta,
+    embranzida,
+    points: base + bonus + empenta + embranzida,
+    streak,
+  };
 }
 
 /** Rang segons els punts totals, amb el següent per mostrar el progrés. */
@@ -176,6 +240,10 @@ module.exports = {
   withHints,
   HINT_PENALTY,
   currentStreak,
+  comebackActive,
+  catchUpActive,
+  COMEBACK_BONUS,
+  CATCHUP_BONUS,
   scoreFor,
   rankFor,
   normalizeName,

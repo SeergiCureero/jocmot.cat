@@ -1,3 +1,5 @@
+import { ColorIcon } from '@/components/icons/color';
+
 /** Rangs per punts totals. Han de coincidir amb `backend/pb_hooks/jocmot.js` (ho comprova un test). */
 export const RANKS = [
   { name: 'Aprenent', icon: '🌱', min: 0 },
@@ -31,22 +33,40 @@ export default function PointsHelp() {
             <strong>Mini:</strong> 15 en menys d’1 minut, 12 en menys de 2, 10 en menys de 4 i 8
             després. Si la reveles, 0.
           </li>
+          <li>
+            <strong>Fondària:</strong> 5 punts per jugar-la, més 1 per cada 70 metres de fondària
+            (màxim 15).
+          </li>
         </ul>
         <p>
-          🔥 <strong>Ratxa:</strong> cada dia seguit que acabes algun joc del dia suma +1 punt a
-          cada joc, fins a +5.
+          <ColorIcon name="fire" size={18} className="inline-block align-[-0.2em]" />{' '}
+          <strong>Ratxa:</strong> cada dia seguit que acabes algun joc del dia suma +1 punt a cada
+          joc, fins a +5.
         </p>
         <p>
-          💡 <strong>Pistes del dia:</strong> cada pista que mires abans d’acabar un puzle en resta
-          3 punts (mínim 3), i si en mires la solució, no en guanyes cap.
+          <ColorIcon name="rocket" size={18} className="inline-block align-[-0.2em]" />{' '}
+          <strong>Empenta de bentornats:</strong> si portaves 5 dies o més sense jugar, el dia que
+          tornes i els dos següents cada joc del dia suma +3 punts extra.
         </p>
         <p>
-          📅 <strong>Arxiu:</strong> els puzles de dies anteriors donen la meitat de punts i no
-          compten per a la ratxa.
+          <ColorIcon name="rocket" size={18} className="inline-block align-[-0.2em]" />{' '}
+          <strong>Embranzida de remuntada:</strong> si a partir del dia 4 del mes portes menys de la
+          meitat dels punts d’un jugador mitjà, cada joc del dia suma +2 punts extra.
         </p>
         <p>
-          🏆 <strong>Lligues:</strong> cada mes comença de zero. Qui en sumi més a final de mes
-          guanya la lliga.
+          <ColorIcon name="bulb" size={18} className="inline-block align-[-0.2em]" />{' '}
+          <strong>Pistes del dia:</strong> cada pista que mires abans d’acabar un puzle en resta 3
+          punts (mínim 3), i si en mires la solució, no en guanyes cap.
+        </p>
+        <p>
+          <ColorIcon name="calendar" size={18} className="inline-block align-[-0.2em]" />{' '}
+          <strong>Arxiu:</strong> els puzles de dies anteriors donen la meitat de punts i no compten
+          per a la ratxa.
+        </p>
+        <p>
+          <ColorIcon name="trophy" size={18} className="inline-block align-[-0.2em]" />{' '}
+          <strong>Lligues:</strong> cada mes comença de zero. Qui en sumi més a final de mes guanya
+          la lliga.
         </p>
         <div>
           <p className="mb-1">

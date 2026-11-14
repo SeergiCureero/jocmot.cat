@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { ColorIcon } from '@/components/icons/color';
 import { Link } from 'react-router';
 import AdSlot from '@/components/ads/AdSlot';
 import Countdown from '@/components/game/Countdown';
@@ -103,7 +104,7 @@ export default function HomePage() {
         <p className="mt-1 min-h-6 text-sm text-stone-700" aria-live="polite">
           {streak && streak.streak > 0 && (
             <>
-              <span aria-hidden>🔥 </span>
+              <ColorIcon name="fire" size={16} className="inline-block align-[-0.2em]" />
               <strong>
                 {streak.streak} {streak.streak === 1 ? 'dia seguit' : 'dies seguits'}
               </strong>
@@ -139,7 +140,8 @@ export default function HomePage() {
           to="/pistes"
           className="text-brand-700 inline-flex min-h-11 items-center px-2 text-sm font-semibold hover:underline"
         >
-          <span aria-hidden>💡&nbsp;</span>T’has encallat? Mira les pistes del dia →
+          <ColorIcon name="bulb" size={18} className="inline-block align-[-0.2em]" /> T’has
+          encallat? Mira les pistes del dia →
         </Link>
       </p>
 

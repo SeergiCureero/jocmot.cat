@@ -59,7 +59,8 @@ routerAdd(
     });
     if (!score) throw new NotFoundError('Encara no hi ha puntuació');
     const result = {};
-    for (const f of ['daily', 'base', 'bonus', 'points', 'streak']) result[f] = score.get(f);
+    for (const f of ['daily', 'base', 'bonus', 'empenta', 'embranzida', 'points', 'streak'])
+      result[f] = score.get(f);
     return e.json(200, result);
   },
   $apis.requireAuth('users'),
@@ -297,6 +298,47 @@ routerAdd(
   $apis.requireAuth('users'),
 );
 
+/**
+ * Lliga mundial d'un mes (?mes=AAAA-MM; per defecte, l'actual): el top de qui hi participa (opt-in)
+ * i, si qui mira hi participa i és fora del top, la seva fila amb la posició real.
+ */
+routerAdd(
+  'GET',
+  '/api/jocmot/lligues/mundial',
+  (e) => {
+    const db = require(`${__hooks}/jocmot_db.js`);
+    const lib = require(`${__hooks}/jocmot.js`);
+    const current = db.today().slice(0, 7);
+    const months = [];
+    for (
+      let [y, m] = current.split('-').map(Number);
+      `${y}-${m < 10 ? '0' : ''}${m}` >= lib.LAUNCH_DATE.slice(0, 7);
+    ) {
+      months.push(`${y}-${m < 10 ? '0' : ''}${m}`);
+      if (--m === 0) {
+        m = 12;
+        y--;
+      }
+    }
+    const requested = e.request.url.query().get('mes');
+    const month = months.indexOf(requested) >= 0 ? requested : current;
+    const participation = e.auth.getString('worldLeague');
+    const world = db.worldRanking(e.app, month, participation === 'yes' ? e.auth.id : '');
+    const finished = month !== current;
+    return e.json(200, {
+      month,
+      months,
+      finished,
+      participation: participation || null,
+      size: db.WORLD_LEAGUE_SIZE,
+      winner: finished && world.ranking[0] ? world.ranking[0].user : null,
+      ranking: world.ranking,
+      me: world.me,
+    });
+  },
+  $apis.requireAuth('users'),
+);
+
 /** Classificació d'una lliga per a un mes (?mes=AAAA-MM; per defecte, l'actual). */
 routerAdd(
   'GET',
@@ -404,6 +446,18 @@ routerAdd(
 
 // ── Likes dels puzles ──
 
+/** Valoració dels puzles d'un joc: likes i partides acabades de cada dia. Només editors. */
+routerAdd(
+  'GET',
+  '/api/jocmot/admin/valoracions/{game}',
+  (e) => {
+    if (!e.auth.getBool('editor')) throw new ForbiddenError('Només per a editors.');
+    const db = require(`${__hooks}/jocmot_db.js`);
+    return e.json(200, { puzzles: db.likesReport(e.app, e.request.pathValue('game')) });
+  },
+  $apis.requireAuth('users'),
+);
+
 /** Quanta gent li agrada un puzle i si t'agrada a tu (sense compte, només el recompte). */
 routerAdd('GET', '/api/jocmot/likes/{game}/{puzzle}', (e) => {
   const db = require(`${__hooks}/jocmot_db.js`);
@@ -434,6 +488,26 @@ routerAdd(
         Boolean(e.requestInfo().body.liked),
       ),
     );
+  },
+  $apis.requireAuth('users'),
+);
+
+// ── Joc preferit (votació) ──
+
+/** Vots de cada joc i el teu (sense compte, només el recompte). */
+routerAdd('GET', '/api/jocmot/vots', (e) => {
+  const db = require(`${__hooks}/jocmot_db.js`);
+  return e.json(200, db.votesOf(e.app, e.auth ? e.auth.id : ''));
+});
+
+/** Vota el teu joc preferit (un sol vot per persona; el pots canviar). */
+routerAdd(
+  'POST',
+  '/api/jocmot/vots',
+  (e) => {
+    const db = require(`${__hooks}/jocmot_db.js`);
+    db.setVote(e.app, e.auth.id, e.requestInfo().body.game);
+    return e.json(200, db.votesOf(e.app, e.auth.id));
   },
   $apis.requireAuth('users'),
 );
@@ -622,6 +696,41 @@ routerAdd(
   (e) => {
     require(`${__hooks}/jocmot_avisos.js`).sendDailyReminders(e.app);
     return e.noContent(204);
+  },
+  $apis.requireSuperuserAuth(),
+);
+
+// ── Correu per tornar a jugar ──
+
+// Cada hora, i només a les 18:00 de Madrid fa la tanda del dia.
+cronAdd('jocmot_recorda', '30 * * * *', () => {
+  require(`${__hooks}/jocmot_recorda.js`).cron($app);
+});
+
+/** Baixa amb un clic des del correu (sense compte). GET per a l'enllaç, POST per al "List-Unsubscribe". */
+const unsub = (e) => {
+  const ok = require(`${__hooks}/jocmot_recorda.js`).unsubscribe(
+    e.app,
+    e.request.pathValue('token'),
+  );
+  const msg = ok
+    ? 'Fet! No et tornarem a escriure per això. Pots tornar-ho a activar des del teu perfil.'
+    : 'Aquest enllaç no és vàlid.';
+  return e.html(
+    ok ? 200 : 404,
+    `<!doctype html><html lang="ca"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>jocmot.cat</title><body style="font-family:system-ui,sans-serif;max-width:28rem;margin:4rem auto;padding:0 1rem;color:#1c1917"><p style="font-size:20px;font-weight:800">jocmot<span style="color:#0f766e">.cat</span></p><p>${msg}</p><p><a href="https://jocmot.cat" style="color:#0f766e">Torna a jocmot.cat</a></p></body></html>`,
+  );
+};
+routerAdd('GET', '/api/jocmot/baixa/{token}', unsub);
+routerAdd('POST', '/api/jocmot/baixa/{token}', unsub);
+
+/** Qui rebria el correu ara (?prova=1) o envia la tanda ara mateix. Només superusuaris. */
+routerAdd(
+  'POST',
+  '/api/jocmot/admin/recorda',
+  (e) => {
+    const dry = e.request.url.query().get('prova') === '1';
+    return e.json(200, require(`${__hooks}/jocmot_recorda.js`).sendReturnEmails(e.app, dry));
   },
   $apis.requireSuperuserAuth(),
 );
