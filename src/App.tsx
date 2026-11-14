@@ -3,7 +3,7 @@ import { Route, Routes } from 'react-router';
 import Layout from './components/layout/Layout';
 import Spinner from './components/ui/Spinner';
 import { FEATURES } from './config/site';
-import { GAMES } from './games/registry';
+import { ALL_GAMES } from './games/registry';
 import GameRoute from './games/GameRoute';
 import HomePage from './pages/HomePage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -36,7 +36,7 @@ export default function App() {
           <Route index element={<HomePage />} />
 
           {/* Cada joc té la seva ruta: /joc (avui) i /joc/:puzzleId (arxiu) */}
-          {GAMES.map((game) => (
+          {ALL_GAMES.map((game) => (
             <Route key={game.id} path={game.slug}>
               <Route index element={<GameRoute game={game} />} />
               <Route path=":puzzleId" element={<GameRoute game={game} />} />

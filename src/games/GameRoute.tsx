@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Navigate, useParams } from 'react-router';
 import Spinner from '@/components/ui/Spinner';
 import { FEATURES } from '@/config/site';
+import { useAuth } from '@/features/auth/AuthContext';
+import NotFoundPage from '@/pages/NotFoundPage';
 import { backend } from '@/services/backend';
 import { getPuzzleDate, getTodayPuzzleNumber } from './puzzles';
 import { isDesignable } from './registry';
@@ -15,6 +17,8 @@ import type { GameDefinition } from './types';
  */
 export default function GameRoute({ game }: { game: GameDefinition }) {
   const { puzzleId } = useParams();
+  const { user } = useAuth();
+  const hidden = Boolean(game.editorsOnly && !user?.editor);
   const today = getTodayPuzzleNumber();
   const requested = puzzleId ? Number(puzzleId) : today;
 
@@ -26,6 +30,8 @@ export default function GameRoute({ game }: { game: GameDefinition }) {
 
   const groupPuzzle = useGroupPuzzle(game.id, isValid ? requested : null);
 
+  // Un joc en proves només es veu amb un compte d'editor: per a la resta, la pàgina no existeix.
+  if (hidden) return <NotFoundPage />;
   if (!isValid) return <Navigate to={`/${game.slug}`} replace />;
   if (groupPuzzle === undefined) return <Spinner />;
 

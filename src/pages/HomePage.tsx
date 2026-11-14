@@ -12,7 +12,7 @@ import { localProgressRecords, syncLocalProgress } from '@/features/progress/use
 import { social } from '@/features/social/api';
 import MyLeagues from '@/features/social/MyLeagues';
 import { getPuzzleDate, getTodayPuzzleNumber } from '@/games/puzzles';
-import { GAMES } from '@/games/registry';
+import { useGames } from '@/games/useGames';
 import { summarize, type GameSummary } from '@/games/summary';
 import type { GameDefinition } from '@/games/types';
 import { cn } from '@/lib/cn';
@@ -68,6 +68,7 @@ function useHomeData() {
 }
 
 export default function HomePage() {
+  const GAMES = useGames();
   const today = getTodayPuzzleNumber();
   const todayDate = getPuzzleDate(today);
   const { records, serverStreak, failed, retry } = useHomeData();
@@ -272,6 +273,7 @@ function ErrorCard({ onRetry }: { onRetry: () => void }) {
 
 /** Tots fets: felicitació, compte enrere i resum del dia per compartir. */
 function AllDone({ cards, date }: { cards: Card[]; date: string }) {
+  const GAMES = useGames();
   const [copied, setCopied] = useState(false);
   const text = [
     `jocmot.cat · ${formatWeekdayCa(date)}`,

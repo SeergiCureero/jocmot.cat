@@ -16,7 +16,8 @@ import {
 } from '@/features/hints/usage';
 import { localProgress } from '@/features/progress/useGameProgress';
 import { getPuzzleDate, getTodayPuzzleNumber } from '@/games/puzzles';
-import { GAMES, isDesignable } from '@/games/registry';
+import { useGames } from '@/games/useGames';
+import { isDesignable } from '@/games/registry';
 import type { GameDefinition, GameId, Hint, PuzzleHints } from '@/games/types';
 import { cn } from '@/lib/cn';
 import { formatWeekdayCa } from '@/lib/date';
@@ -24,6 +25,7 @@ import { backend } from '@/services/backend';
 
 /** Pistes dels puzles d'avui: es destapen una a una, de la més suau a la solució. */
 export default function HintsPage() {
+  const GAMES = useGames();
   const today = getTodayPuzzleNumber();
   const { user } = useAuth();
   const [params] = useSearchParams();

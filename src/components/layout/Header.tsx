@@ -3,7 +3,7 @@ import { Link, NavLink } from 'react-router';
 import GameIcon from '@/components/game/GameIcon';
 import { MenuIcon } from '@/components/icons';
 import { ColorIcon } from '@/components/icons/color';
-import { GAMES } from '@/games/registry';
+import { useGames } from '@/games/useGames';
 import { cn } from '@/lib/cn';
 import { FEATURES } from '@/config/site';
 import { ICON_BUTTON as iconButton } from '@/components/ui/styles';
@@ -15,6 +15,7 @@ import logoText from '../../../public/logos/jocmot-text.svg?raw';
  * 56 px d'alçada més la zona segura de l'iPhone (la "notch").
  */
 export default function Header() {
+  const GAMES = useGames();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (

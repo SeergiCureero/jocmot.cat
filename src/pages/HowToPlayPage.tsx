@@ -1,9 +1,10 @@
 import { Link } from 'react-router';
 import GameIcon from '@/components/game/GameIcon';
 import { HELP } from '@/games/help';
-import { GAMES } from '@/games/registry';
+import { useGames } from '@/games/useGames';
 
 export default function HowToPlayPage() {
+  const GAMES = useGames();
   return (
     <div className="mx-auto max-w-2xl py-6">
       <h1 className="mb-1 text-2xl font-bold">Com es juga</h1>

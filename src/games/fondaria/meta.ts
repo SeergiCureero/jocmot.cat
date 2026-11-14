@@ -7,6 +7,7 @@ export const meta: GameMeta = {
   inspiredBy: 'Krillion',
   tagline: 'Set preguntes, 25 segons cadascuna: com més rara la paraula, més fons',
   icon: '🌊',
+  editorsOnly: true,
   theme: {
     bg: 'bg-cyan-100',
     text: 'text-cyan-900',

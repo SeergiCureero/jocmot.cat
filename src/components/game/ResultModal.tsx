@@ -16,7 +16,7 @@ import {
 import LikeButton from '@/features/social/LikeButton';
 import PointsEarned from '@/features/social/PointsEarned';
 import { getTodayPuzzleNumber } from '@/games/puzzles';
-import { GAMES } from '@/games/registry';
+import { useGames } from '@/games/useGames';
 import { headline, summarize } from '@/games/summary';
 import type { GameMeta } from '@/games/types';
 import { shareText } from '@/lib/share';
@@ -36,6 +36,7 @@ interface Props {
 
 /** Finestra final, igual a tots els jocs. */
 export default function ResultModal({ open, onClose, meta, puzzleNumber, result, preview }: Props) {
+  const GAMES = useGames();
   const { user } = useAuth();
   const [copied, setCopied] = useState(false);
   const [records, setRecords] = useState<ProgressRecord[] | null>(null);

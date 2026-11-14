@@ -3,7 +3,7 @@ import GameIcon from '@/components/game/GameIcon';
 import { Link, useSearchParams } from 'react-router';
 import { useAuth } from '@/features/auth/AuthContext';
 import { getPuzzleDate, getTodayPuzzleNumber } from '@/games/puzzles';
-import { GAMES } from '@/games/registry';
+import { useGames } from '@/games/useGames';
 import { cn } from '@/lib/cn';
 import { storage } from '@/lib/storage';
 import { backend, type GameStatus, type ProgressRecord } from '@/services/backend';
@@ -23,6 +23,7 @@ const formatDay = (isoDate: string) => {
 
 /** Tots els puzles publicats fins avui, per tornar a jugar els que t'has perdut. */
 export default function ArchivePage() {
+  const GAMES = useGames();
   const [params, setParams] = useSearchParams();
   const game = GAMES.find((g) => g.slug === params.get('joc')) ?? GAMES[0];
   const today = getTodayPuzzleNumber();

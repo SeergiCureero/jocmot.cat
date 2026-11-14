@@ -5,7 +5,7 @@ import Modal from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
 import { FEATURES } from '@/config/site';
 import { useAuth } from '@/features/auth/AuthContext';
-import { GAMES } from '@/games/registry';
+import { ALL_GAMES } from '@/games/registry';
 import { backend } from '@/services/backend';
 
 /**
@@ -20,7 +20,7 @@ export default function WorldLeagueInvite() {
   const [later, setLater] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const playing = GAMES.some(
+  const playing = ALL_GAMES.some(
     (g) => pathname === `/${g.slug}` || pathname.startsWith(`/${g.slug}/`),
   );
   const open =

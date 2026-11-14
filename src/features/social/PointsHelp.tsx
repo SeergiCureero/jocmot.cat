@@ -33,10 +33,6 @@ export default function PointsHelp() {
             <strong>Mini:</strong> 15 en menys d’1 minut, 12 en menys de 2, 10 en menys de 4 i 8
             després. Si la reveles, 0.
           </li>
-          <li>
-            <strong>Fondària:</strong> 5 punts per jugar-la, més 1 per cada 70 metres de fondària
-            (màxim 15).
-          </li>
         </ul>
         <p>
           <ColorIcon name="fire" size={18} className="inline-block align-[-0.2em]" />{' '}
