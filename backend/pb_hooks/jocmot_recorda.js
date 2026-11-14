@@ -83,14 +83,13 @@ function render(name, days, link) {
   return { html, text };
 }
 
-function sendOne(app, user, days) {
-  const link = `${API}/api/jocmot/baixa/${unsubToken(app, user)}`;
-  const { html, text } = render(user.getString('name'), days, link);
+function deliver(app, address, name, days, link) {
+  const { html, text } = render(name, days, link);
   const meta = app.settings().meta;
   app.newMailClient().send(
     new MailerMessage({
       from: { address: meta.senderAddress, name: meta.senderName },
-      to: [{ address: user.getString('email') }],
+      to: [{ address }],
       subject: 'Et trobem a faltar a jocmot.cat',
       html,
       text,
@@ -100,6 +99,16 @@ function sendOne(app, user, days) {
       },
     }),
   );
+}
+
+function sendOne(app, user, days) {
+  const link = `${API}/api/jocmot/baixa/${unsubToken(app, user)}`;
+  deliver(app, user.getString('email'), user.getString('name'), days, link);
+}
+
+/** Correu d'exemple a una adreça (per provar-ne l'aspecte i que arriba). L'enllaç de baixa no és vàlid. */
+function sendSample(app, address) {
+  deliver(app, address, 'Prova', 6, `${API}/api/jocmot/baixa/enllac-de-prova-no-valid`);
 }
 
 /**
@@ -148,4 +157,4 @@ function unsubscribe(app, token) {
   return true;
 }
 
-module.exports = { candidates, sendReturnEmails, cron, unsubscribe };
+module.exports = { candidates, sendReturnEmails, sendSample, cron, unsubscribe };
