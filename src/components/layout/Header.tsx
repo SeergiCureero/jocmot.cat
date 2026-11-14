@@ -1,6 +1,10 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
-import { ChartIcon, MenuIcon, TrophyIcon } from '@/components/icons';
+import { Link, NavLink } from 'react-router';
+import GameIcon from '@/components/game/GameIcon';
+import { MenuIcon } from '@/components/icons';
+import { ColorIcon } from '@/components/icons/color';
+import { GAMES } from '@/games/registry';
+import { cn } from '@/lib/cn';
 import { FEATURES } from '@/config/site';
 import { ICON_BUTTON as iconButton } from '@/components/ui/styles';
 import Menu from './Menu';
@@ -32,11 +36,11 @@ export default function Header() {
         <div className="ml-auto flex items-center gap-1">
           {FEATURES.social && (
             <Link to="/lligues" className={iconButton} aria-label="Lligues">
-              <TrophyIcon />
+              <ColorIcon name="trophy" size={28} />
             </Link>
           )}
           <Link to="/estadistiques" className={iconButton} aria-label="Estadístiques">
-            <ChartIcon />
+            <ColorIcon name="chart" size={28} />
           </Link>
           <button
             type="button"
@@ -50,6 +54,27 @@ export default function Header() {
           </button>
         </div>
       </div>
+      {/* Dreceres als quatre jocs, sempre a mà. */}
+      <nav aria-label="Jocs" className="border-t border-stone-100">
+        <ul className="mx-auto flex max-w-5xl px-1">
+          {GAMES.map((g) => (
+            <li key={g.id} className="min-w-0 flex-auto">
+              <NavLink
+                to={`/${g.slug}`}
+                className={({ isActive }) =>
+                  cn(
+                    'flex h-11 items-center justify-center gap-1 rounded-lg px-0.5 text-[11px] font-semibold transition-colors sm:gap-2 sm:text-sm',
+                    isActive ? 'bg-stone-100 text-stone-900' : 'text-stone-700 hover:bg-stone-50',
+                  )
+                }
+              >
+                <GameIcon id={g.id} size={22} className="rounded-md" />
+                <span className="truncate">{g.name}</span>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
       <Menu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </header>
   );

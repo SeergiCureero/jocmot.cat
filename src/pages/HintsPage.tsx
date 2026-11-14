@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ColorIcon } from '@/components/icons/color';
 import { Link, useSearchParams } from 'react-router';
 import GameIcon from '@/components/game/GameIcon';
 import Button from '@/components/ui/Button';
@@ -88,7 +89,7 @@ export default function HintsPage() {
   return (
     <div className="mx-auto max-w-2xl py-8">
       <h1 className="text-2xl font-bold">
-        <span aria-hidden>💡 </span>Pistes del dia
+        <ColorIcon name="bulb" size={22} className="inline-block align-[-0.2em]" /> Pistes del dia
       </h1>
       <p className="mt-1 text-sm font-semibold text-stone-700">
         {formatWeekdayCa(getPuzzleDate(today))}
@@ -256,7 +257,11 @@ function RevealButton({
       )}
     >
       <span>
-        <span aria-hidden>{solution ? '🔓 ' : '💡 '}</span>
+        {solution ? (
+          <span aria-hidden>🔓 </span>
+        ) : (
+          <ColorIcon name="bulb" size={18} className="inline-block align-[-0.2em]" />
+        )}
         {label}
       </span>
       {cost && <span className="shrink-0 text-xs font-medium text-stone-600">{cost}</span>}

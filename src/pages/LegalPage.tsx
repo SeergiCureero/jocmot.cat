@@ -187,6 +187,16 @@ export default function LegalPage() {
             a corregir-ne o adaptar-ne el contingut. Ha de ser original teu. Podem no publicar-lo, i
             no hi pot haver res ofensiu.
           </li>
+          <li>
+            Si tries sortir a la <strong>lliga mundial</strong>, el teu nom d’usuari i els punts del
+            mes seran visibles per a tots els jugadors. És voluntari: ho decideixes tu, no hi surts
+            si no ho acceptes, i ho pots canviar quan vulguis des del perfil.
+          </li>
+          <li>
+            Si fa 5 dies que no jugues, t’enviem <strong>un sol correu</strong> per recordar-t’ho (i
+            com a molt un cada 30 dies). Hi ha un enllaç per donar-te de baixa sense entrar al
+            compte, i ho pots desactivar des del perfil.
+          </li>
           <li>Jugar és gratuït. Crear un compte també.</li>
           <li>
             Tria un nom d’usuari i noms de lliga respectuosos: els veuen altres persones. Podem

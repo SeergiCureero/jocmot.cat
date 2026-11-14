@@ -1,4 +1,5 @@
 import { INPUT, type EditorKit, type FormProps } from './types';
+import { ColorIcon } from '@/components/icons/color';
 
 /** Llargada màxima de la pista de l'autor. */
 export const HINT_MAX = 200;
@@ -31,7 +32,8 @@ export function withHint<D>(kit: EditorKit<D>): EditorKit<WithHint<D>> {
         />
         <label className="block rounded-xl border border-stone-200 bg-white p-3">
           <span className="block text-sm font-medium text-stone-700">
-            💡 Pista per a qui s’encalli (opcional)
+            <ColorIcon name="bulb" size={18} className="inline-block align-[-0.2em]" /> Pista per a
+            qui s’encalli (opcional)
           </span>
           <span className="mb-2 block text-xs text-stone-600">
             Surt la primera a la pàgina de pistes. Que ajudi sense dir la solució.

@@ -33,7 +33,7 @@ export default function Board({ guesses, current, answer, shake, revealRow, boun
   return (
     <div
       // Les fitxes s'adapten a l'alçada: tauler i teclat caben sencers en un mòbil petit.
-      className="grid gap-1.5 [--tile:clamp(2.5rem,calc((100dvh-372px)/6),3.5rem)] sm:[--tile:clamp(2.5rem,calc((100dvh-372px)/6),4rem)]"
+      className="grid gap-1.5 [--tile:clamp(2.5rem,calc((100dvh-416px)/6),3.5rem)] sm:[--tile:clamp(2.5rem,calc((100dvh-416px)/6),4rem)]"
       role="grid"
       aria-label="Tauler"
     >

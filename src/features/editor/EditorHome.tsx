@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import { ColorIcon } from '@/components/icons/color';
 import GameIcon from '@/components/game/GameIcon';
 import { Link, useNavigate } from 'react-router';
 import Spinner from '@/components/ui/Spinner';
@@ -69,11 +70,31 @@ export default function EditorHome() {
       )}
       {isEditor && (
         <Link
+          to="/editor/valoracions"
+          className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg"
+        >
+          <span>
+            <span className="block font-bold">
+              <ColorIcon name="heart" size={18} className="inline-block align-[-0.2em]" />{' '}
+              Valoracions
+            </span>
+            <span className="block text-sm text-stone-600">
+              Quins puzles agraden i quins no, de tots els jocs.
+            </span>
+          </span>
+          <span className="text-brand-700 font-semibold">→</span>
+        </Link>
+      )}
+      {isEditor && (
+        <Link
           to="/editor/calendari"
           className="mb-8 flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg"
         >
           <span>
-            <span className="block font-bold">📅 Calendari</span>
+            <span className="block font-bold">
+              <ColorIcon name="calendar" size={18} className="inline-block align-[-0.2em]" />{' '}
+              Calendari
+            </span>
             <span className="block text-sm text-stone-600">
               Quin puzle surt cada dia. Canvia’ls de dia.
             </span>

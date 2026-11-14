@@ -68,6 +68,7 @@
   --color-joc-connexions: #6b21a8;
   --color-joc-fils: #075985;
   --color-joc-mini: #92400e;
+  --color-joc-fondaria: #155e75;
 
   /* Fitxes del logo (docs/DISSENY.md) */
   --color-fitxa-1: #0f766e;
@@ -320,7 +321,7 @@ button {
 }
 /* La pàgina no queda tapada per la capçalera fixa en saltar a un ancoratge. */
 html {
-  scroll-padding-top: calc(3.5rem + env(safe-area-inset-top));
+  scroll-padding-top: calc(6.25rem + env(safe-area-inset-top));
 }
 
 /*

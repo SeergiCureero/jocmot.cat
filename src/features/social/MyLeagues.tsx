@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ColorIcon } from '@/components/icons/color';
 import { Link } from 'react-router';
 import { useAuth } from '@/features/auth/AuthContext';
 import { cn } from '@/lib/cn';
@@ -46,7 +47,7 @@ export default function MyLeagues() {
           className="flex min-h-[4.5rem] items-center gap-4 rounded-2xl border border-dashed border-stone-300 bg-white p-4 text-sm text-stone-700 hover:border-stone-400"
         >
           <span aria-hidden className="text-2xl">
-            🏆
+            <ColorIcon name="trophy" size={28} />
           </span>
           <span>
             <strong className="block text-stone-900">Competeix amb els amics</strong>
@@ -64,14 +65,19 @@ export default function MyLeagues() {
                   className="flex min-h-[4.5rem] items-center gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 transition hover:border-stone-300 hover:shadow-md active:scale-[0.98]"
                 >
                   <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-amber-100 text-xl">
-                    🏆
+                    <ColorIcon name="trophy" size={26} />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
                       <span className="truncate font-bold">{l.name}</span>
                       {unread && (
                         <span className="bg-brand-700 shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold text-white">
-                          💬 Nou
+                          <ColorIcon
+                            name="chat"
+                            size={14}
+                            className="inline-block align-[-0.2em]"
+                          />{' '}
+                          Nou
                         </span>
                       )}
                     </span>

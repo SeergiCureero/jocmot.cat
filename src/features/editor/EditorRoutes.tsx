@@ -4,6 +4,7 @@ import CalendarPage from './CalendarPage';
 import DraftPage from './DraftPage';
 import EditorHome from './EditorHome';
 import PuzzlePage from './PuzzlePage';
+import RatingsPage from './RatingsPage';
 
 /**
  * /editor/* — qualsevol persona amb compte hi pot dissenyar i proposar puzles; els editors
@@ -18,6 +19,7 @@ export default function EditorRoutes() {
       <Route path="esborrany/:id" element={<DraftPage />} />
       <Route path="puzle/:id" element={<PuzzlePage />} />
       {user.editor && <Route path="calendari" element={<CalendarPage />} />}
+      {user.editor && <Route path="valoracions" element={<RatingsPage />} />}
       <Route path="*" element={<Navigate to="/editor" replace />} />
     </Routes>
   );

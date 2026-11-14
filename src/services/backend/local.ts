@@ -16,7 +16,9 @@ import {
  * Simula comptes i progrés dins del navegador perquè es pugui provar tot el flux
  * sense servidor. No és segur ni sincronitza entre dispositius.
  */
-interface StoredUser extends Omit<User, 'editor'> {
+interface StoredUser extends Omit<User, 'editor' | 'worldLeague' | 'returnEmail'> {
+  worldLeague?: User['worldLeague'];
+  returnEmail?: boolean;
   passwordHash: string;
 }
 
@@ -42,11 +44,13 @@ async function hash(text: string): Promise<string> {
 }
 
 // En mode local tothom és editor, per poder provar l'editor sense servidor.
-const toPublic = ({ id, email, username }: StoredUser): User => ({
+const toPublic = ({ id, email, username, worldLeague, returnEmail }: StoredUser): User => ({
   id,
   email,
   username,
   editor: true,
+  worldLeague: worldLeague ?? null,
+  returnEmail: returnEmail ?? true,
 });
 
 export function createLocalBackend(): Backend {
@@ -250,6 +254,24 @@ export function createLocalBackend(): Backend {
         updated: new Date().toISOString(),
       };
       storage.set(REVIEWS_KEY, [...others, review]);
+    },
+
+    async setReturnEmail(on) {
+      const user = requireUser();
+      storage.set(
+        USERS_KEY,
+        users().map((u) => (u.id === user.id ? { ...u, returnEmail: on } : u)),
+      );
+      setSession({ ...user, returnEmail: on });
+    },
+
+    async setWorldLeague(choice) {
+      const user = requireUser();
+      storage.set(
+        USERS_KEY,
+        users().map((u) => (u.id === user.id ? { ...u, worldLeague: choice } : u)),
+      );
+      setSession({ ...user, worldLeague: choice });
     },
 
     async requestPasswordReset() {

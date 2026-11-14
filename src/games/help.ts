@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 import ConnexionsHelp from './connexions/help';
 import FilsHelp from './fils/help';
 import MiniHelp from './mini/help';
+import FondariaHelp from './fondaria/help';
 import ParaulaHelp from './paraula/help';
 import type { GameId } from './types';
 
@@ -11,4 +12,5 @@ export const HELP: Record<GameId, ComponentType> = {
   connexions: ConnexionsHelp,
   fils: FilsHelp,
   mini: MiniHelp,
+  fondaria: FondariaHelp,
 };

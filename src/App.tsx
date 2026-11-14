@@ -19,10 +19,12 @@ const NewPasswordPage = lazy(() => import('./features/auth/NewPasswordPage'));
 const StatsPage = lazy(() => import('./pages/StatsPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const HowToPlayPage = lazy(() => import('./pages/HowToPlayPage'));
+const VotePage = lazy(() => import('./pages/VotePage'));
 const HintsPage = lazy(() => import('./pages/HintsPage'));
 const EditorRoutes = lazy(() => import('./features/editor/EditorRoutes'));
 const LeaguesPage = lazy(() => import('./features/social/LeaguesPage'));
 const LeaguePage = lazy(() => import('./features/social/LeaguePage'));
+const WorldLeaguePage = lazy(() => import('./features/social/WorldLeaguePage'));
 const JoinLeaguePage = lazy(() => import('./features/social/JoinLeaguePage'));
 const FriendsPage = lazy(() => import('./features/social/FriendsPage'));
 
@@ -45,6 +47,7 @@ export default function App() {
           <Route path="estadistiques" element={<StatsPage />} />
           <Route path="configuracio" element={<SettingsPage />} />
           <Route path="com-es-juga" element={<HowToPlayPage />} />
+          <Route path="vota" element={<VotePage />} />
           <Route path="pistes" element={<HintsPage />} />
           <Route path="sobre" element={<AboutPage />} />
           <Route path="legal" element={<LegalPage />} />
@@ -61,6 +64,7 @@ export default function App() {
           {FEATURES.social && (
             <>
               <Route path="lligues" element={<LeaguesPage />} />
+              <Route path="lligues/mundial" element={<WorldLeaguePage />} />
               <Route path="lligues/unir/:code" element={<JoinLeaguePage />} />
               <Route path="lligues/:id" element={<LeaguePage />} />
               <Route path="amics" element={<FriendsPage />} />

@@ -599,5 +599,124 @@ expect('veure la solució deixa el puzle sense punts', r.body.points === 0, r.bo
 r = await post(`/jocmot/pistes/paraula/${today}`, { count: 3 }, jan.token);
 expect('un cop acabat, les pistes ja no compten', r.status === 200 && r.body.counted === false, r);
 
+// ── Lliga mundial (opt-in) ──
+const patchUser = (u, data) =>
+  req(`/collections/users/records/${u.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+    token: u.token,
+  });
+const mon = lib.madridDate(Date.now()).slice(0, 7);
+const noa = await user('noa');
+const pol = await user('pol');
+const uri = await user('uri');
+r = await get('/jocmot/lligues/mundial');
+expect('la lliga mundial demana compte', r.status === 401, r);
+r = await get('/jocmot/lligues/mundial', noa.token);
+expect('de bon principi ningú no ha triat', r.body.participation === null, r.body);
+expect(
+  'ningú no surt a la lliga mundial sense triar-ho',
+  !r.body.ranking.some((x) => ['anna', 'noa', 'pol', 'uri'].includes(x.user.name)),
+  r.body.ranking,
+);
+await finish(noa, 'paraula', today, 'won', { guesses: ['a'], status: 'won' });
+await finish(pol, 'paraula', today, 'won', { guesses: ['a', 'b'], status: 'won' });
+await finish(uri, 'paraula', today, 'won', { guesses: ['a', 'b', 'c'], status: 'won' });
+r = await patchUser(noa, { worldLeague: 'yes' });
+expect('es pot triar participar', r.status === 200 && r.body.worldLeague === 'yes', r);
+r = await patchUser(noa, { worldLeague: 'potser' });
+expect('només sí o no', r.status === 400, r);
+await patchUser(pol, { worldLeague: 'yes' });
+await patchUser(uri, { worldLeague: 'no' });
+r = await get('/jocmot/lligues/mundial', noa.token);
+const wNames = r.body.ranking.map((x) => x.user.name);
+expect(
+  'hi surten els que hi participen, per punts',
+  wNames.indexOf('noa') >= 0 && wNames.indexOf('noa') < wNames.indexOf('pol'),
+  wNames,
+);
+expect('qui diu que no, no hi surt', !wNames.includes('uri'), wNames);
+expect(
+  'sortim al rànquing amb la posició',
+  r.body.ranking[0].position === 1 && r.body.participation === 'yes',
+  r.body,
+);
+expect(
+  'l’entrada porta rang i ratxa',
+  r.body.ranking[0].rank && r.body.ranking[0].streak >= 1,
+  r.body.ranking[0],
+);
+r = await get('/jocmot/lligues/mundial', uri.token);
+expect(
+  'qui no hi participa també la pot mirar, sense fila pròpia',
+  r.body.participation === 'no' && r.body.me === null,
+  r.body,
+);
+const lia = await user('lia');
+await patchUser(lia, { worldLeague: 'yes' });
+r = await get('/jocmot/lligues/mundial', lia.token);
+expect(
+  'qui participa però encara no ha puntuat veu la lliga',
+  r.status === 200 && r.body.me === null,
+  r,
+);
+r = await get('/jocmot/lligues/mundial?mes=1999-01', noa.token);
+expect('un mes que no existeix torna a l’actual', r.body.month === mon, r.body.month);
+
+// ── Valoracions per a editors ──
+r = await get('/jocmot/admin/valoracions/paraula', noa.token);
+expect('les valoracions no són per a qui no és editor', r.status === 403, r);
+r = await get('/jocmot/admin/valoracions/paraula');
+expect('… ni sense compte', r.status === 401, r);
+const ed = await user('edita');
+await req(`/collections/users/records/${ed.id}`, {
+  method: 'PATCH',
+  body: JSON.stringify({ editor: true }),
+  token: (
+    await post('/collections/_superusers/auth-with-password', {
+      identity: 'admin@test.local',
+      password: 'adminadmin123',
+    })
+  ).body.token,
+});
+r = await get('/jocmot/admin/valoracions/paraula', ed.token);
+const todayRow = r.body.puzzles?.find((x) => x.puzzle === today);
+expect(
+  'un editor veu els puzles amb partides acabades',
+  r.status === 200 && todayRow?.finished >= 3,
+  r.body,
+);
+r = await get('/jocmot/admin/valoracions/zzz', ed.token);
+expect('un joc que no existeix dóna 404', r.status === 404, r);
+
+// ── Fondària ──
+const fon = await user('fon');
+await finish(fon, 'fondaria', today, 'won', {
+  answers: [100, 100, 100, 100, 100, 100, 100].map((points) => ({ word: 'x', points })),
+});
+r = await get(`/jocmot/puntuacio/fondaria/${today}`, fon.token);
+expect('Fondària: 700 m donen 15 punts', r.body.base === 15 && r.body.daily === true, r.body);
+
+// ── Joc preferit ──
+r = await get('/jocmot/vots');
+expect(
+  'es veuen els vots sense compte',
+  r.status === 200 && r.body.counts.mini === 0 && r.body.mine === null,
+  r,
+);
+r = await post('/jocmot/vots', { game: 'mini' });
+expect('per votar cal compte', r.status === 401, r);
+r = await post('/jocmot/vots', { game: 'zzz' }, noa.token);
+expect('un joc que no existeix no es pot votar', r.status === 400, r);
+await post('/jocmot/vots', { game: 'mini' }, noa.token);
+await post('/jocmot/vots', { game: 'fils' }, noa.token);
+await post('/jocmot/vots', { game: 'fils' }, pol.token);
+r = await get('/jocmot/vots', noa.token);
+expect(
+  'un sol vot per persona, que es pot canviar',
+  r.body.counts.fils === 2 && r.body.counts.mini === 0 && r.body.mine === 'fils',
+  r.body,
+);
+
 console.log(fails ? `\n${fails} comprovacions han fallat` : '\nTot correcte');
 process.exit(fails ? 1 : 0);

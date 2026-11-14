@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import { ColorIcon } from '@/components/icons/color';
 import { Link } from 'react-router';
 import Button from '@/components/ui/Button';
 import DonateButton from '@/components/ui/DonateButton';
@@ -107,7 +108,8 @@ export default function ResultModal({ open, onClose, meta, puzzleNumber, result,
                   onClick={onClose}
                   className="inline-flex min-h-11 items-center gap-2 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-800 transition-colors hover:bg-stone-100"
                 >
-                  <span aria-hidden>🏆</span> Com vas a la lliga
+                  <ColorIcon name="trophy" size={18} className="inline-block align-[-0.2em]" /> Com
+                  vas a la lliga
                 </Link>
               )}
             </div>

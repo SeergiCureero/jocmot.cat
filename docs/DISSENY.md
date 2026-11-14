@@ -19,6 +19,8 @@ Regles de disseny que s'han de seguir **sempre**, en qualsevol canvi de la inter
 
 - Fitxes del logo: `#0f766e`, `#15803d`, `#9333ea`, `#0284c7`, `#b45309` (variables `--color-fitxa-1` a `--color-fitxa-5`).
 - El color va als jocs i al logo. Menús, botons i textos continuen sobris (blanc, stone i el teal de marca).
+- **Icones de colors** (`src/components/icons/color.tsx`): la interfície no fa servir emojis del sistema, sinó icones pròpies de colors, gairebé emojis però iguals a tots els dispositius (copa, estadístiques, món, amics, xat, foc, bombeta, calendari…). Són decoratives: el text va sempre al costat. Les de línia (menú, tancar, enrere) hereten el color del text.
+- Les icones dels jocs i la barra de dreceres als quatre jocs (sota la capçalera) fan servir els colors de cada joc.
 - Totes les icones i elements gràfics han de tenir un contrast mínim de **3:1** amb el fons, i els textos de **4.5:1**.
 
 ## Principis d'experiència d'ús
