@@ -12,7 +12,7 @@ import { normalizeWord } from '@/lib/text';
 import { pickByNumber } from '../puzzles';
 import type { GameProps } from '../types';
 import Board, { REVEAL_MS } from './components/Board';
-import { ANSWERS } from './data/answers';
+import { ALL_ANSWERS, ANSWERS } from './data/answers';
 import {
   buildShareText,
   getStatus,
@@ -24,7 +24,7 @@ import {
 } from './logic';
 import { meta } from './meta';
 
-const SOLUTIONS = new Set(ANSWERS.map(normalizeWord));
+const SOLUTIONS = new Set(ALL_ANSWERS.map(normalizeWord));
 
 const PRAISE = ['Genial!', 'Magnífic!', 'Impressionant!', 'Molt bé!', 'Bé!', 'Pel pèl!'];
 
@@ -34,13 +34,14 @@ const KEY_COLORS = {
   absent: 'bg-absent text-white',
 };
 
-export default function ParaulaGame({ puzzleNumber, date }: GameProps) {
+export default function ParaulaGame({ puzzleNumber, date, preview }: GameProps) {
   const answer = pickByNumber(ANSWERS, puzzleNumber);
   const { state, update, status } = useGameProgress({
     gameId: meta.id,
     puzzleId: puzzleNumber,
     initialState,
     getStatus,
+    persist: !preview,
   });
   // Les lletres a mig escriure també es desen: en tornar, hi són.
   const draftKey = `draft:${meta.id}:${puzzleNumber}`;
@@ -146,6 +147,7 @@ export default function ParaulaGame({ puzzleNumber, date }: GameProps) {
       date={date}
       result={result}
       message={message}
+      preview={preview}
     >
       <Board
         guesses={state.guesses}

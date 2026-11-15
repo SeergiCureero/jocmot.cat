@@ -596,6 +596,62 @@ function trafficReport(app, days) {
   };
 }
 
+// ── Valoració dels puzles que encara no han sortit (només editors) ──
+
+/** Valoracions de tots els editors dels puzles entre `from` i `to` (números), amb qui les ha fetes. */
+function upcomingFeedback(app, from, to) {
+  const rows = app.findRecordsByFilter(
+    'upcoming_feedback',
+    'number >= {:f} && number <= {:t}',
+    'number',
+    0,
+    0,
+    { f: Number(from) || 0, t: Number(to) || 100000 },
+  );
+  return rows.map((r) => ({
+    game: r.getString('game'),
+    number: r.getInt('number'),
+    verdict: r.getString('verdict'),
+    note: r.getString('note'),
+    user: person(app.findRecordById('users', r.getString('user'))),
+  }));
+}
+
+/** Desa (o treu, amb verdict buit) la valoració d'un editor sobre un puzle. */
+function setUpcomingFeedback(app, userId, body) {
+  const game = String(body.game || '');
+  const number = Number(body.number);
+  const verdict = String(body.verdict || '');
+  if (LIKE_GAMES.indexOf(game) < 0 || !Number.isInteger(number) || number < 1)
+    throw new BadRequestError('Puzle no vàlid.');
+  if (verdict && verdict !== 'ok' && verdict !== 'change')
+    throw new BadRequestError('Valoració no vàlida.');
+  const existing = findFirst(
+    app,
+    'upcoming_feedback',
+    'user = {:u} && game = {:g} && number = {:n}',
+    { u: userId, g: game, n: number },
+  );
+  if (!verdict) {
+    if (existing) app.delete(existing);
+    return;
+  }
+  const rec = existing || new Record(app.findCollectionByNameOrId('upcoming_feedback'));
+  if (!existing) {
+    rec.set('user', userId);
+    rec.set('game', game);
+    rec.set('number', number);
+  }
+  rec.set('verdict', verdict);
+  rec.set(
+    'note',
+    String(body.note || '')
+      .trim()
+      .slice(0, 500),
+  );
+  app.save(rec);
+}
+
 function likeCount(app, game, puzzle) {
   const rows = arrayOf(new DynamicModel({ n: 0 }));
   app
@@ -928,6 +984,8 @@ module.exports = {
   correctPuzzle,
   likesOf,
   likesReport,
+  upcomingFeedback,
+  setUpcomingFeedback,
   trafficReport,
   votesOf,
   setVote,

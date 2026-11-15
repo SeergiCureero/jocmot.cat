@@ -1,16 +1,35 @@
 import { normalizeWord } from '@/lib/text';
-import { ANSWERS } from './data/answers';
+import { pickByNumber, uniqueUntil } from '../puzzles';
+import { ALL_ANSWERS, ANSWERS } from './data/answers';
 import { buildShareText, evaluateGuess, initialState, keyboardStates, submitGuess } from './logic';
 
 const always = () => true;
 
 describe('evaluateGuess', () => {
   it('marca correctes, presents i absents', () => {
-    expect(evaluateGuess('TERRA', 'TARTA')).toEqual(['correct', 'absent', 'correct', 'absent', 'correct']);
-    expect(evaluateGuess('RATES', 'TERRA')).toEqual(['present', 'present', 'present', 'present', 'absent']);
+    expect(evaluateGuess('TERRA', 'TARTA')).toEqual([
+      'correct',
+      'absent',
+      'correct',
+      'absent',
+      'correct',
+    ]);
+    expect(evaluateGuess('RATES', 'TERRA')).toEqual([
+      'present',
+      'present',
+      'present',
+      'present',
+      'absent',
+    ]);
   });
   it('no compta dues vegades una lletra repetida', () => {
-    expect(evaluateGuess('AAAAA', 'PLATA')).toEqual(['absent', 'absent', 'correct', 'absent', 'correct']);
+    expect(evaluateGuess('AAAAA', 'PLATA')).toEqual([
+      'absent',
+      'absent',
+      'correct',
+      'absent',
+      'correct',
+    ]);
   });
   it('ignora accents', () => {
     expect(evaluateGuess('NUVOL', 'núvol').every((s) => s === 'correct')).toBe(true);
@@ -40,12 +59,31 @@ it('el teclat guarda el millor estat', () => {
 });
 
 it('genera el text per compartir', () => {
-  const text = buildShareText(3, { guesses: ['PLATA', 'TERRA'], status: 'won' }, 'TERRA', 'jocmot.cat');
+  const text = buildShareText(
+    3,
+    { guesses: ['PLATA', 'TERRA'], status: 'won' },
+    'TERRA',
+    'jocmot.cat',
+  );
   expect(text.startsWith('Paraula #3 2/6')).toBe(true);
 });
 
-it('totes les solucions tenen 5 lletres i no es repeteixen', () => {
-  const norm = ANSWERS.map(normalizeWord);
+it('totes les solucions tenen 5 lletres i no es repeteixen (tampoc les temàtiques)', () => {
+  const norm = ALL_ANSWERS.map(normalizeWord);
   expect(norm.every((w) => w.length === 5)).toBe(true);
   expect(new Set(norm).size).toBe(norm.length);
+});
+
+it('hi ha una paraula diferent per a cada dia fins a final d’any', () => {
+  // #67 = 31 de desembre de 2026.
+  expect(uniqueUntil(ANSWERS)).toBeGreaterThanOrEqual(67);
+  const days = Array.from({ length: 67 - 21 }, (_, i) =>
+    normalizeWord(pickByNumber(ANSWERS, 22 + i)),
+  );
+  expect(new Set(days).size).toBe(days.length);
+  // I no repeteixen cap de les que ja han sortit (#1-#21).
+  const before = new Set(
+    Array.from({ length: 21 }, (_, i) => normalizeWord(pickByNumber(ANSWERS, 1 + i))),
+  );
+  expect(days.filter((w) => before.has(w))).toEqual([]);
 });

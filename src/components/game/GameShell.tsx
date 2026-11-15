@@ -50,7 +50,7 @@ export default function GameShell({
   children,
 }: Props) {
   const helpKey = `help-seen:${meta.id}`;
-  const [helpOpen, setHelpOpen] = useState(() => !storage.get<boolean>(helpKey));
+  const [helpOpen, setHelpOpen] = useState(() => !preview && !storage.get<boolean>(helpKey));
   // Només celebrem si la partida s'ha acabat ara, no en tornar a obrir un puzle ja resolt.
   const startedPlaying = useRef(!result);
   const [resultOpen, setResultOpen] = useState(false);

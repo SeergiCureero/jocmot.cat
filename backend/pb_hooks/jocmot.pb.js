@@ -458,6 +458,31 @@ routerAdd(
   $apis.requireAuth('users'),
 );
 
+/** Valoracions dels editors dels puzles que encara no han sortit (?des=número&fins=número). */
+routerAdd(
+  'GET',
+  '/api/jocmot/admin/proxims-valoracions',
+  (e) => {
+    if (!e.auth.getBool('editor')) throw new ForbiddenError('Només per a editors.');
+    const db = require(`${__hooks}/jocmot_db.js`);
+    const q = e.request.url.query();
+    return e.json(200, { items: db.upcomingFeedback(e.app, q.get('des'), q.get('fins')) });
+  },
+  $apis.requireAuth('users'),
+);
+
+/** Valora un puzle: {game, number, verdict: 'ok' | 'change' | '', note}. Només editors. */
+routerAdd(
+  'POST',
+  '/api/jocmot/admin/proxims-valoracions',
+  (e) => {
+    if (!e.auth.getBool('editor')) throw new ForbiddenError('Només per a editors.');
+    require(`${__hooks}/jocmot_db.js`).setUpcomingFeedback(e.app, e.auth.id, e.requestInfo().body);
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
 /** Valoració dels puzles d'un joc: likes i partides acabades de cada dia. Només editors. */
 routerAdd(
   'GET',
