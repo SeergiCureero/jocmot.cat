@@ -11,7 +11,7 @@ Afegir-los **al final** de `src/games/<joc>/data/…` (la posició = número de 
 | Fils | `data/puzzles.ts` | `python scripts/generate-fils.py` genera graella i recorreguts. |
 | Mini | `data/puzzles.ts` | `python scripts/generate-mini.py` cerca graelles; les definicions, a mà. |
 
-Mentre hi hagi menys puzles que dies, la llista es recicla. Els puzles afegits a la llista després del #22 surten un per dia a partir del #23 (`markLegacy` a `src/games/puzzles.ts`): els dies que ja s'han jugat no canvien. Quan hi hagi més puzles que dies, s'ha de revisar `LEGACY_LAST_NUMBER`.
+Mentre hi hagi menys puzles que dies, la llista es recicla. Els puzles afegits a la llista després del #21 surten un per dia a partir del #22 (`markLegacy` a `src/games/puzzles.ts`): els dies que ja s'han jugat no canvien. Quan hi hagi més puzles que dies, s'ha de revisar `LEGACY_LAST_NUMBER`.
 
 Fondària no té llista de puzles: les preguntes del dia es generen a partir del número (`src/games/fondaria/logic.ts`).
 

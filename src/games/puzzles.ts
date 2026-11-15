@@ -12,9 +12,9 @@ export function getPuzzleDate(puzzleNumber: number): string {
 
 /**
  * Últim número de puzle que continua fent servir el reciclatge antic de les llistes. Els puzles
- * d'aquests dies ja s'han jugat (el #20 és el del 14 de novembre de 2026) o estan a punt de sortir: afegir-ne de nous no els pot canviar.
+ * d'aquests dies ja s'han jugat (el #20 és el del 14 de novembre de 2026 i el #21 el del 15) o estan a punt de sortir: afegir-ne de nous no els pot canviar.
  */
-export const LEGACY_LAST_NUMBER = 22;
+export const LEGACY_LAST_NUMBER = 21;
 
 const legacyLengths = new WeakMap<readonly unknown[], number>();
 
