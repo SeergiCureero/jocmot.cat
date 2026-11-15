@@ -3,7 +3,9 @@ import GameShell from '@/components/game/GameShell';
 import { useGameMessage } from '@/components/game/GameMessage';
 import { SITE } from '@/config/site';
 import { useGameProgress } from '@/features/progress/useGameProgress';
-import { isWord } from '@/lib/dictionary';
+import { useAuth } from '@/features/auth/AuthContext';
+import { normalizeWord } from '@/lib/text';
+import { backend } from '@/services/backend';
 import Ocean from './Ocean';
 import { cn } from '@/lib/cn';
 import type { GameProps } from '../types';
@@ -35,6 +37,19 @@ const TIER_CLASS = [
 ];
 const TIER_NAME = ['Habitual', 'Corrent', 'Interessant', 'Poc comuna', 'Rara', 'Molt rara'];
 
+/** Avisa el servidor de les preguntes que s'han acabat sense resposta (no passa res si falla). */
+function reportSkips(puzzle: number, from: number, to: number) {
+  void (async () => {
+    for (let round = from; round < to; round++) {
+      try {
+        await backend.call('/fondaria/passa', { method: 'POST', body: { puzzle, round } });
+      } catch {
+        return;
+      }
+    }
+  })();
+}
+
 export default function FondariaGame({ puzzleNumber, date, preview }: GameProps) {
   const prompts = useMemo(() => buildPrompts(puzzleNumber), [puzzleNumber]);
   const { state, update, status } = useGameProgress({
@@ -44,6 +59,9 @@ export default function FondariaGame({ puzzleNumber, date, preview }: GameProps)
     getStatus,
     persist: !preview,
   });
+  const { user } = useAuth();
+  // Amb compte i servidor, el servidor valida cada resposta i en calcula els punts (amb la comunitat).
+  const online = backend.kind === 'pocketbase' && Boolean(user) && !preview;
   const { message, say } = useGameMessage();
   const [text, setText] = useState('');
   const [checking, setChecking] = useState(false);
@@ -65,13 +83,15 @@ export default function FondariaGame({ puzzleNumber, date, preview }: GameProps)
       const t = Date.now();
       setNow(t);
       if (secondsLeft(state, t) <= 0) {
+        const next = expireRounds(state, t);
+        if (online) reportSkips(puzzleNumber, state.answers.length, next.answers.length);
         update((s) => expireRounds(s, t));
         setText('');
         say('S’ha acabat el temps', 'error');
       }
     }, 200);
     return () => clearInterval(id);
-  }, [playing, state, update, say]);
+  }, [playing, state, update, say, online, puzzleNumber]);
 
   useEffect(() => {
     if (playing) input.current?.focus();
@@ -82,40 +102,49 @@ export default function FondariaGame({ puzzleNumber, date, preview }: GameProps)
       e?.preventDefault();
       if (!playing || checking) return;
       const prompt = prompts[round];
-      const word = fitsPrompt(prompt, text);
+      const word = normalizeWord(text);
       if (!word) {
-        say(
-          !text.trim()
-            ? 'Escriu una resposta'
-            : prompt.kind === 'category'
-              ? 'Aquesta no la tenim a la llista'
-              : 'No compleix la pregunta',
-          'error',
-        );
+        say('Escriu una resposta', 'error');
         return;
       }
       if (state.answers.some((a) => a.word === word)) {
         say('Aquesta ja l’has dit', 'error');
         return;
       }
-      setChecking(true);
-      // Si no es pot comprovar el diccionari (sense connexió), s'accepta.
-      const valid = prompt.kind === 'pattern' ? await isWord(word) : true;
-      setChecking(false);
-      if (valid === false) {
-        say('Aquesta paraula no és al diccionari', 'error');
-        return;
+      let points: number;
+      if (online) {
+        setChecking(true);
+        try {
+          const res = await backend.call<{ known: boolean; points?: number }>(
+            '/fondaria/resposta',
+            { method: 'POST', body: { puzzle: puzzleNumber, round, word: text } },
+          );
+          if (!res.known) {
+            say('No la tenim. L’hem apuntada perquè l’equip la revisi', 'error');
+            return;
+          }
+          points = res.points ?? 0;
+        } catch (e) {
+          say((e as Error).message, 'error');
+          return;
+        } finally {
+          setChecking(false);
+        }
+      } else {
+        if (!fitsPrompt(prompt, text)) {
+          say('Aquesta no la tenim a la llista', 'error');
+          return;
+        }
+        points = pointsFor(prompt, word);
       }
       const t = Date.now();
       // El temps pot haver caducat mentre es comprovava: llavors compta com a perdut.
       update((s) =>
-        secondsLeft(s, t) <= 0
-          ? expireRounds(s, t)
-          : addAnswer(s, { word, points: pointsFor(prompt, word) }, t),
+        secondsLeft(s, t) <= 0 ? expireRounds(s, t) : addAnswer(s, { word, points }, t),
       );
       setText('');
     },
-    [playing, checking, prompts, round, text, state.answers, update, say],
+    [playing, checking, prompts, round, text, state.answers, update, say, online, puzzleNumber],
   );
 
   const left = playing ? secondsLeft(state, now) : 0;
