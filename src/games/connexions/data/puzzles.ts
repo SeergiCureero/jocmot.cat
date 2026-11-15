@@ -167,7 +167,7 @@ const HARDER: readonly ConnexionsPuzzle[] = [
  */
 
 /**
- * Puzles de reserva afegits després: surten a partir del número 23 (veure `markLegacy`), un per dia,
+ * Puzles de reserva afegits després: surten a partir del número 22 (veure `markLegacy`), un per dia,
  * quan el grup no n'ha programat cap. Pendents de revisió de l'equip.
  */
 const MORE: readonly ConnexionsPuzzle[] = [
