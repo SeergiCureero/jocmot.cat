@@ -15,7 +15,8 @@ export interface MiniDraft {
   clues: Record<string, string>;
 }
 
-const SIZE = 5;
+const DEFAULT_SIZE = 5;
+const SIZES = [4, 5, 6, 7];
 const clueKey = (e: Pick<Entry, 'direction' | 'cells'>) => `${e.direction}:${e.cells[0].join(',')}`;
 const LABEL: Record<Direction, string> = { across: 'Horitzontals', down: 'Verticals' };
 
@@ -30,7 +31,16 @@ function toPuzzle(d: MiniDraft): MiniPuzzle {
 }
 
 function Form({ value, onChange, readOnly }: FormProps<MiniDraft>) {
+  const SIZE = value.grid.length;
   const [blockMode, setBlockMode] = useState(false);
+
+  const resize = (n: number) =>
+    onChange({
+      ...value,
+      grid: Array.from({ length: n }, (_, r) =>
+        Array.from({ length: n }, (_, c) => value.grid[r]?.[c] ?? EMPTY).join(''),
+      ),
+    });
   const refs = useRef<(HTMLInputElement | null)[]>([]);
   const { numbers, entries } = buildEntries({ grid: value.grid, clues: { across: {}, down: {} } });
 
@@ -72,6 +82,25 @@ function Form({ value, onChange, readOnly }: FormProps<MiniDraft>) {
             caselles negres o prem <kbd className="rounded border px-1">#</kbd> o{' '}
             <kbd className="rounded border px-1">.</kbd> a la casella.
           </p>
+          <div className="flex items-center gap-2 font-medium text-stone-800">
+            Mida
+            {SIZES.map((n) => (
+              <button
+                key={n}
+                type="button"
+                aria-pressed={SIZE === n}
+                onClick={() => resize(n)}
+                className={cn(
+                  'rounded-lg border px-3 py-1',
+                  SIZE === n
+                    ? 'border-stone-900 bg-stone-900 text-white'
+                    : 'border-stone-300 bg-white',
+                )}
+              >
+                {n}×{n}
+              </button>
+            ))}
+          </div>
           <label className="inline-flex items-center gap-2 font-medium text-stone-800">
             <input
               type="checkbox"
@@ -84,7 +113,8 @@ function Form({ value, onChange, readOnly }: FormProps<MiniDraft>) {
       )}
 
       <div
-        className="mx-auto grid w-full max-w-xs grid-cols-5 border-2 border-stone-900"
+        className="mx-auto grid w-full max-w-xs border-2 border-stone-900"
+        style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))` }}
         role="grid"
         aria-label="Graella"
       >
@@ -190,7 +220,10 @@ function Form({ value, onChange, readOnly }: FormProps<MiniDraft>) {
 
 export const miniKit: EditorKit<MiniDraft> = {
   game: 'mini',
-  empty: () => ({ grid: Array.from({ length: SIZE }, () => EMPTY.repeat(SIZE)), clues: {} }),
+  empty: () => ({
+    grid: Array.from({ length: DEFAULT_SIZE }, () => EMPTY.repeat(DEFAULT_SIZE)),
+    clues: {},
+  }),
   fromPuzzle: (raw) => {
     const p = raw as MiniPuzzle;
     const { entries } = buildEntries(p);
