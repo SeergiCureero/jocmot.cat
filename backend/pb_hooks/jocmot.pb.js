@@ -719,6 +719,28 @@ routerAdd(
   $apis.requireAuth('users'),
 );
 
+/** Rebutja una proposta d'un altre: l'autor la veu rebutjada, amb el motiu als comentaris. Només editors. */
+routerAdd(
+  'POST',
+  '/api/jocmot/puzles/{id}/rebutja',
+  (e) => {
+    require(`${__hooks}/jocmot_db.js`).rejectPuzzle(e.app, e.auth, e.request.pathValue('id'));
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
+/** Torna a proposar un puzle rebutjat. L'autor (un cop corregit) o un editor. */
+routerAdd(
+  'POST',
+  '/api/jocmot/puzles/{id}/reobre',
+  (e) => {
+    require(`${__hooks}/jocmot_db.js`).reopenPuzzle(e.app, e.auth, e.request.pathValue('id'));
+    return e.noContent(204);
+  },
+  $apis.requireAuth('users'),
+);
+
 // ── Administració ──
 
 /** Calcula les puntuacions que faltin a partir del progrés ja desat (p. ex. partides d'abans d'aquesta funció). */
