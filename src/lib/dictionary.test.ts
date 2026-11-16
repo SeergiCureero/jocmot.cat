@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { ANSWERS } from '@/games/paraula/data/answers';
+import { ALL_ANSWERS } from '@/games/paraula/data/answers';
 import { PUZZLES as FILS } from '@/games/fils/data/puzzles';
 import { decodeList } from './dictionary';
 import { normalizeWord } from './text';
@@ -33,7 +33,11 @@ describe('fitxers del diccionari', () => {
   });
 
   it('totes les solucions de Paraula hi són', () => {
-    expect(ANSWERS.map(normalizeWord).filter((w) => !five.has(w))).toEqual([]);
+    // «nadal» (la festa) no és al diccionari de Softcatalà perquè és també un cognom: s'accepta a mà.
+    const allowed = new Set(['NADAL']);
+    expect(ALL_ANSWERS.map(normalizeWord).filter((w) => !five.has(w) && !allowed.has(w))).toEqual(
+      [],
+    );
   });
 
   it('les paraules temàtiques de Fils hi són (l’spangram pot ser una expressió)', () => {

@@ -20,10 +20,14 @@ export const initialStateFor = (puzzle: MiniPuzzle) => (): MiniState => ({
   status: 'playing',
 });
 
-export const isBlock = (p: MiniPuzzle, [r, c]: Cell) => p.grid[r]?.[c] === undefined || p.grid[r][c] === BLOCK;
+export const isBlock = (p: MiniPuzzle, [r, c]: Cell) =>
+  p.grid[r]?.[c] === undefined || p.grid[r][c] === BLOCK;
 
 /** Numeració estàndard de mots encreuats i llista d'entrades. */
-export function buildEntries(puzzle: MiniPuzzle): { numbers: (number | null)[][]; entries: Entry[] } {
+export function buildEntries(puzzle: MiniPuzzle): {
+  numbers: (number | null)[][];
+  entries: Entry[];
+} {
   const size = puzzle.grid.length;
   const numbers: (number | null)[][] = puzzle.grid.map((row) => [...row].map(() => null));
   const entries: Entry[] = [];
@@ -61,12 +65,21 @@ export function buildEntries(puzzle: MiniPuzzle): { numbers: (number | null)[][]
 }
 
 export function entryAt(entries: Entry[], [r, c]: Cell, direction: Direction): Entry | undefined {
-  return entries.find((e) => e.direction === direction && e.cells.some(([a, b]) => a === r && b === c));
+  return entries.find(
+    (e) => e.direction === direction && e.cells.some(([a, b]) => a === r && b === c),
+  );
 }
 
-export function setLetter(state: MiniState, puzzle: MiniPuzzle, [r, c]: Cell, letter: string): MiniState {
+export function setLetter(
+  state: MiniState,
+  puzzle: MiniPuzzle,
+  [r, c]: Cell,
+  letter: string,
+): MiniState {
   if (state.status !== 'playing' || isBlock(puzzle, [r, c])) return state;
-  const letters = state.letters.map((row, i) => (i === r ? row.slice(0, c) + letter + row.slice(c + 1) : row));
+  const letters = state.letters.map((row, i) =>
+    i === r ? row.slice(0, c) + letter + row.slice(c + 1) : row,
+  );
   const solved = letters.every((row, i) => row === puzzle.grid[i]);
   return { ...state, letters, status: solved ? 'won' : 'playing' };
 }
@@ -88,8 +101,14 @@ export function reveal(state: MiniState, puzzle: MiniPuzzle): MiniState {
   return { ...state, letters: [...puzzle.grid], status: 'lost' };
 }
 
-export function buildShareText(puzzleNumber: number, state: MiniState, url: string, format: (s: number) => string) {
-  const line = state.status === 'won' ? `resolt en ${format(state.elapsedSeconds)} ⏱️` : 'resolt amb ajuda';
+export function buildShareText(
+  puzzleNumber: number,
+  state: MiniState,
+  url: string,
+  format: (s: number) => string,
+) {
+  const line =
+    state.status === 'won' ? `resolt en ${format(state.elapsedSeconds)} ⏱️` : 'resolt amb ajuda';
   return `Mini #${puzzleNumber} ${line}\n\n${url}`;
 }
 
@@ -97,18 +116,25 @@ export function buildShareText(puzzleNumber: number, state: MiniState, url: stri
 export function validatePuzzle(p: MiniPuzzle): string[] {
   const errors: string[] = [];
   const size = p.grid.length;
-  if (size < 3 || p.grid.some((row) => row.length !== size)) errors.push('la graella ha de ser quadrada');
-  if (p.grid.some((row) => /[^A-ZÇ#]/.test(row))) errors.push('hi ha caselles buides o caràcters no vàlids');
+  if (size > 7) errors.push('la graella no pot passar de 7×7');
+  if (size < 3 || p.grid.some((row) => row.length !== size))
+    errors.push('la graella ha de ser quadrada');
+  if (p.grid.some((row) => /[^A-ZÇ#]/.test(row)))
+    errors.push('hi ha caselles buides o caràcters no vàlids');
 
   const { entries } = buildEntries(p);
   const covered = new Set(entries.flatMap((e) => e.cells.map((c) => c.join())));
   p.grid.forEach((row, r) =>
     [...row].forEach((ch, c) => {
-      if (ch !== BLOCK && !covered.has(`${r},${c}`)) errors.push(`la casella ${r + 1},${c + 1} no forma part de cap paraula`);
+      if (ch !== BLOCK && !covered.has(`${r},${c}`))
+        errors.push(`la casella ${r + 1},${c + 1} no forma part de cap paraula`);
     }),
   );
   for (const e of entries) {
-    if (!e.clue.trim()) errors.push(`${e.number}${e.direction === 'across' ? 'H' : 'V'} (${e.answer}): falta la definició`);
+    if (!e.clue.trim())
+      errors.push(
+        `${e.number}${e.direction === 'across' ? 'H' : 'V'} (${e.answer}): falta la definició`,
+      );
   }
   const clueCount = Object.keys(p.clues.across).length + Object.keys(p.clues.down).length;
   if (clueCount > entries.length) errors.push('hi ha definicions que no corresponen a cap paraula');

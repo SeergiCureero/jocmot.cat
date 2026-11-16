@@ -1,11 +1,22 @@
 import { PUZZLES } from './data/puzzles';
-import { buildEntries, initialStateFor, reveal, setLetter, validatePuzzle, wrongCells } from './logic';
+import {
+  buildEntries,
+  initialStateFor,
+  reveal,
+  setLetter,
+  validatePuzzle,
+  wrongCells,
+} from './logic';
 
 describe('buildEntries', () => {
   it('numera com un mot encreuat', () => {
     const { entries } = buildEntries(PUZZLES[0]);
-    const across = entries.filter((e) => e.direction === 'across').map((e) => `${e.number}:${e.answer}`);
-    const down = entries.filter((e) => e.direction === 'down').map((e) => `${e.number}:${e.answer}`);
+    const across = entries
+      .filter((e) => e.direction === 'across')
+      .map((e) => `${e.number}:${e.answer}`);
+    const down = entries
+      .filter((e) => e.direction === 'down')
+      .map((e) => `${e.number}:${e.answer}`);
     expect(across).toEqual(['1:TAP', '4:TALL', '5:PORTA', '6:ARTS', '7:UNA']);
     expect(down).toEqual(['1:TARTA', '2:ALTS', '3:PLA', '4:TORN', '5:PAU']);
   });
@@ -20,9 +31,19 @@ it('cada puzle té una definició per paraula i cap de sobrant', () => {
   }
 });
 
+it('les mides varien entre 4 i 7', () => {
+  const sizes = new Set(PUZZLES.map((p) => p.grid.length));
+  expect(Math.max(...sizes)).toBeLessThanOrEqual(7);
+  for (const n of [4, 5, 6, 7]) expect(sizes.has(n)).toBe(true);
+});
+
 describe('validatePuzzle', () => {
   it('detecta definicions que falten i caselles buides', () => {
-    const p = { ...PUZZLES[0], grid: ['##TA ', ...PUZZLES[0].grid.slice(1)], clues: { across: {}, down: {} } };
+    const p = {
+      ...PUZZLES[0],
+      grid: ['##TA ', ...PUZZLES[0].grid.slice(1)],
+      clues: { across: {}, down: {} },
+    };
     const errors = validatePuzzle(p);
     expect(errors.some((e) => e.includes('caselles buides'))).toBe(true);
     expect(errors.some((e) => e.includes('falta la definició'))).toBe(true);

@@ -43,4 +43,4 @@ El DIEC no té cap API pública, i per això només hi enllacem. Per decidir si 
 
 **Fils.** Escriu el tema, el _fil conductor_ (la paraula que el descriu i travessa la graella) i les paraules del tema. Entre totes han de sumar **48 lletres** (els accents s'eliminen). Llavors prem _Genera la graella_; si no t'agrada, _Genera'n una altra_. Les paraules molt llargues fan més difícil trobar una graella.
 
-**Mini.** Escriu les lletres de la solució a la graella de 5×5. Per a les caselles negres, activa _Mode caselles negres_ o prem `#` o `.`. Les definicions apareixen soles a mesura que es formen les paraules. Totes les caselles blanques han de formar part d'alguna paraula.
+**Mini.** Escriu les lletres de la solució a la graella (pots triar la mida, de 4×4 a 7×7). Per a les caselles negres, activa _Mode caselles negres_ o prem `#` o `.`. Les definicions apareixen soles a mesura que es formen les paraules. Totes les caselles blanques han de formar part d'alguna paraula.

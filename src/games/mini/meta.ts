@@ -5,7 +5,7 @@ export const meta: GameMeta = {
   slug: 'mini',
   name: 'Mini',
   inspiredBy: 'The Mini Crossword (NYT)',
-  tagline: 'Un mot encreuat de 5×5 per resoldre en un minut',
+  tagline: 'Un mot encreuat petit (de 4×4 a 7×7) per resoldre en uns minuts',
   icon: '✏️',
   theme: {
     bg: 'bg-amber-100',

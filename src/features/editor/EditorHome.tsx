@@ -70,6 +70,23 @@ export default function EditorHome() {
       )}
       {isEditor && (
         <Link
+          to="/editor/proxims"
+          className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg"
+        >
+          <span>
+            <span className="block font-bold">
+              <ColorIcon name="calendar" size={18} className="inline-block align-[-0.2em]" />{' '}
+              Propers puzles
+            </span>
+            <span className="block text-sm text-stone-600">
+              Què surt els pròxims dies, prova’l i digues si mola o cal canviar-lo.
+            </span>
+          </span>
+          <span className="text-brand-700 font-semibold">→</span>
+        </Link>
+      )}
+      {isEditor && (
+        <Link
           to="/editor/fondaria"
           className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg"
         >

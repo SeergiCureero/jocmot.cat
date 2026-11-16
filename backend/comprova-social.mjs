@@ -755,6 +755,45 @@ expect('un editor pot aprovar-la', r.status === 204, r);
 r = await post('/jocmot/fondaria/passa', { puzzle: today, round: 0 }, fon2.token);
 expect('passar una pregunta compta zero', r.status === 200 && r.body.skipped === true, r);
 
+// ── Valoració dels puzles propers ──
+r = await post(
+  '/jocmot/admin/proxims-valoracions',
+  { game: 'mini', number: 30, verdict: 'ok' },
+  noa.token,
+);
+expect('la valoració de puzles propers és només per a editors', r.status === 403, r);
+r = await post(
+  '/jocmot/admin/proxims-valoracions',
+  { game: 'mini', number: 30, verdict: 'ok' },
+  ed.token,
+);
+expect('un editor pot valorar un puzle', r.status === 204, r);
+await post(
+  '/jocmot/admin/proxims-valoracions',
+  { game: 'mini', number: 30, verdict: 'change', note: 'Massa fàcil' },
+  ed.token,
+);
+r = await get('/jocmot/admin/proxims-valoracions?des=25&fins=40', ed.token);
+const fb = r.body.items?.filter((x) => x.game === 'mini' && x.number === 30);
+expect(
+  'només hi ha una valoració per editor i puzle (l’última)',
+  fb?.length === 1 && fb[0].verdict === 'change' && fb[0].note === 'Massa fàcil',
+  r.body,
+);
+r = await post(
+  '/jocmot/admin/proxims-valoracions',
+  { game: 'mini', number: 30, verdict: '' },
+  ed.token,
+);
+r = await get('/jocmot/admin/proxims-valoracions?des=25&fins=40', ed.token);
+expect('es pot treure', r.body.items?.length === 0, r.body);
+r = await post(
+  '/jocmot/admin/proxims-valoracions',
+  { game: 'zzz', number: 30, verdict: 'ok' },
+  ed.token,
+);
+expect('un joc que no existeix no val', r.status === 400, r);
+
 // ── Joc preferit ──
 r = await get('/jocmot/vots');
 expect(

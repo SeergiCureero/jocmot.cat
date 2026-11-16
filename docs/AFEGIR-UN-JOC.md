@@ -11,7 +11,7 @@ Afegir-los **al final** de `src/games/<joc>/data/…` (la posició = número de 
 | Fils | `data/puzzles.ts` | `python scripts/generate-fils.py` genera graella i recorreguts. |
 | Mini | `data/puzzles.ts` | `python scripts/generate-mini.py` cerca graelles; les definicions, a mà. |
 
-Mentre hi hagi menys puzles que dies, la llista es recicla. Els puzles afegits a la llista després del #22 surten un per dia a partir del #23 (`markLegacy` a `src/games/puzzles.ts`): els dies que ja s'han jugat no canvien. Quan hi hagi més puzles que dies, s'ha de revisar `LEGACY_LAST_NUMBER`.
+**Calendari sense repeticions.** Els puzles #1-#21 (ja jugats) no es toquen. Després, cada joc té una llista de puzles nous que surten un per dia, sense repetir-se mai (`markLegacy` a `src/games/puzzles.ts`), i un diccionari `THEMED` de **puzles temàtics** que surten exactament el seu dia (Advent, Santa Llúcia, Nadal, Sant Esteve, Cap d'Any…), a `data/puzzles.ts` (a Paraula, `THEMED_ANSWERS`). La vista `/editor/proxims` mostra què surt cada dia i fins quan hi ha puzles diferents; `src/games/calendar.test.ts` falla si algun joc es queda sense contingut abans del 31 de desembre de 2026. Quan s'acabin, torna a començar pels nous: cal afegir-ne.
 
 Fondària no té llista de puzles: les preguntes del dia es generen a partir del número (`src/games/fondaria/logic.ts`).
 
