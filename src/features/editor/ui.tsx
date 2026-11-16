@@ -21,6 +21,7 @@ export function GameLabel({ game }: { game: DesignableGameId }) {
 export function statusText(p: PuzzleRecord): string {
   if (p.status === 'proposed')
     return `En revisió · ${validApprovals(p).length}/${APPROVALS_NEEDED} ${APPROVALS_NEEDED === 1 ? 'aprovació' : 'aprovacions'}`;
+  if (p.status === 'rejected') return 'Rebutjat';
   const date = formatDateCa(getPuzzleDate(p.number!));
   return new Date(p.releaseAt!) > new Date()
     ? `Programat per al ${date} (#${p.number})`

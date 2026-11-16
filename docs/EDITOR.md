@@ -23,6 +23,7 @@ Detalls:
 - Si l'autor canvia el puzle, les aprovacions anteriors deixen de comptar i s'han de repetir.
 - Mentre està en revisió, l'autor el pot retirar. Un cop programat, l'autor ja no en pot canviar el contingut.
 - **Corregir.** Els editors poden corregir qualsevol puzle (_Mostra la solució_, canvia-ho i _Desa la correcció_): propostes d'altres (les aprovacions s'han de repetir), programats (es queden al seu dia) i fins i tot els que ja han sortit (només per a errades petites, com una definició: si es canvien les respostes, qui l'estigui jugant pot trobar coses estranyes).
+- **Rebutjar.** Un editor pot _Rebutjar_ una proposta d'un altre: escriu al comentari què cal canviar (és obligatori, l'autor ho llegirà) i prem _Rebutja'l_. Surt de _Pendents de revisió_ i va a _Rebutjats_. L'autor el pot corregir i prem _Torna a proposar_ (compta dins del límit de 5 propostes pendents), o l'esborra. Un editor que es repensa el pot _Reobrir_. Un puzle teu no el pots rebutjar: el pots retirar.
 - **Desaprovar.** Un editor pot _Desaprovar_ un puzle programat que encara no ha sortit: torna a _Pendents de revisió_, perd el dia (que queda com a dia preferit) i s'ha de tornar a aprovar. El motiu queda als comentaris perquè l'autor el vegi.
 - Als puzles que ja han sortit es veu quanta gent els ha fet ❤️.
 - **Pista de l'autor.** Sota el formulari hi ha el camp _💡 Pista per a qui s'encalli_ (opcional). Surt la primera a la pàgina **Pistes del dia** (`/pistes`), abans de les pistes automàtiques. Ha d'ajudar sense dir la solució.

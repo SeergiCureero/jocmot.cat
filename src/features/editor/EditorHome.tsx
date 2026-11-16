@@ -45,6 +45,9 @@ export default function EditorHome() {
 
   const now = new Date();
   const proposed = puzzles?.filter((p) => p.status === 'proposed') ?? [];
+  const rejected = (puzzles ?? [])
+    .filter((p) => p.status === 'rejected')
+    .sort((a, b) => b.updated.localeCompare(a.updated));
   const scheduled = (puzzles ?? [])
     .filter((p) => p.status === 'published' && new Date(p.releaseAt!) > now)
     .sort((a, b) => a.releaseAt!.localeCompare(b.releaseAt!));
@@ -214,6 +217,23 @@ export default function EditorHome() {
               );
             })}
           </Section>
+          {rejected.length > 0 && (
+            <Section
+              title={isEditor ? 'Rebutjats' : 'Rebutjats: corregeix-los i torna’ls a proposar'}
+              empty=""
+            >
+              {rejected.map((p) => (
+                <PuzzleRow key={p.id} puzzle={p} onRenamed={rename}>
+                  <span className="flex min-w-0 flex-col gap-1">
+                    <PuzzleHeading puzzle={p} />
+                    <span className="text-xs text-stone-500">
+                      de {p.author.id === user!.id ? 'tu' : p.author.username} · {statusText(p)}
+                    </span>
+                  </span>
+                </PuzzleRow>
+              ))}
+            </Section>
+          )}
           <Section
             title={isEditor ? 'Programats' : 'Aprovats (sortiran aviat)'}
             empty="Cap puzle programat."

@@ -36,7 +36,8 @@ export interface PuzzleRecord {
   game: DesignableGameId;
   data: unknown;
   author: PersonRef;
-  status: 'proposed' | 'published';
+  /** `rejected`: un editor l'ha rebutjat; l'autor el pot corregir i tornar a proposar. */
+  status: 'proposed' | 'published' | 'rejected';
   /** Número de puzle assignat en publicar-lo. */
   number: number | null;
   /** ISO 8601. Moment a partir del qual el públic el pot jugar. */

@@ -18,6 +18,9 @@ import { APPROVALS_NEEDED, publishIfReady, validApprovals } from './schedule';
 import { ErrorList, GameLabel, statusText } from './ui';
 import { INPUT } from './kits/types';
 
+/** Així comença el comentari d'un puzle rebutjat, perquè es vegi que és el motiu. */
+const REJECTED_PREFIX = '🚫 Rebutjat: ';
+
 /** Un puzle proposat o publicat: jugar-hi, veure la solució, revisar-lo i (si és teu) editar-lo. */
 export default function PuzzlePage() {
   const { id = '' } = useParams();
@@ -54,8 +57,8 @@ function PuzzleView({
   const isEditor = Boolean(user!.editor);
   const scheduled = record.status === 'published' && record.number! > getTodayPuzzleNumber();
   const released = record.status === 'published' && !scheduled;
-  // L'autor edita les seves propostes; els editors poden corregir qualsevol puzle.
-  const editable = (mine && record.status === 'proposed') || isEditor;
+  // L'autor edita les seves propostes (també si les han rebutjat); els editors poden corregir qualsevol puzle.
+  const editable = (mine && record.status !== 'published') || isEditor;
   const myReview = record.reviews.find((r) => r.author.id === user!.id);
   // Una aprovació anterior a l'últim canvi ja no compta: cal tornar a aprovar.
   const approvedByMe = Boolean(myReview && validApprovals(record).includes(myReview));
@@ -97,9 +100,33 @@ function PuzzleView({
         });
       else await backend.updatePuzzle(record.id, built.puzzle);
       onChange(await backend.getPuzzle(record.id));
-      toast(record.status === 'proposed' ? 'Desat' : 'Corregit');
+      toast(record.status === 'published' ? 'Corregit' : 'Desat');
     });
   };
+
+  // Rebutjar: el motiu és el comentari, perquè l'autor sàpiga què ha de canviar.
+  const reject = () => {
+    const reason = comment.trim().replace(REJECTED_PREFIX, '');
+    run(async () => {
+      await backend.saveReview(record.id, {
+        approved: false,
+        comment: `${REJECTED_PREFIX}${reason}`.slice(0, 2000),
+      });
+      await backend.call(`/puzles/${record.id}/rebutja`, { method: 'POST' });
+      onChange(await backend.getPuzzle(record.id));
+      toast('Rebutjat. L’autor en veurà el motiu als comentaris.', 4000);
+    });
+  };
+
+  // Tornar a proposar (l'autor, un cop corregit) o reobrir (un editor que es repensa).
+  const reopen = () =>
+    run(async () => {
+      if (comment.trim() && comment.trim() !== (myReview?.comment ?? '').trim())
+        await backend.saveReview(record.id, { approved: false, comment: comment.trim() });
+      await backend.call(`/puzles/${record.id}/reobre`, { method: 'POST' });
+      onChange(await backend.getPuzzle(record.id));
+      toast(mine ? 'Tornat a proposar' : 'Reobert: torna a estar en revisió', 4000);
+    });
 
   // Desaprovar un programat: torna a revisió, perd el dia i s'ha de tornar a aprovar.
   const unpublish = () => {
@@ -153,9 +180,9 @@ function PuzzleView({
           <RenameButton puzzle={record} onSaved={(title) => onChange({ ...record, title })} />
         </h1>
         <div className="flex shrink-0 items-center gap-2">
-          {mine && record.status === 'proposed' && (
+          {mine && record.status !== 'published' && (
             <Button variant="ghost" onClick={remove} disabled={busy}>
-              Retira-la
+              {record.status === 'rejected' ? 'Esborra-la' : 'Retira-la'}
             </Button>
           )}
           {isEditor && scheduled && (
@@ -176,6 +203,13 @@ function PuzzleView({
         )}
         {FEATURES.social && released && <PuzzleLikes game={record.game} number={record.number!} />}
       </p>
+      {record.status === 'rejected' && (
+        <p className="mb-4 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          {mine
+            ? 'Aquest puzle s’ha rebutjat. Mira el motiu als comentaris; si el corregeixes, el pots tornar a proposar.'
+            : 'Aquest puzle s’ha rebutjat. Si t’ho repenses, el pots reobrir.'}
+        </p>
+      )}
       {record.status === 'proposed' && mine && !isEditor && (
         <p className="bg-brand-50 text-brand-900 mb-4 rounded-xl px-3 py-2 text-sm">
           L’equip de jocmot hi jugarà i, si li agrada, l’aprovarà i sortirà publicat. Si hi veu
@@ -251,7 +285,7 @@ function PuzzleView({
                     </p>
                   )}
                   <Button disabled={!built.puzzle || busy} onClick={saveChanges}>
-                    {record.status === 'proposed' ? 'Desa els canvis' : 'Desa la correcció'}
+                    {record.status === 'published' ? 'Desa la correcció' : 'Desa els canvis'}
                   </Button>
                 </div>
               )}
@@ -304,7 +338,8 @@ function PuzzleView({
               })}
             </ul>
 
-            {record.status === 'proposed' && (
+            {(record.status === 'proposed' ||
+              (record.status === 'rejected' && (mine || isEditor))) && (
               <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
                 <label className="block">
                   <span className="mb-1 block text-sm font-medium text-stone-700">
@@ -319,14 +354,29 @@ function PuzzleView({
                   />
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {isEditor && !mine && !approvedByMe && (
+                  {record.status === 'rejected' && (
+                    <Button disabled={busy} onClick={reopen}>
+                      {mine ? 'Torna a proposar' : 'Reobre’l'}
+                    </Button>
+                  )}
+                  {record.status === 'proposed' && isEditor && !mine && !approvedByMe && (
                     <Button disabled={busy} onClick={() => review(true)}>
                       Aprova’l
                     </Button>
                   )}
-                  {isEditor && !mine && approvedByMe && (
+                  {record.status === 'proposed' && isEditor && !mine && approvedByMe && (
                     <Button variant="secondary" disabled={busy} onClick={() => review(false)}>
                       Retira l’aprovació
+                    </Button>
+                  )}
+                  {record.status === 'proposed' && isEditor && !mine && (
+                    <Button
+                      variant="secondary"
+                      className="text-red-800"
+                      disabled={busy || !comment.trim()}
+                      onClick={reject}
+                    >
+                      Rebutja’l
                     </Button>
                   )}
                   <Button
@@ -337,6 +387,11 @@ function PuzzleView({
                     Desa el comentari
                   </Button>
                 </div>
+                {record.status === 'proposed' && isEditor && !mine && (
+                  <p className="text-sm text-stone-600">
+                    Per rebutjar-lo, explica al comentari què cal canviar: l’autor ho veurà.
+                  </p>
+                )}
               </div>
             )}
           </section>

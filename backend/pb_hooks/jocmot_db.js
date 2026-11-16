@@ -301,7 +301,7 @@ function deleteAccount(app, user, password) {
     for (const r of tx.findRecordsByFilter('reviews', 'author = {:u}', '', 0, 0, { u: user.id }))
       tx.delete(r);
     for (const p of tx.findRecordsByFilter('puzzles', 'author = {:u}', '', 0, 0, { u: user.id })) {
-      if (p.getString('status') === 'proposed') tx.delete(p);
+      if (['proposed', 'rejected'].includes(p.getString('status'))) tx.delete(p);
       else {
         p.set('author', '');
         tx.saveNoValidate(p);
@@ -422,6 +422,37 @@ function correctPuzzle(app, id, data) {
   const puzzle = app.findRecordById('puzzles', id);
   puzzle.set('data', data);
   if (puzzle.getString('status') === 'proposed') puzzle.set('contentUpdated', new DateTime());
+  app.save(puzzle);
+}
+
+/**
+ * Un editor rebutja la proposta d'un altre: surt de «Pendents de revisió» i l'autor la veu
+ * rebutjada (el motiu va als comentaris). Un de propi no es pot rebutjar: se'n pot retirar.
+ */
+function rejectPuzzle(app, user, id) {
+  if (!user.getBool('editor')) throw new ForbiddenError('Només per a editors.');
+  const puzzle = app.findRecordById('puzzles', id);
+  if (puzzle.getString('status') !== 'proposed')
+    throw new BadRequestError('Aquest puzle no està en revisió.');
+  if (puzzle.getString('author') === user.id)
+    throw new BadRequestError('No pots rebutjar un puzle teu: retira’l.');
+  puzzle.set('status', 'rejected');
+  app.save(puzzle);
+}
+
+/**
+ * Torna a posar en revisió un puzle rebutjat. Ho pot fer l'autor (un cop corregit, i dins del
+ * límit de propostes pendents) o un editor que es repensa.
+ */
+function reopenPuzzle(app, user, id) {
+  const puzzle = app.findRecordById('puzzles', id);
+  if (!user.getBool('editor') && puzzle.getString('author') !== user.id)
+    throw new ForbiddenError('Només l’autor o un editor el poden tornar a proposar.');
+  if (puzzle.getString('status') !== 'rejected')
+    throw new BadRequestError('Aquest puzle no està rebutjat.');
+  checkProposalLimit(app, user);
+  puzzle.set('status', 'proposed');
+  puzzle.set('contentUpdated', new DateTime());
   app.save(puzzle);
 }
 
@@ -982,6 +1013,8 @@ module.exports = {
   updatePuzzleInfo,
   unpublishPuzzle,
   correctPuzzle,
+  rejectPuzzle,
+  reopenPuzzle,
   likesOf,
   likesReport,
   upcomingFeedback,
